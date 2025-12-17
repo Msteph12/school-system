@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Student extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'admission_number',
+        'first_name',
+        'last_name',
+        'gender',
+        'date_of_birth',
+        'status',
+        'guardian_name',
+        'guardian_relationship',
+        'guardian_phone',
+        'guardian_phone_alt',
+        'guardian_address',
+    ];
+
+     /**
+     * A student has many class enrollments (over years).
+     */
+    public function classStudents()
+    {
+        return $this->hasMany(ClassStudent::class);
+    }
+}
