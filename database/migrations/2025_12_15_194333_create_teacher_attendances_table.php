@@ -15,6 +15,7 @@ return new class extends Migration {
                   ->cascadeOnDelete();
 
             $table->date('date');
+            $table->enum('status', ['present', 'absent', 'late', 'on_leave', 'sick', 'half-day']);
             $table->time('check_in_time')->nullable();
             $table->time('check_out_time')->nullable();
 
