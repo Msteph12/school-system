@@ -24,7 +24,7 @@ class Student extends Model
         'guardian_address',
     ];
 
-     /**
+    /**
      * A student has many class enrollments (over years).
      */
     public function classStudents()
@@ -38,5 +38,29 @@ class Student extends Model
     public function attendances()
     {
         return $this->hasMany(StudentAttendance::class);
+    }
+
+    /**
+     * A student has many marks (exam performance).
+     */
+    public function marks()
+    {
+        return $this->hasMany(Marks::class);
+    }
+
+    /**
+     * A student has many fee obligations.
+     */
+    public function studentFees()
+    {
+        return $this->hasMany(StudentFee::class);
+    }
+
+    /**
+     * A student has made many payments.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }
