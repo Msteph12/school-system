@@ -15,6 +15,7 @@ class ClassStudent extends Model
         'academic_year_id', // active, promoted, repeated, withdrawn
     ];
 
+    
     /**
      * This enrollment belongs to one student.
      */
@@ -37,5 +38,13 @@ class ClassStudent extends Model
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    /**
+     * This enrollment has many attendance records.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(StudentAttendance::class);
     }
 }

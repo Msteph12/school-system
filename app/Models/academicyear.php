@@ -14,6 +14,7 @@ class AcademicYear extends Model
         'starts_at',
         'ends_at',
         'is_active',
+        'status',
     ];
 
     /**
@@ -31,4 +32,10 @@ class AcademicYear extends Model
     {
         return $this->hasMany(ClassStudent::class);
     }
+
+        public function isLocked()
+    {
+        return $this->status === 'locked';
+    }
+
 }

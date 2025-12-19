@@ -35,4 +35,13 @@ class Teacher extends Model
     {
         return $this->hasMany(SubjectTeacher::class);
     }
+
+    /** 
+     * A teacher has many attendance records.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(TeacherAttendance::class);
+    }
+
 }

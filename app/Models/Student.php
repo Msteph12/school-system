@@ -31,4 +31,12 @@ class Student extends Model
     {
         return $this->hasMany(ClassStudent::class);
     }
+
+    /**
+     * A student has many attendance records.
+     */
+    public function attendances()
+    {
+        return $this->hasMany(StudentAttendance::class);
+    }
 }
