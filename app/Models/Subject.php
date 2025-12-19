@@ -32,4 +32,13 @@ class Subject extends Model
             'class_subjects'
         );
     }
+
+    /**
+     * A subject can be part of many grades (via grade_subjects).
+     */
+    public function timetables()
+    {
+        return $this->hasMany(Timetable::class);
+    }
+
 }

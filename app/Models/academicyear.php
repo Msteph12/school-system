@@ -38,4 +38,12 @@ class AcademicYear extends Model
         return $this->status === 'locked';
     }
 
+    /**
+     * An academic year has many timetables.
+     */
+    public function timetables()
+    {
+        return $this->hasMany(Timetable::class);
+    }
+
 }

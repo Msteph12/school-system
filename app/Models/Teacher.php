@@ -44,4 +44,12 @@ class Teacher extends Model
         return $this->hasMany(TeacherAttendance::class);
     }
 
+    /**
+     * A teacher has many timetables.
+     */
+    public function timetables()
+    {
+        return $this->hasMany(Timetable::class);
+    }
+
 }

@@ -49,4 +49,13 @@ class SchoolClass extends Model
     {
         return $this->hasMany(ClassSubject::class);
     }
+
+    /**
+     * A class has many timetables.
+     */
+    public function timetables()
+    {
+        return $this->hasMany(Timetable::class, 'class_id');
+    }
+
 }
