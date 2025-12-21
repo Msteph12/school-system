@@ -19,12 +19,12 @@ class SubjectTeacherController extends Controller
     {
         $validated = $request->validate([
             'teacher_id' => 'required|exists:teachers,id',
-            'subject_id' => 'required|exists:subjects,id',
+            'class_subject_id' => 'required|exists:subjects,id', 
         ]);
 
         // prevent duplicate assignment
         $exists = SubjectTeacher::where('teacher_id', $validated['teacher_id'])
-            ->where('subject_id', $validated['subject_id'])
+            ->where('class_subject_id', $validated['class_subject_id'])
             ->exists();
 
         if ($exists) {

@@ -38,20 +38,47 @@ class SchoolClassController extends Controller
         $schoolClass = SchoolClass::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'string|unique:school_classes,name,' . $schoolClass->id,
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'grade_id' => 'exists:grades,id',
+            'name' => 'string',
+            'code' => 'nullable|string',
+            'status' => 'in:active,inactive',
+            'teacher_id' => 'nullable|exists:teachers,id',
+            'capacity' => 'nullable|integer|min:1',
         ]);
+
+        // Ensure class name is unique per grade
+        if (isset($validated['name'], $validated['grade_id'])) {
+            $exists = SchoolClass::where('grade_id', $validated['grade_id'])
+                ->where('name', $validated['name'])
+                ->where('id', '!=', $schoolClass->id)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'message' => 'Class name already exists in this grade'
+                ], 409);
+            }
+        }
 
         $schoolClass->update($validated);
 
         return $schoolClass;
     }
 
+
     // DELETE /api/school-classes/{id}
     public function destroy($id)
     {
-        SchoolClass::findOrFail($id)->delete();
+        $schoolClass = SchoolClass::findOrFail($id);
+
+        // Prevent deletion if students are assigned
+        if ($schoolClass->classStudents()->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete class with enrolled students'
+            ], 409);
+        }
+
+        $schoolClass->delete();
 
         return response()->json(['message' => 'School class deleted']);
     }

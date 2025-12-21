@@ -19,11 +19,20 @@ class ClassStudentController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'school_class_id' => 'required|exists:school_classes,id',
+            'class_id' => 'required|exists:school_classes,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
         ]);
 
         // Ensure student is not enrolled twice
-        ClassStudent::where('student_id', $validated['student_id'])->delete();
+        $exists = ClassStudent::where('student_id', $validated['student_id'])
+            ->where('academic_year_id', $validated['academic_year_id'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Student is already enrolled for this academic year'
+            ], 409);
+        }
 
         return ClassStudent::create($validated);
     }
