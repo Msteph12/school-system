@@ -20,8 +20,6 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|unique:subjects,name',
             'code' => 'nullable|string|unique:subjects,code',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
         ]);
 
         return Subject::create($validated);
@@ -41,8 +39,6 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'name' => 'string|unique:subjects,name,' . $subject->id,
             'code' => 'nullable|string|unique:subjects,code,' . $subject->id,
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
         ]);
 
         $subject->update($validated);
@@ -53,8 +49,8 @@ class SubjectController extends Controller
     // DELETE /api/subjects/{id}
     public function destroy($id)
     {
-        Subject::findOrFail($id)->delete();
-
-        return response()->json(['message' => 'Subject deleted']);
+        return response()->json([
+            'message' => 'Subjects cannot be deleted once created'
+        ], 403);
     }
 }
