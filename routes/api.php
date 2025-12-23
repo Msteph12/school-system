@@ -39,3 +39,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('promotions', [PromotionController::class, 'promote']);
     Route::get('reports', [ReportsController::class, 'index']);
 });
+
+Route::middleware(['auth:sanctum', 'role:admin'])->get('/admin', function () {
+    return response()->json(['message' => 'Admin only']);
+});
+
+Route::middleware(['auth:sanctum', 'role:admin'])
+    ->get('/admin-test', function () {
+        return response()->json([
+            'message' => 'Admin access confirmed'
+        ]);
+    });
+
