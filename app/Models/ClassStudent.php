@@ -12,7 +12,8 @@ class ClassStudent extends Model
     protected $fillable = [
         'student_id',
         'class_id',
-        'academic_year_id', // active, promoted, repeated, withdrawn
+        'academic_year_id', 
+        'status', // active, promoted, repeated, withdrawn
     ];
 
     

@@ -11,7 +11,8 @@ class GradeSubject extends Model
 
     protected $fillable = [
         'grade_id',
-        'subject_id', // active, inactive
+        'subject_id',
+        'is_active' // Indicates if the subject is currently active for the grade
     ];
 
     /**

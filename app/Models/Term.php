@@ -13,8 +13,8 @@ class Term extends Model
         'academic_year_id',
         'name',
         'order',
-        'starts_at',
-        'ends_at',
+        'start_date',
+        'end_date',
         'is_active',
     ];
 

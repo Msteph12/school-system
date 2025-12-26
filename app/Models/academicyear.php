@@ -11,8 +11,8 @@ class AcademicYear extends Model
 
     protected $fillable = [
         'name',
-        'starts_at',
-        'ends_at',
+        'start_date',
+        'end_date',
         'is_active',
         'status',
     ];

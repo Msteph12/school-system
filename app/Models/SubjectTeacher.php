@@ -11,7 +11,8 @@ class SubjectTeacher extends Model
 
     protected $fillable = [
         'class_subject_id',
-        'teacher_id', // active, inactive
+        'teacher_id', 
+        'is_active', // whether the teacher is currently teaching this subject
     ];
 
     /**
