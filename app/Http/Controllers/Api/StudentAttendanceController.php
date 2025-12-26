@@ -6,11 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\ClassStudent;
 use App\Models\StudentAttendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class StudentAttendanceController extends Controller
 {
+    // POST /api/student-attendance
     public function store(Request $request)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'teacher'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'class_student_id' => 'required|exists:class_students,id',
@@ -23,7 +30,7 @@ class StudentAttendanceController extends Controller
             'remarks' => 'nullable|string',
         ]);
 
-        // ensure class_student matches student + year
+        // Ensure class enrollment matches student + academic year
         $classStudent = ClassStudent::where('id', $validated['class_student_id'])
             ->where('student_id', $validated['student_id'])
             ->where('academic_year_id', $validated['academic_year_id'])
@@ -35,15 +42,29 @@ class StudentAttendanceController extends Controller
             ], 422);
         }
 
-        // prevent duplicates
+        // Status-based date rules
+        if ($validated['status'] === 'present') {
+            $validated['from_date'] = null;
+            $validated['to_date'] = null;
+        }
+
+        if (in_array($validated['status'], ['absent', 'excused']) && empty($validated['from_date'])) {
+            return response()->json([
+                'message' => 'Absent or excused attendance requires a date'
+            ], 422);
+        }
+
+        // Prevent exact duplicate attendance entry
         $exists = StudentAttendance::where('student_id', $validated['student_id'])
             ->where('academic_year_id', $validated['academic_year_id'])
             ->where('term_id', $validated['term_id'])
+            ->where('from_date', $validated['from_date'])
+            ->where('to_date', $validated['to_date'])
             ->exists();
 
         if ($exists) {
             return response()->json([
-                'message' => 'Attendance already recorded for this term'
+                'message' => 'Attendance already recorded for this period'
             ], 409);
         }
 
@@ -52,8 +73,6 @@ class StudentAttendanceController extends Controller
 
     /**
      * NO HARD DELETE
-     * Attendance records are never deleted.
-     * If needed, update status instead.
+     * Attendance records are historical and must never be deleted.
      */
 }
-

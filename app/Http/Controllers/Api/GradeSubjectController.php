@@ -5,18 +5,29 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\GradeSubject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class GradeSubjectController extends Controller
 {
     // GET /api/grade-subjects
     public function index()
     {
-        return GradeSubject::with(['grade', 'subject'])->get();
+        return GradeSubject::with(['grade', 'subject'])
+            ->where('is_active', true)
+            ->get();
     }
+
 
     // POST /api/grade-subjects
     public function store(Request $request)
     {
+        if (Auth::user()->role->name !== 'admin') {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+        
         $validated = $request->validate([
             'grade_id' => 'required|exists:grades,id',
             'subject_id' => 'required|exists:subjects,id',
@@ -39,8 +50,14 @@ class GradeSubjectController extends Controller
     // DELETE /api/grade-subjects/{id}
     public function destroy($id)
     {
-        GradeSubject::findOrFail($id)->delete();
+        $gradeSubject = GradeSubject::findOrFail($id);
 
-        return response()->json(['message' => 'Grade subject removed']);
+        $gradeSubject->update([
+            'is_active' => false
+        ]);
+
+        return response()->json([
+            'message' => 'Subject removed from grade'
+        ]);
     }
 }

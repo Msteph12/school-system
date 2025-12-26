@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TeacherController extends Controller
 {
@@ -17,6 +18,10 @@ class TeacherController extends Controller
     // POST /api/teachers
     public function store(Request $request)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'registrar'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'staff_number' => 'required|string|unique:teachers,staff_number',
@@ -40,6 +45,10 @@ class TeacherController extends Controller
     // PUT /api/teachers/{id}
     public function update(Request $request, $id)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'registrar'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
         $teacher = Teacher::findOrFail($id);
 
         $validated = $request->validate([
@@ -50,7 +59,7 @@ class TeacherController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email|unique:teachers,email,' . $teacher->id,
             'department' => 'nullable|string',
-            'status' =>  'required|in:active,inactive,on_leave',
+            'status' =>  'nullable|in:active,inactive,on_leave',
         ]);
 
         $teacher->update($validated);
@@ -61,6 +70,10 @@ class TeacherController extends Controller
     // DELETE /api/teachers/{id}
     public function destroy($id)
     {
+        if (Auth::user()->role->name !== 'admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
         $teacher = Teacher::findOrFail($id);
 
         $teacher->update([

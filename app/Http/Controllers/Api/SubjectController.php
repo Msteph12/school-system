@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class SubjectController extends Controller
 {
@@ -17,6 +19,12 @@ class SubjectController extends Controller
     // POST /api/subjects
     public function store(Request $request)
     {
+        if (Auth::user()->role->name !== 'admin') {
+            return response()->json([
+                'message' => 'Only admins can create subjects'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|unique:subjects,name',
             'code' => 'nullable|string|unique:subjects,code',
@@ -34,6 +42,12 @@ class SubjectController extends Controller
     // PUT /api/subjects/{id}
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role->name !== 'admin') {
+            return response()->json([
+                'message' => 'Only admins can update subjects'
+            ], 403);
+        }
+
         $subject = Subject::findOrFail($id);
 
         $validated = $request->validate([
@@ -48,7 +62,7 @@ class SubjectController extends Controller
 
     // DELETE /api/subjects/{id}
     public function destroy($id)
-    {
+    {   
         return response()->json([
             'message' => 'Subjects cannot be deleted once created'
         ], 403);

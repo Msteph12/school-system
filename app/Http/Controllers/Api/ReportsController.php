@@ -7,6 +7,8 @@ use App\Models\ClassStudent;
 use App\Models\StudentAttendance;
 use App\Models\TeacherAttendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class ReportsController extends Controller
 {
@@ -16,15 +18,20 @@ class ReportsController extends Controller
      */
     public function studentsByClass(Request $request)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'teacher', 'registrar'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
         ]);
 
         return ClassStudent::with(['student', 'schoolClass.grade'])
             ->where('academic_year_id', $request->academic_year_id)
-            ->where('status', 'active')
             ->get()
-            ->groupBy('schoolClass.name');
+            ->groupBy(fn ($item) =>
+                $item->schoolClass->grade->name . ' - ' . $item->schoolClass->name
+            );
     }
 
     /**
@@ -33,6 +40,10 @@ class ReportsController extends Controller
      */
     public function studentAttendance(Request $request)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'teacher', 'registrar'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $request->validate([
             'student_id' => 'required|exists:students,id',
         ]);
@@ -48,6 +59,10 @@ class ReportsController extends Controller
      */
     public function teacherAttendance(Request $request)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'teacher', 'registrar'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
         $request->validate([
             'teacher_id' => 'required|exists:teachers,id',
         ]);

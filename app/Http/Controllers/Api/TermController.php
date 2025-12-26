@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Term;
-use App\Models\AcademicYear;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TermController extends Controller
 {
@@ -20,6 +20,10 @@ class TermController extends Controller
     // POST /api/terms
     public function store(Request $request)
     {
+        if (Auth::user()->role->name !== 'admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
         $validated = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'name' => 'required|string',
@@ -28,7 +32,7 @@ class TermController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        // Only one active term per academic year
+        // Ensure only one active term per academic year
         if (!empty($validated['is_active']) && $validated['is_active']) {
             Term::where('academic_year_id', $validated['academic_year_id'])
                 ->where('is_active', true)
@@ -47,20 +51,27 @@ class TermController extends Controller
     // PUT /api/terms/{id}
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role->name !== 'admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
         $term = Term::findOrFail($id);
 
         $validated = $request->validate([
-            'academic_year_id' => 'exists:academic_years,id',
-            'name' => 'string',
-            'start_date' => 'date',
-            'end_date' => 'date|after:start_date',
-            'is_active' => 'boolean',
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+            'name' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after:start_date',
+            'is_active' => 'nullable|boolean',
         ]);
 
-        // Enforce one active term per academic year
+        // Determine which academic year to apply the active-term rule to
+        $yearId = $validated['academic_year_id'] ?? $term->academic_year_id;
+
         if (!empty($validated['is_active']) && $validated['is_active']) {
-            Term::where('academic_year_id', $term->academic_year_id)
+            Term::where('academic_year_id', $yearId)
                 ->where('is_active', true)
+                ->where('id', '!=', $term->id)
                 ->update(['is_active' => false]);
         }
 
@@ -69,11 +80,10 @@ class TermController extends Controller
         return $term;
     }
 
-    // DELETE /api/terms/{id}
-    public function destroy($id)
-    {
-        Term::findOrFail($id)->delete();
+    /**
+     * TERMS ARE NEVER DELETED
+     * Terms are historical records tied to attendance, exams and results.
+     * Use is_active to close a term instead.
+     */
 
-        return response()->json(['message' => 'Term deleted']);
-    }
 }

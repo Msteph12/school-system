@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Grade;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class GradeController extends Controller
 {
@@ -18,6 +20,10 @@ class GradeController extends Controller
     // POST /api/grades
     public function store(Request $request)
     {
+        if (Auth::user()->role->name !== 'admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
         $validated = $request->validate([
             'name' => 'required|string|unique:grades,name',
             'code' => 'required|string|unique:grades,code',
@@ -37,6 +43,10 @@ class GradeController extends Controller
    // PUT /api/grades/{id}
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role->name !== 'admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
         $grade = Grade::findOrFail($id);
 
         $validated = $request->validate([

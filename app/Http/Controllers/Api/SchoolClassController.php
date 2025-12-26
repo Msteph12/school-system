@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SchoolClassController extends Controller
 {
@@ -17,6 +18,12 @@ class SchoolClassController extends Controller
     // POST /api/school-classes
     public function store(Request $request)
     {
+        if (Auth::user()->role->name !== 'admin') {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|unique:school_classes,name',
             'description' => 'nullable|string',
@@ -35,6 +42,12 @@ class SchoolClassController extends Controller
     // PUT /api/school-classes/{id}
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role->name !== 'admin') {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
         $schoolClass = SchoolClass::findOrFail($id);
 
         $validated = $request->validate([
@@ -68,7 +81,7 @@ class SchoolClassController extends Controller
 
     // DELETE /api/school-classes/{id}
     public function destroy($id)
-    {
+    {       
         $schoolClass = SchoolClass::findOrFail($id);
 
         // Prevent deletion if students are assigned

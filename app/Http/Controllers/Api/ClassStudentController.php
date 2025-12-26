@@ -5,18 +5,27 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ClassStudent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class ClassStudentController extends Controller
 {
     // GET /api/class-students
     public function index()
     {
-        return ClassStudent::with(['student', 'schoolClass'])->get();
+        return ClassStudent::with(['student', 'schoolClass'])
+            ->where('status', 'active')
+            ->get();
     }
+
 
     // POST /api/class-students
     public function store(Request $request)
     {
+        if (!in_array(Auth::user()->role->name, ['admin', 'registrar'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+    
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'class_id' => 'required|exists:school_classes,id',
@@ -40,8 +49,14 @@ class ClassStudentController extends Controller
     // DELETE /api/class-students/{id}
     public function destroy($id)
     {
-        ClassStudent::findOrFail($id)->delete();
+        $classStudent = ClassStudent::findOrFail($id);
 
-        return response()->json(['message' => 'Student removed from class']);
+        $classStudent->update([
+            'status' => 'withdrawn'
+        ]);
+
+        return response()->json([
+            'message' => 'Student withdrawn from class'
+        ]);
     }
 }
