@@ -16,7 +16,7 @@ return new class extends Migration {
 
             $table->foreignId('class_subject_id')
                   ->constrained()
-                  ->cascadeOnDelete();
+                  ->restrictOnDelete();
 
             $table->timestamps();
 

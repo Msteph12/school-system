@@ -29,9 +29,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('grades', GradeController::class);
     Route::apiResource('school-classes', SchoolClassController::class);
     Route::apiResource('subjects', SubjectController::class);
-    Route::apiResource('grade-subjects', GradeSubjectController::class)->only(['index','store','destroy']);
-    Route::apiResource('class-students', ClassStudentController::class)->only(['index','store','destroy']);
-    Route::apiResource('subject-teachers', SubjectTeacherController::class)->only(['index','store','destroy']);
     Route::apiResource('teachers', TeacherController::class);
     Route::apiResource('student-attendance', StudentAttendanceController::class)->except(['destroy']);
     Route::apiResource('teacher-attendance', TeacherAttendanceController::class)->except(['destroy']);
