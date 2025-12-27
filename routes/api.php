@@ -15,6 +15,14 @@ use App\Http\Controllers\Api\TeacherAttendanceController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\StudentBalanceController;
+use App\Http\Controllers\Api\FeeReceiptController;
+use App\Http\Controllers\Api\StudentOptionalFeeController;
+use App\Http\Controllers\Api\OptionalFeeController;
+use App\Http\Controllers\Api\FeeStructureController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\StudentFeesController;
+use App\Http\Controllers\Api\FinancialReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -98,3 +106,123 @@ Route::middleware(['auth:sanctum', 'role:admin,teacher'])->group(function () {
     Route::get('reports/teacher-attendance', [ReportsController::class, 'teacherAttendance']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Admin + Accountant (Finance core)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    Route::apiResource('fee-structures', FeeStructureController::class)
+        ->only(['index', 'store', 'update']);
+});
+
+/*
+//--------------------------------------------------------------------------
+/ Admin + Accountant 
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    Route::apiResource('optional-fees', OptionalFeeController::class)
+        ->except(['show']);
+});
+/*Student view only
+*/
+Route::middleware('auth:sanctum')->get(
+    'optional-fees',
+    [OptionalFeeController::class, 'index']
+);
+
+/*
+//--------------------------------------------------------------------------
+/ Admin + Accountant 
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    Route::post(
+        'students/{student}/optional-fees',
+        [StudentOptionalFeeController::class, 'store']
+    );
+});
+
+/*
+//--------------------------------------------------------------------------
+/ Admin + Accountant 
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    Route::get('student-fees', [StudentFeesController::class, 'index']);
+    Route::post('student-fees/recalculate', [StudentFeesController::class, 'store']);
+    Route::get('students/{student}/fees', [StudentFeesController::class, 'show']);
+});
+
+/*
+//--------------------------------------------------------------------------
+/ Admin Only
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::put('student-fees/{studentFee}', [StudentFeesController::class, 'update']);
+});
+
+
+/*
+//--------------------------------------------------------------------------
+/ Admin + Accountant 
+//--------------------------------------------------------------------------
+*/  
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->get(
+    'students/{student}/balance',
+    [StudentBalanceController::class, 'show']
+);
+/*Student view only
+*/
+Route::middleware(['auth:sanctum', 'role:student'])->get(
+    'my/balance',
+    function (Illuminate\Http\Request $request) {
+        return app(\App\Http\Controllers\Api\StudentBalanceController::class)
+            ->show(
+                $request,
+                $request->user()->student
+            );
+    }
+);
+
+/*
+//--------------------------------------------------------------------------
+/ Admin + Accountant
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->get(
+    'fee-receipts/{payment}',
+    [FeeReceiptController::class, 'show']
+);
+
+/*
+//--------------------------------------------------------------------------
+/ Admin Only
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::get('reports/financial', [FinancialReportController::class, 'index']);
+});
+
+/*
+//--------------------------------------------------------------------------
+/ Admin + Accountant 
+//--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    Route::get('payments', [PaymentController::class, 'index']);
+    Route::post('payments', [PaymentController::class, 'store']);
+    Route::get('payments/{payment}', [PaymentController::class, 'show']);
+});
+/*Student view only
+*/
+Route::middleware(['auth:sanctum', 'role:student'])->get(
+    'my/payments',
+    function (Illuminate\Http\Request $request) {
+        return \App\Models\Payment::where('student_id', $request->user()->student_id)
+            ->orderBy('payment_date', 'desc')
+            ->get();
+    }
+);
