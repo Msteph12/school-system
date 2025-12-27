@@ -63,4 +63,14 @@ class Student extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    // Optional fees selected by the student
+    public function optionalFees()
+    {
+        return $this->belongsToMany(
+            OptionalFee::class,
+            'student_optional_fees'
+        )->withPivot('academic_year_id', 'term_id')
+        ->withTimestamps();
+    }
 }
