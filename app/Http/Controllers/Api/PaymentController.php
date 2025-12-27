@@ -12,27 +12,39 @@ class PaymentController extends Controller
 {
     /**
      * GET /api/payments
-     * List payments (filterable)
      */
     public function index(Request $request)
     {
-        return Payment::with('student')
-            ->when($request->student_id, fn ($q) =>
-                $q->where('student_id', $request->student_id)
-            )
-            ->when($request->academic_year_id, fn ($q) =>
-                $q->where('academic_year_id', $request->academic_year_id)
-            )
-            ->when($request->term_id, fn ($q) =>
-                $q->where('term_id', $request->term_id)
-            )
-            ->orderBy('payment_date', 'desc')
-            ->get();
+        $user = $request->user();
+
+        $query = Payment::with('student')
+            ->orderBy('payment_date', 'desc');
+
+        // Student: only their own payments
+        if ($user->role->name === 'student') {
+            $query->where('student_id', $user->id);
+        }
+
+        // Admin / Accountant: allow filters
+        if (in_array($user->role->name, ['admin', 'accountant'])) {
+            $query
+                ->when($request->student_id, fn ($q) =>
+                    $q->where('student_id', $request->student_id)
+                )
+                ->when($request->academic_year_id, fn ($q) =>
+                    $q->where('academic_year_id', $request->academic_year_id)
+                )
+                ->when($request->term_id, fn ($q) =>
+                    $q->where('term_id', $request->term_id)
+                );
+        }
+
+        return $query->get();
     }
 
     /**
      * POST /api/payments
-     * Record a payment and apply it to student fees
+     * Admin + Accountant only (route-level protection)
      */
     public function store(Request $request)
     {
@@ -48,10 +60,8 @@ class PaymentController extends Controller
 
         return DB::transaction(function () use ($data) {
 
-            // 1️⃣ Record payment
             $payment = Payment::create($data);
 
-            // 2️⃣ Apply payment to student fee
             $studentFee = StudentFee::where('student_id', $data['student_id'])
                 ->whereHas('feeStructure', fn ($q) =>
                     $q->where('academic_year_id', $data['academic_year_id'])
@@ -62,19 +72,9 @@ class PaymentController extends Controller
             if ($studentFee) {
                 $remaining = $studentFee->amount_due - $data['amount_paid'];
 
-                // Fully paid or excess
-                if ($remaining <= 0) {
-                    $studentFee->update([
-                        'amount_due' => 0,
-                    ]);
-
-                    // Excess is implicitly carried forward
-                    // (Handled later via balance logic)
-                } else {
-                    $studentFee->update([
-                        'amount_due' => $remaining,
-                    ]);
-                }
+                $studentFee->update([
+                    'amount_due' => max(0, $remaining),
+                ]);
             }
 
             return response()->json([
@@ -87,8 +87,15 @@ class PaymentController extends Controller
     /**
      * GET /api/payments/{payment}
      */
-    public function show(Payment $payment)
+    public function show(Request $request, Payment $payment)
     {
+        $user = $request->user();
+
+        // Student: ownership check
+        if ($user->role->name === 'student' && $payment->student_id !== $user->id) {
+            abort(403, 'Unauthorized');
+        }
+
         return $payment->load('student');
     }
 }

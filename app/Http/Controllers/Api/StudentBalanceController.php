@@ -15,6 +15,23 @@ class StudentBalanceController extends Controller
      */
     public function show(Request $request, Student $student)
     {
+        $user = $request->user();
+
+        // 🔐 Access control
+        if (
+            ! in_array($user->role->name, ['admin', 'accountant']) &&
+            ! ($user->role->name === 'student' && $student->user_id === $user->id)
+        ) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        if ($request->user()->role === 'student' &&
+        $request->user()->student_id !== $student->id) {
+        abort(403, 'Unauthorized');
+        }
+
         $data = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'term_id'          => 'required|exists:terms,id',
@@ -24,7 +41,7 @@ class StudentBalanceController extends Controller
         $termId         = $data['term_id'];
 
         /**
-         * 1️⃣ Total fees due (via fee structure)
+         * 1️⃣ Total fees due
          */
         $totalFees = StudentFee::where('student_id', $student->id)
             ->whereHas('feeStructure', fn ($q) =>
@@ -42,20 +59,20 @@ class StudentBalanceController extends Controller
             ->sum('amount_paid');
 
         /**
-         * 3️⃣ Calculate balance
+         * 3️⃣ Balance calculation
          */
         $balance = $totalFees - $totalPaid;
 
         return response()->json([
-            'student_id'   => $student->id,
-            'academic_year_id' => $academicYearId,
-            'term_id'      => $termId,
+            'student_id'        => $student->id,
+            'academic_year_id'  => $academicYearId,
+            'term_id'           => $termId,
 
-            'total_fees'   => $totalFees,
-            'total_paid'   => $totalPaid,
+            'total_fees'        => $totalFees,
+            'total_paid'        => $totalPaid,
 
-            'balance_due'  => $balance > 0 ? $balance : 0,
-            'credit'       => $balance < 0 ? abs($balance) : 0,
+            'balance_due'       => $balance > 0 ? $balance : 0,
+            'credit'            => $balance < 0 ? abs($balance) : 0,
         ]);
     }
 }
