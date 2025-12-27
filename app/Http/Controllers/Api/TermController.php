@@ -30,6 +30,7 @@ class TermController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'is_active' => 'boolean',
+            'is_closed' => 'boolean',
         ]);
 
         // Ensure only one active term per academic year
@@ -63,6 +64,7 @@ class TermController extends Controller
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after:start_date',
             'is_active' => 'nullable|boolean',
+            'is_closed' => 'nullable|boolean',
         ]);
 
         // Determine which academic year to apply the active-term rule to
@@ -72,7 +74,7 @@ class TermController extends Controller
             Term::where('academic_year_id', $yearId)
                 ->where('is_active', true)
                 ->where('id', '!=', $term->id)
-                ->update(['is_active' => false]);
+                ->update(['is_active' => false, 'is_closed' => false]);
         }
 
         $term->update($validated);
