@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->date('ends_at');
 
             $table->boolean('is_active')->default(false);
+            $table->boolean('is_closed')->default(false);
 
             $table->timestamps();
 
