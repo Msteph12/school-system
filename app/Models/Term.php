@@ -16,6 +16,7 @@ class Term extends Model
         'start_date',
         'end_date',
         'is_active',
+        'is_closed',
     ];
 
     /**
