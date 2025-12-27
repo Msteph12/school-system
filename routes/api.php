@@ -1,6 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| Controllers
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\TermController;
 use App\Http\Controllers\Api\GradeController;
@@ -14,25 +22,33 @@ use App\Http\Controllers\Api\StudentAttendanceController;
 use App\Http\Controllers\Api\TeacherAttendanceController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\ReportsController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\StudentBalanceController;
-use App\Http\Controllers\Api\FeeReceiptController;
-use App\Http\Controllers\Api\StudentOptionalFeeController;
-use App\Http\Controllers\Api\OptionalFeeController;
+
 use App\Http\Controllers\Api\FeeStructureController;
-use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\OptionalFeeController;
+use App\Http\Controllers\Api\StudentOptionalFeeController;
 use App\Http\Controllers\Api\StudentFeesController;
+use App\Http\Controllers\Api\StudentBalanceController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\FeeReceiptController;
 use App\Http\Controllers\Api\FinancialReportController;
+
+use App\Http\Controllers\Api\GradeScaleController;
+use App\Http\Controllers\Api\MarksController;
+use App\Http\Controllers\Api\TimetableController;
+use App\Http\Controllers\Api\ExamsController;
+use App\Http\Controllers\Api\TermClosureController;
+
+use App\Http\Controllers\Api\ResultsController;
 
 /*
 |--------------------------------------------------------------------------
-| Public
+| Public Routes
 |--------------------------------------------------------------------------
 */
 Route::post('login', [AuthController::class, 'login']);
 
 /*
-|------------------ --------------------------------------------------------
+|--------------------------------------------------------------------------
 | Authenticated (any logged-in user)
 |--------------------------------------------------------------------------
 */
@@ -43,186 +59,170 @@ Route::middleware('auth:sanctum')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Admin only
+| ADMIN ONLY
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
-    Route::apiResource('academic-years', AcademicYearController::class)
-        ->except(['destroy']);
-    Route::apiResource('terms', TermController::class)
-        ->except(['destroy']);
+    // Core setup
+    Route::apiResource('academic-years', AcademicYearController::class)->except(['destroy']);
+    Route::apiResource('terms', TermController::class)->except(['destroy']);
     Route::apiResource('grades', GradeController::class);
     Route::apiResource('subjects', SubjectController::class);
     Route::apiResource('teachers', TeacherController::class);
 
-    Route::apiResource('grade-subjects', GradeSubjectController::class)
-        ->only(['index','store','destroy']);
+    // Linking
+    Route::apiResource('grade-subjects', GradeSubjectController::class)->only(['index','store','destroy']);
+    Route::apiResource('subject-teachers', SubjectTeacherController::class)->only(['index','store','destroy']);
 
-    Route::apiResource('subject-teachers', SubjectTeacherController::class)
-        ->only(['index','store','destroy']);
+    // Student fees manual adjustment
+    Route::put('student-fees/{studentFee}', [StudentFeesController::class, 'update']);
 
+    // Financial reports
+    Route::get('reports/financial', [FinancialReportController::class, 'index']);
+
+    // Grade scales (full CRUD)
+    Route::apiResource('grade-scales', GradeScaleController::class);
+
+    // Timetables (full CRUD)
+    Route::apiResource('timetables', TimetableController::class);
+
+    // Exams (create/update/view – no delete)
+    Route::apiResource('exams', ExamsController::class)->except(['destroy']);
+
+    // Term closure
+    Route::post('terms/{term}/close', [TermClosureController::class, 'close']);
 });
 
 /*
 |--------------------------------------------------------------------------
-| Admin + Registrar
+| ADMIN + REGISTRAR
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'role:admin,registrar'])->group(function () {
 
     Route::apiResource('school-classes', SchoolClassController::class);
-
-    Route::apiResource('class-students', ClassStudentController::class)
-        ->only(['index','store','destroy']);
-
+    Route::apiResource('class-students', ClassStudentController::class)->only(['index','store','destroy']);
     Route::post('promotions', [PromotionController::class, 'promote']);
-
 });
 
 /*
 |--------------------------------------------------------------------------
-| Teacher only
+| TEACHER ONLY
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'role:teacher'])->group(function () {
 
-    Route::apiResource('teacher-attendance', TeacherAttendanceController::class)
-        ->except(['destroy']);
+    // Attendance
+    Route::apiResource('teacher-attendance', TeacherAttendanceController::class)->except(['destroy']);
+    Route::apiResource('student-attendance', StudentAttendanceController::class)->except(['destroy']);
 
-    Route::apiResource('student-attendance', StudentAttendanceController::class)
-        ->except(['destroy']);
+    // Read-only grade scales
+    Route::get('grade-scales', [GradeScaleController::class, 'index']);
+    Route::get('grade-scales/{gradeScale}', [GradeScaleController::class, 'show']);
 
+    // Read-only timetables
+    Route::get('timetables', [TimetableController::class, 'index']);
+    Route::get('timetables/{timetable}', [TimetableController::class, 'show']);
+
+    // Read-only exams
+    Route::get('exams', [ExamsController::class, 'index']);
+    Route::get('exams/{exam}', [ExamsController::class, 'show']);
 });
 
 /*
 |--------------------------------------------------------------------------
-| Admin + Teacher
+| ADMIN + TEACHER
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'role:admin,teacher'])->group(function () {
+
+    // Reports
     Route::get('reports/students-by-class', [ReportsController::class, 'studentsByClass']);
     Route::get('reports/student-attendance', [ReportsController::class, 'studentAttendance']);
     Route::get('reports/teacher-attendance', [ReportsController::class, 'teacherAttendance']);
+
+    // Marks (full CRUD)
+    Route::apiResource('marks', MarksController::class);
+
+    Route::get('results/student/{student}', [ResultsController::class, 'studentResults']);
+
 });
 
 /*
 |--------------------------------------------------------------------------
-| Admin + Accountant (Finance core)
+| ADMIN + ACCOUNTANT (FINANCE CORE)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
-    Route::apiResource('fee-structures', FeeStructureController::class)
-        ->only(['index', 'store', 'update']);
-});
 
-/*
-//--------------------------------------------------------------------------
-/ Admin + Accountant 
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
-    Route::apiResource('optional-fees', OptionalFeeController::class)
-        ->except(['show']);
-});
-/*Student view only
-*/
-Route::middleware('auth:sanctum')->get(
-    'optional-fees',
-    [OptionalFeeController::class, 'index']
-);
+    // Fee structures
+    Route::apiResource('fee-structures', FeeStructureController::class)->only(['index','store','update']);
 
-/*
-//--------------------------------------------------------------------------
-/ Admin + Accountant 
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
-    Route::post(
-        'students/{student}/optional-fees',
-        [StudentOptionalFeeController::class, 'store']
-    );
-});
+    // Optional fees
+    Route::apiResource('optional-fees', OptionalFeeController::class)->except(['show']);
+    Route::post('students/{student}/optional-fees', [StudentOptionalFeeController::class, 'store']);
 
-/*
-//--------------------------------------------------------------------------
-/ Admin + Accountant 
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    // Student fees
     Route::get('student-fees', [StudentFeesController::class, 'index']);
     Route::post('student-fees/recalculate', [StudentFeesController::class, 'store']);
     Route::get('students/{student}/fees', [StudentFeesController::class, 'show']);
-});
 
-/*
-//--------------------------------------------------------------------------
-/ Admin Only
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    Route::put('student-fees/{studentFee}', [StudentFeesController::class, 'update']);
-});
+    // Balances
+    Route::get('students/{student}/balance', [StudentBalanceController::class, 'show']);
 
-
-/*
-//--------------------------------------------------------------------------
-/ Admin + Accountant 
-//--------------------------------------------------------------------------
-*/  
-Route::middleware(['auth:sanctum', 'role:admin,accountant'])->get(
-    'students/{student}/balance',
-    [StudentBalanceController::class, 'show']
-);
-/*Student view only
-*/
-Route::middleware(['auth:sanctum', 'role:student'])->get(
-    'my/balance',
-    function (Illuminate\Http\Request $request) {
-        return app(\App\Http\Controllers\Api\StudentBalanceController::class)
-            ->show(
-                $request,
-                $request->user()->student
-            );
-    }
-);
-
-/*
-//--------------------------------------------------------------------------
-/ Admin + Accountant
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin,accountant'])->get(
-    'fee-receipts/{payment}',
-    [FeeReceiptController::class, 'show']
-);
-
-/*
-//--------------------------------------------------------------------------
-/ Admin Only
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    Route::get('reports/financial', [FinancialReportController::class, 'index']);
-});
-
-/*
-//--------------------------------------------------------------------------
-/ Admin + Accountant 
-//--------------------------------------------------------------------------
-*/
-Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () {
+    // Payments
     Route::get('payments', [PaymentController::class, 'index']);
     Route::post('payments', [PaymentController::class, 'store']);
     Route::get('payments/{payment}', [PaymentController::class, 'show']);
+
+    // Fee receipts
+    Route::get('fee-receipts/{payment}', [FeeReceiptController::class, 'show']);
 });
-/*Student view only
+
+/*
+|--------------------------------------------------------------------------
+| STUDENT ONLY (SELF VIEW)
+|--------------------------------------------------------------------------
 */
-Route::middleware(['auth:sanctum', 'role:student'])->get(
-    'my/payments',
-    function (Illuminate\Http\Request $request) {
+Route::middleware(['auth:sanctum', 'role:student'])->group(function () {
+
+    // Optional fees (view)
+    Route::get('optional-fees', [OptionalFeeController::class, 'index']);
+
+    // Balance (own)
+    Route::get('my/balance', function (Request $request) {
+        return app(\App\Http\Controllers\Api\StudentBalanceController::class)
+            ->show($request, $request->user()->student);
+    });
+
+    // Payments (own)
+    Route::get('my/payments', function (Request $request) {
         return \App\Models\Payment::where('student_id', $request->user()->student_id)
             ->orderBy('payment_date', 'desc')
             ->get();
-    }
-);
+    });
+
+    // Marks (own)
+    Route::get('my/marks', function (Request $request) {
+        return \App\Models\Marks::with([
+                'exam',
+                'subject',
+                'academicYear',
+                'term',
+            ])
+            ->where('student_id', $request->user()->student_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    });
+
+    //Results (own)
+    Route::get('my/results', function (Illuminate\Http\Request $request) {
+        return app(\App\Http\Controllers\Api\ResultsController::class)
+            ->studentResults(
+                $request,
+                $request->user()->student
+            );
+    });
+
+});
