@@ -17,8 +17,8 @@ return new class extends Migration {
             $table->string('name'); // Term 1, Term 2, Term 3
             $table->unsignedTinyInteger('order'); // 1, 2, 3
 
-            $table->date('starts_at');
-            $table->date('ends_at');
+            $table->date('start_date');
+            $table->date('end_date');
 
             $table->boolean('is_active')->default(false);
             $table->boolean('is_closed')->default(false);

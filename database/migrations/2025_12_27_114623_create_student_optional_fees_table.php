@@ -29,12 +29,11 @@ return new class extends Migration {
             $table->timestamps();
 
             // Prevent duplicate selections
-            $table->unique([
-                'student_id',
-                'optional_fee_id',
-                'academic_year_id',
-                'term_id'
-            ]);
+            $table->unique(
+                ['student_id', 'optional_fee_id', 'academic_year_id', 'term_id'],
+                'student_optional_fee_unique'
+            );
+
         });
     }
 

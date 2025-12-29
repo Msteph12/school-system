@@ -11,8 +11,8 @@ return new class extends Migration {
             $table->id();
 
             $table->string('name'); // e.g. "2025" or "2025/2026"
-            $table->date('starts_at');
-            $table->date('ends_at');
+            $table->date('start_date');
+            $table->date('end_date');
 
             $table->boolean('is_active')->default(false);
             $table->string('status')->default('active');
