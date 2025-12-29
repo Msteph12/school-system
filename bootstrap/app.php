@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+        $middleware->redirectGuestsTo(function () {
+        abort(401, 'Unauthenticated.');
+    });
     })
 
     ->create();
