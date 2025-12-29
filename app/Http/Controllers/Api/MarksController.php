@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Marks;
-use Illuminate\Http\Request;
-
 use App\Models\Exam;
 use App\Models\Term;
+use App\Models\AcademicYear;
+use Illuminate\Http\Request;
 
 class MarksController extends Controller
 {
     /**
      * GET /api/marks
-     * List marks (filterable)
      */
     public function index(Request $request)
     {
@@ -44,7 +43,6 @@ class MarksController extends Controller
 
     /**
      * POST /api/marks
-     * Record or update marks
      */
     public function store(Request $request)
     {
@@ -54,13 +52,21 @@ class MarksController extends Controller
             'subject_id'        => 'required|exists:subjects,id',
             'academic_year_id'  => 'required|exists:academic_years,id',
             'term_id'           => 'required|exists:terms,id',
-
             'score'             => 'required|numeric|min:0',
             'grade_label'       => 'required|string',
         ]);
 
         /**
-         * 🔒 Ensure exam belongs to the same term & academic year
+         * 🔒 Block uploads if term is closed
+         */
+        $term = Term::findOrFail($data['term_id']);
+
+        if ($term->is_closed) {
+            abort(403, 'This term is closed. Marks cannot be uploaded.');
+        }
+
+        /**
+         * 🔒 Ensure exam belongs to same term & year
          */
         $exam = Exam::findOrFail($data['exam_id']);
 
@@ -73,17 +79,14 @@ class MarksController extends Controller
             ], 422);
         }
 
-        $term = Term::findOrFail($data['term_id']);
+        $year = AcademicYear::findOrFail($data['academic_year_id']);
 
-        if ($term->is_closed) {
-        return response()->json([
-        'message' => 'This term is closed. Marks can no longer be uploaded or edited.',
-        ], 423);
+        if ($year->isClosed()) {
+            return response()->json([
+                'message' => 'This academic year is closed. Marks cannot be uploaded.',
+            ], 423);
         }
 
-        /**
-         * Prevent duplicate marks for same exam + subject + term
-         */
         $mark = Marks::updateOrCreate(
             [
                 'student_id'       => $data['student_id'],
@@ -104,25 +107,24 @@ class MarksController extends Controller
         ], 201);
     }
 
-
     /**
      * PUT /api/marks/{mark}
-     * Update marks
      */
     public function update(Request $request, Marks $mark)
     {
+        /**
+         * 🔒 Block edits if term is closed
+         */
+        if ($mark->term->is_closed) {
+            abort(403, 'This term is closed. Marks cannot be modified.');
+        }
+
         $data = $request->validate([
             'score'       => 'required|numeric|min:0',
             'grade_label' => 'required|string',
         ]);
 
         $mark->update($data);
-
-        if ($mark->term->is_closed) {
-        return response()->json([
-            'message' => 'This term is closed. Marks cannot be modified.',
-        ], 423);
-        }
 
         return response()->json([
             'message' => 'Marks updated successfully',

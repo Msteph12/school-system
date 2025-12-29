@@ -18,10 +18,6 @@ class ReportsController extends Controller
      */
     public function studentsByClass(Request $request)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'teacher', 'registrar'])) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
         ]);
@@ -40,10 +36,6 @@ class ReportsController extends Controller
      */
     public function studentAttendance(Request $request)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'teacher', 'registrar'])) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $request->validate([
             'student_id' => 'required|exists:students,id',
         ]);
@@ -59,10 +51,6 @@ class ReportsController extends Controller
      */
     public function teacherAttendance(Request $request)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'teacher', 'registrar'])) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-        }
-        
         $request->validate([
             'teacher_id' => 'required|exists:teachers,id',
         ]);

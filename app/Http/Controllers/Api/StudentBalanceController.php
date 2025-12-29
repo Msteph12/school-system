@@ -17,21 +17,6 @@ class StudentBalanceController extends Controller
     {
         $user = $request->user();
 
-        // 🔐 Access control
-        if (
-            ! in_array($user->role->name, ['admin', 'accountant']) &&
-            ! ($user->role->name === 'student' && $student->user_id === $user->id)
-        ) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
-        if ($request->user()->role === 'student' &&
-        $request->user()->student_id !== $student->id) {
-        abort(403, 'Unauthorized');
-        }
-
         $data = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'term_id'          => 'required|exists:terms,id',

@@ -21,9 +21,6 @@ class SubjectTeacherController extends Controller
     // POST /api/subject-teachers
     public function store(Request $request)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'registrar'])) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
 
         $validated = $request->validate([
             'teacher_id' => 'required|exists:teachers,id',
@@ -50,9 +47,6 @@ class SubjectTeacherController extends Controller
     // DELETE /api/subject-teachers/{id}
     public function destroy($id)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'registrar'])) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
         
         $assignment = SubjectTeacher::findOrFail($id);
 

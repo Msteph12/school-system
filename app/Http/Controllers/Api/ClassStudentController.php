@@ -22,9 +22,6 @@ class ClassStudentController extends Controller
     // POST /api/class-students
     public function store(Request $request)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'registrar'])) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
     
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',

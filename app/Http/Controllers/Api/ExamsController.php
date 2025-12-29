@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
+use App\Models\AcademicYear;
 use Illuminate\Http\Request;
+use App\Models\Term;
 
 class ExamsController extends Controller
 {
@@ -51,6 +53,22 @@ class ExamsController extends Controller
             'exam_date'         => 'required|date',
         ]);
 
+        $term = Term::findOrFail($data['term_id']);
+
+        if ($term->is_closed) {
+        return response()->json([
+            'message' => 'This term is closed. Exams cannot be created.',
+        ], 423);
+        }
+
+        $year = AcademicYear::findOrFail($data['academic_year_id']);
+
+        if ($year->isClosed()) {
+            return response()->json([
+                'message' => 'This academic year is closed. Exams cannot be created.',
+            ], 423);
+        }
+
         $exam = Exam::create($data);
 
         return response()->json([
@@ -78,6 +96,12 @@ class ExamsController extends Controller
      */
     public function update(Request $request, Exam $exam)
     {
+        if ($exam->term->is_closed) {
+        return response()->json([
+            'message' => 'This term is closed. Exams cannot be modified.',
+        ], 423);
+        }
+
         $data = $request->validate([
             'name'       => 'required|string|max:255',
             'exam_date'  => 'required|date',

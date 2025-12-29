@@ -12,13 +12,13 @@ class AcademicYearController extends Controller
     // GET /api/academic-years
     public function index()
     {
-        return AcademicYear::orderBy('starts_at', 'desc')->get();
+        return AcademicYear::orderBy('start_date', 'desc')->get();
     }
 
     // POST /api/academic-years
     public function store(Request $request)
     {
-        if (Auth::user()->role->name !== 'admin') {
+        if (Auth::user()->role?->name !== 'admin') {
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
@@ -33,6 +33,15 @@ class AcademicYearController extends Controller
         // Ensure only one active academic year
         if (!empty($validated['is_active']) && $validated['is_active']) {
             AcademicYear::where('is_active', true)->update(['is_active' => false]);
+        }
+
+        if ($validated['status'] === 'closed') {
+            $validated['is_active'] = false;
+        }
+
+        if ($validated['status'] === 'active') {
+            AcademicYear::where('is_active', true)->update(['is_active' => false]);
+            $validated['is_active'] = true;
         }
 
         return AcademicYear::create($validated);
@@ -63,6 +72,15 @@ class AcademicYearController extends Controller
 
         if (!empty($validated['is_active']) && $validated['is_active']) {
             AcademicYear::where('is_active', true)->update(['is_active' => false]);
+        }
+
+        if ($validated['status'] === 'closed') {
+            $validated['is_active'] = false;
+        }
+
+        if ($validated['status'] === 'active') {
+            AcademicYear::where('is_active', true)->update(['is_active' => false]);
+            $validated['is_active'] = true;
         }
 
         $academicYear->update($validated);

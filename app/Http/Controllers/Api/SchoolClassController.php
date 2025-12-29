@@ -18,11 +18,6 @@ class SchoolClassController extends Controller
     // POST /api/school-classes
     public function store(Request $request)
     {
-        if (Auth::user()->role->name !== 'admin') {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
 
         $validated = $request->validate([
             'name' => 'required|string|unique:school_classes,name',
@@ -42,12 +37,6 @@ class SchoolClassController extends Controller
     // PUT /api/school-classes/{id}
     public function update(Request $request, $id)
     {
-        if (Auth::user()->role->name !== 'admin') {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
         $schoolClass = SchoolClass::findOrFail($id);
 
         $validated = $request->validate([

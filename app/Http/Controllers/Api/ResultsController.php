@@ -27,7 +27,7 @@ class ResultsController extends Controller
         $academicYearId = $request->academic_year_id;
         $termId = $request->term_id;
 
-        $term = Term::findOrFail($termId);
+        $term = Term::findOrFail($request->term_id);
 
         /**
          * Fetch marks
@@ -69,5 +69,9 @@ class ResultsController extends Controller
                 ? 'final'
                 : 'provisional',
         ]);
+
+        if ($term->is_closed) {
+            abort(403, 'Term is closed. Results are locked.');
+        }
     }
 }

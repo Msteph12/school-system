@@ -65,6 +65,13 @@ class TeacherAttendanceController extends Controller
         return TeacherAttendance::create($validated);
     }
 
+    public function myAttendance(Request $request)
+    {
+        return TeacherAttendance::where('teacher_id', $request->user()->id)
+            ->orderBy('date', 'desc')
+            ->get();
+    }
+
     /**
      * NO HARD DELETE
      * Attendance is historical and preserved.

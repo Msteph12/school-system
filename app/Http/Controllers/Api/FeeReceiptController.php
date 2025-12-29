@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FeeReceiptController extends Controller
 {
@@ -14,17 +15,7 @@ class FeeReceiptController extends Controller
      */
     public function show(Request $request, Payment $payment)
     {
-        $user = $request->user();
 
-        // 🔐 Access control
-        if (
-            ! in_array($user->role->name, ['admin', 'accountant']) &&
-            ! ($user->role->name === 'student' && $payment->student->user_id === $user->id)
-        ) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
 
         $payment->load([
             'student',
@@ -53,5 +44,31 @@ class FeeReceiptController extends Controller
 
             'issued_at' => now(),
         ]);
+    }
+
+    public function pdf(Request $request, Payment $payment)
+    {
+        // 🔒 Lock rule: receipt must be immutable
+        if ($payment->receipt_generated_at === null) {
+            $payment->update([
+                'receipt_generated_at' => now(),
+                'receipt_number' => 'RCT-' . str_pad($payment->id, 6, '0', STR_PAD_LEFT),
+            ]);
+        }
+
+        $payment->load([
+            'student',
+            'academicYear',
+            'term',
+        ]);
+
+        $pdf = Pdf::loadView('receipts.fee', [
+            'payment' => $payment,
+        ])->setPaper([0, 0, 226.77, 566.93]); // 80mm receipt paper
+
+        return $pdf->stream(
+            $payment->receipt_number . '.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
     }
 }

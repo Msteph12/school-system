@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Term;
+use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TermController extends Controller
 {
@@ -20,13 +22,11 @@ class TermController extends Controller
     // POST /api/terms
     public function store(Request $request)
     {
-        if (Auth::user()->role->name !== 'admin') {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
 
         $validated = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'name' => 'required|string',
+            'order' => 'required|integer|min:1',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'is_active' => 'boolean',
@@ -38,6 +38,14 @@ class TermController extends Controller
             Term::where('academic_year_id', $validated['academic_year_id'])
                 ->where('is_active', true)
                 ->update(['is_active' => false]);
+        }
+
+        $year = AcademicYear::findOrFail($validated['academic_year_id']);
+
+        if ($year->isClosed()) {
+            return response()->json([
+                'message' => 'This academic year is closed. Terms cannot be created.',
+            ], 423);
         }
 
         return Term::create($validated);
@@ -57,10 +65,12 @@ class TermController extends Controller
     }
     
         $term = Term::findOrFail($id);
+        
 
         $validated = $request->validate([
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'name' => 'nullable|string',
+            'order' => 'nullable|integer|min:1',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after:start_date',
             'is_active' => 'nullable|boolean',
@@ -80,6 +90,40 @@ class TermController extends Controller
         $term->update($validated);
 
         return $term;
+    }
+
+    public function activate(Term $term)
+    {
+        DB::transaction(function () use ($term) {
+            Term::where('academic_year_id', $term->academic_year_id)
+                ->update(['is_active' => false]);
+
+            $term->update(['is_active' => true]);
+        });
+
+        return response()->json([
+            'message' => 'Term activated successfully',
+            'term' => $term,
+        ]);
+    }
+
+    public function close(Term $term)
+    {
+        if (!$term->is_active) {
+            return response()->json([
+                'message' => 'Only the active term can be closed',
+            ], 422);
+        }
+
+        $term->update([
+            'is_closed' => true,
+            'is_active' => false,
+        ]);
+
+        return response()->json([
+            'message' => 'Term closed successfully',
+            'term' => $term,
+        ]);
     }
 
     /**

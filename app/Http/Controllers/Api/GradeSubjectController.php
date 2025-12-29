@@ -21,13 +21,7 @@ class GradeSubjectController extends Controller
 
     // POST /api/grade-subjects
     public function store(Request $request)
-    {
-        if (Auth::user()->role->name !== 'admin') {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-        
+    {   
         $validated = $request->validate([
             'grade_id' => 'required|exists:grades,id',
             'subject_id' => 'required|exists:subjects,id',

@@ -12,39 +12,27 @@ class PaymentController extends Controller
 {
     /**
      * GET /api/payments
+     * Access controlled at route level
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-
-        $query = Payment::with('student')
-            ->orderBy('payment_date', 'desc');
-
-        // Student: only their own payments
-        if ($user->role->name === 'student') {
-            $query->where('student_id', $user->id);
-        }
-
-        // Admin / Accountant: allow filters
-        if (in_array($user->role->name, ['admin', 'accountant'])) {
-            $query
-                ->when($request->student_id, fn ($q) =>
-                    $q->where('student_id', $request->student_id)
-                )
-                ->when($request->academic_year_id, fn ($q) =>
-                    $q->where('academic_year_id', $request->academic_year_id)
-                )
-                ->when($request->term_id, fn ($q) =>
-                    $q->where('term_id', $request->term_id)
-                );
-        }
-
-        return $query->get();
+        return Payment::with('student')
+            ->when($request->student_id, fn ($q) =>
+                $q->where('student_id', $request->student_id)
+            )
+            ->when($request->academic_year_id, fn ($q) =>
+                $q->where('academic_year_id', $request->academic_year_id)
+            )
+            ->when($request->term_id, fn ($q) =>
+                $q->where('term_id', $request->term_id)
+            )
+            ->orderBy('payment_date', 'desc')
+            ->get();
     }
 
     /**
      * POST /api/payments
-     * Admin + Accountant only (route-level protection)
+     * Admin / Accountant only (route middleware)
      */
     public function store(Request $request)
     {
@@ -70,10 +58,8 @@ class PaymentController extends Controller
                 ->first();
 
             if ($studentFee) {
-                $remaining = $studentFee->amount_due - $data['amount_paid'];
-
                 $studentFee->update([
-                    'amount_due' => max(0, $remaining),
+                    'amount_due' => max(0, $studentFee->amount_due - $data['amount_paid']),
                 ]);
             }
 
@@ -86,16 +72,10 @@ class PaymentController extends Controller
 
     /**
      * GET /api/payments/{payment}
+     * Access controlled at route level
      */
-    public function show(Request $request, Payment $payment)
+    public function show(Payment $payment)
     {
-        $user = $request->user();
-
-        // Student: ownership check
-        if ($user->role->name === 'student' && $payment->student_id !== $user->id) {
-            abort(403, 'Unauthorized');
-        }
-
         return $payment->load('student');
     }
 }

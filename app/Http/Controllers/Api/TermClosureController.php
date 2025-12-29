@@ -15,19 +15,15 @@ class TermClosureController extends Controller
      */
     public function close(Request $request, Term $term)
     {
-        // 1. Only admin can close a term
-        if (Auth::user()->role->name !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
 
-        // 2. Prevent double-closing
+        // 1. Prevent double-closing
         if ($term->is_closed) {
             return response()->json([
                 'message' => 'This term is already closed.',
             ], 422);
         }
 
-        // 3. Close the term
+        // 2. Close the term
         $term->update([
             'is_active' => false,
             'is_closed' => true,

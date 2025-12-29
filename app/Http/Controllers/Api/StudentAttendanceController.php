@@ -11,12 +11,16 @@ use Illuminate\Support\Facades\Auth;
 
 class StudentAttendanceController extends Controller
 {
+    public function index()
+    {
+        return response()->json(
+            StudentAttendance::orderBy('id', 'desc')->get()
+        );
+    }
+
     // POST /api/student-attendance
     public function store(Request $request)
     {
-        if (!in_array(Auth::user()->role->name, ['admin', 'teacher'])) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
     
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',

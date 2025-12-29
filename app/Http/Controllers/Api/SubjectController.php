@@ -19,11 +19,6 @@ class SubjectController extends Controller
     // POST /api/subjects
     public function store(Request $request)
     {
-        if (Auth::user()->role->name !== 'admin') {
-            return response()->json([
-                'message' => 'Only admins can create subjects'
-            ], 403);
-        }
 
         $validated = $request->validate([
             'name' => 'required|string|unique:subjects,name',
@@ -42,11 +37,6 @@ class SubjectController extends Controller
     // PUT /api/subjects/{id}
     public function update(Request $request, $id)
     {
-        if (Auth::user()->role->name !== 'admin') {
-            return response()->json([
-                'message' => 'Only admins can update subjects'
-            ], 403);
-        }
 
         $subject = Subject::findOrFail($id);
 

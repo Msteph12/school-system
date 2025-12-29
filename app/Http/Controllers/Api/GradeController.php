@@ -20,10 +20,6 @@ class GradeController extends Controller
     // POST /api/grades
     public function store(Request $request)
     {
-        if (Auth::user()->role->name !== 'admin') {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
         $validated = $request->validate([
             'name' => 'required|string|unique:grades,name',
             'code' => 'required|string|unique:grades,code',
