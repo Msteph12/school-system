@@ -27,39 +27,50 @@ class RoleAndUserSeeder extends Seeder
             ])->id;
         }
 
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@school.com',
-            'password' => Hash::make('password'),
-            'role_id' => $roleIds['admin'],
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@school.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'role_id' => $roleIds['admin'],
+            ]
+        );
 
-        User::create([
-            'name' => 'Registrar User',
-            'email' => 'registrar@school.com',
-            'password' => Hash::make('password'),
-            'role_id' => $roleIds['registrar'],
-        ]);
+        User::firstOrCreate(
+            ['email' => 'registrar@school.com'],
+            [
+                'name' => 'Registrar User',
+                'password' => Hash::make('password'),
+                'role_id' => $roleIds['registrar'],
+            ]
+        );
 
-        User::create([
-            'name' => 'Teacher User',
-            'email' => 'teacher@school.com',
-            'password' => Hash::make('password'),
-            'role_id' => $roleIds['teacher'],
-        ]);
+        User::firstOrCreate(
+            ['email' => 'teacher@school.com'],
+            [
+                'name' => 'Teacher User',
+                'password' => Hash::make('password'),
+                'role_id' => $roleIds['teacher'],
+            ]
+        );
 
-        User::create([
-            'name' => 'Student User',
-            'email' => 'student@school.com',
-            'password' => Hash::make('password'),
-            'role_id' => $roleIds['student'],
-        ]);
+        User::firstOrCreate(
+            ['email' => 'student@school.com'],
+            [
+                'name' => 'Student User',
+                'password' => Hash::make('password'),
+                'role_id' => $roleIds['student'],
+            ]
+        );
 
-        User::create([
-            'name' => 'Accountant User',
-            'email' => 'accountant@school.com',
-            'password' => Hash::make('password'),
-            'role_id' => $roleIds['accountant'],
-        ]);
+        User::firstOrCreate(
+            ['email' => 'accountant@school.com'],
+            [
+                'name' => 'Accountant User',
+                'password' => Hash::make('password'),
+                'role_id' => $roleIds['accountant'],
+            ]
+        );
+
     }
 }
