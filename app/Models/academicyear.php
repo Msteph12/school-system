@@ -17,6 +17,11 @@ class AcademicYear extends Model
         'status',
     ];
 
+    public function isClosed(): bool
+    {
+        return !$this->is_active || $this->status === 'closed';
+    }
+
     /**
      * An academic year has many terms.
      */

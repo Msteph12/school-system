@@ -9,6 +9,8 @@ class Term extends Model
 {
     use HasFactory;
 
+    protected $table = 'terms';
+
     protected $fillable = [
         'academic_year_id',
         'name',
