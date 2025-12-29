@@ -39,6 +39,8 @@ use App\Http\Controllers\Api\ExamsController;
 use App\Http\Controllers\Api\TermClosureController;
 
 use App\Http\Controllers\Api\ResultsController;
+use App\Http\Controllers\Api\ResultSlipController;
+use App\Http\Controllers\Api\ReportCardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +69,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Core setup
     Route::apiResource('academic-years', AcademicYearController::class)->except(['destroy']);
     Route::apiResource('terms', TermController::class)->except(['destroy']);
+    Route::post('/terms/{term}/close', [TermController::class, 'close']);
+    Route::post('/terms/{term}/activate', [TermController::class, 'activate']);
     Route::apiResource('grades', GradeController::class);
     Route::apiResource('subjects', SubjectController::class);
     Route::apiResource('teachers', TeacherController::class);
@@ -104,6 +108,7 @@ Route::middleware(['auth:sanctum', 'role:admin,registrar'])->group(function () {
     Route::apiResource('school-classes', SchoolClassController::class);
     Route::apiResource('class-students', ClassStudentController::class)->only(['index','store','destroy']);
     Route::post('promotions', [PromotionController::class, 'promote']);
+    Route::apiResource('teacher-attendance', TeacherAttendanceController::class) ->except(['show']);
 });
 
 /*
@@ -114,8 +119,10 @@ Route::middleware(['auth:sanctum', 'role:admin,registrar'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:teacher'])->group(function () {
 
     // Attendance
-    Route::apiResource('teacher-attendance', TeacherAttendanceController::class)->except(['destroy']);
     Route::apiResource('student-attendance', StudentAttendanceController::class)->except(['destroy']);
+
+    // Teacher's own attendance records
+    Route::get('my/attendance', [TeacherAttendanceController::class, 'myAttendance']);
 
     // Read-only grade scales
     Route::get('grade-scales', [GradeScaleController::class, 'index']);
@@ -178,7 +185,22 @@ Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () 
 
     // Fee receipts
     Route::get('fee-receipts/{payment}', [FeeReceiptController::class, 'show']);
+    Route::get('fee-receipts/{payment}/pdf', [FeeReceiptController::class, 'pdf']); 
 });
+
+/*
+/-------------------------------------------------------------------------
+| ADMIN + REGISTRAR + TEACHER
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,registrar,teacher'])->group(function (){
+    Route::get('result-slips/{student}', [ResultSlipController::class, 'show']);
+    Route::get('result-slips/{student}/pdf', [ResultSlipController::class, 'pdf']);
+    Route::get('report-cards/{student}', [ReportCardController::class, 'show'] );
+    Route::get('report-cards/{student}/pdf', [ReportCardController::class, 'pdf']);
+});
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -225,4 +247,13 @@ Route::middleware(['auth:sanctum', 'role:student'])->group(function () {
             );
     });
 
+    // Result slip (own)
+    Route::get('my/result-slip', function (Illuminate\Http\Request $request) {
+        return app(\App\Http\Controllers\Api\ResultSlipController::class)
+            ->show(
+                $request,
+                $request->user()->student
+            );
+    });
+    Route::get('my/result-slip/pdf', [ResultSlipController::class, 'myResultSlipPdf']);
 });
