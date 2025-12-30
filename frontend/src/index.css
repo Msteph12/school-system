@@ -13,3 +13,6 @@ summary {
 summary::-webkit-details-marker {
   display: none;
 }
+.input {
+  @apply border rounded px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-red-400;
+}
