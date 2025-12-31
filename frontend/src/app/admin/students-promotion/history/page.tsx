@@ -22,7 +22,9 @@ const PromotionHistoryPage = () => {
     getPromotionHistory().then(res => setHistory(res));
   }, []);
 
-  const years = Array.from(new Set(history.map(h => h.academic_year)));
+  const years = Array.from(
+    new Set(history.map(h => h.academic_year))
+  );
 
   const filtered = yearFilter
     ? history.filter(h => h.academic_year === yearFilter)
@@ -34,7 +36,9 @@ const PromotionHistoryPage = () => {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Students Promotion History</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Students Promotion History
+        </h1>
         <button
           onClick={() => window.history.back()}
           className="text-blue-600 mr-5 hover:underline"

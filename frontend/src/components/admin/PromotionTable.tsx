@@ -1,4 +1,4 @@
-import { Student } from "@/types/student";
+import type { Student } from "@/types/student";
 
 interface Props {
   students: Student[];
@@ -49,9 +49,15 @@ const PromotionTable = ({ students, selected, setSelected }: Props) => {
                   type="checkbox"
                   checked={selected.includes(s.id)}
                   onChange={() => toggle(s.id)}
+                  disabled={s.is_promoted} 
                 />
               </td>
-              <td className="p-3">{s.name}</td>
+              <td className="p-3">
+                {s.name}
+                {s.is_promoted && (
+                    <span className="ml-2 text-xs text-green-600">(Promoted)</span>
+                )}
+                </td>
             </tr>
           ))}
         </tbody>

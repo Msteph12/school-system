@@ -23,4 +23,5 @@ export type StudentFull = {
 export interface Student {
   id: number;
   name: string;
+  is_promoted: boolean;
 }
