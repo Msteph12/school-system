@@ -18,16 +18,20 @@ class PromotionHistoryController extends Controller
         $history = StudentPromotion::with([
             'student:id,first_name,last_name',
             'academicYear:id,name',
+            'fromGrade:id,name',
+            'fromClass:id,name',
+            'toGrade:id,name',
+            'toClass:id,name',
         ])
         ->orderByDesc('promoted_at')
         ->get()
         ->map(fn ($p) => [
             'id' => $p->id,
             'student_name' => $p->student->first_name . ' ' . $p->student->last_name,
-            'from_grade' => Grade::find($p->from_grade_id)->name,
-            'from_class' => SchoolClass::find($p->from_class_id)->name,
-            'to_grade' => Grade::find($p->to_grade_id)->name,
-            'to_class' => SchoolClass::find($p->to_class_id)->name,
+            'from_grade' => $p->fromGrade->name,
+            'from_class' => $p->fromClass->name,
+            'to_grade' => $p->toGrade->name,
+            'to_class' => $p->toClass->name,
             'academic_year' => $p->academicYear->name,
             'promoted_at' => $p->promoted_at->format('Y-m-d'),
         ]);

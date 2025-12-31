@@ -17,11 +17,16 @@ class Student extends Model
         'gender',
         'date_of_birth',
         'status',
+        'is_promoted', // Add this
         'guardian_name',
         'guardian_relationship',
         'guardian_phone',
         'guardian_phone_alt',
         'guardian_address',
+    ];
+
+    protected $casts = [
+    'is_promoted' => 'boolean', // Add this
     ];
 
     /**

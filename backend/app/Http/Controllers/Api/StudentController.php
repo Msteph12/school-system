@@ -11,7 +11,20 @@ class StudentController extends Controller
     // GET /api/students
     public function index()
     {
-        return Student::orderBy('last_name')->get();
+        return Student::select([
+            'id',
+            'first_name', 
+            'last_name',
+            'admission_number',
+            'is_promoted'
+        ])
+        ->orderBy('last_name')
+        ->get()
+        ->map(fn($s) => [
+            'id' => $s->id,
+            'name' => $s->first_name . ' ' . $s->last_name,
+            'is_promoted' => $s->is_promoted,
+        ]);
     }
 
     // POST /api/students
