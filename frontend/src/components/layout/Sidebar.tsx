@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { FiChevronRight } from "react-icons/fi";
 import { FiCircle } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 const Sidebar = () => {
   const linkClass =
@@ -28,7 +29,14 @@ const Sidebar = () => {
             <FiChevronRight className="transition-transform group-open:rotate-90" />
           </summary>
          <NavLink to="/admin/students" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>All Students</span></NavLink>
-         <NavLink to="/admin/students/promotion" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Student Promotion</span></NavLink>
+         <Link to="/admin/students-promotion" className={`${dropdownItem} flex items-center gap-2`} >
+          <FiCircle className="w-2 h-2" />
+          <span>Student Promotion</span>
+        </Link>
+        <Link to="/admin/students-promotion/history" className={`${dropdownItem} flex items-center gap-2`} >
+          <FiCircle className="w-2 h-2" />
+          <span>Promotion History</span>
+        </Link>
          <NavLink to="/admin/students/attendance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Student Attendance</span></NavLink>
         </details>
 

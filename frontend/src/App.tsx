@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "./app/admin/AdminLayout";
 import AdminDashboard from "./app/admin/AdminDashboard";
 import Students from "./app/pages/admin/Students";
+import StudentsPromotion from "@/app/admin/students-promotion/page";
+import StudentsPromotionHistory from "@/app/admin/students-promotion/history/page";
 
 function App() {
   return (
@@ -11,6 +13,8 @@ function App() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="students" element={<Students />} />
+        <Route path="students-promotion" element={<StudentsPromotion />}/>
+        <Route path="students-promotion/history" element={<StudentsPromotionHistory />}/>
       </Route>
     </Routes>
   );

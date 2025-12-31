@@ -19,3 +19,8 @@ export type StudentFull = {
     guardian_phone?: string;
     date_of_birth?: string;
 };
+
+export interface Student {
+  id: number;
+  name: string;
+}
