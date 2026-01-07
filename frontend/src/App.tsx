@@ -6,6 +6,7 @@ import StudentsPromotion from "@/app/admin/students-promotion/page";
 import StudentsPromotionHistory from "@/app/admin/students-promotion/history/page";
 import StudentAttendancePage from "@/app/admin/student-attendance";
 import Teachers from "@/app/pages/admin/Teachers";
+import TeacherAttendancePage from "@/app/admin/teacher-attendance";
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="students-promotion/history" element={<StudentsPromotionHistory />}/>
         <Route path="student-attendance" element={<StudentAttendancePage />} /> 
         <Route path="teachers" element={<Teachers />} />
+        <Route path="teachers-attendance" element={<TeacherAttendancePage />} />
       </Route>
     </Routes>
   );
