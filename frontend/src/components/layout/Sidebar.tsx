@@ -47,9 +47,9 @@ const Sidebar = () => {
             <span className="flex-1">Teachers</span>
             <FiChevronRight className="transition-transform group-open:rotate-90" />
           </summary>
-          <NavLink to="/admin/teachers" className={dropdownItem}>All Teachers</NavLink>
-          <NavLink to="/admin/teachers/attendance" className={dropdownItem}>Teacher Attendance</NavLink>
-          <NavLink to="/admin/teachers/subjects" className={dropdownItem}>Subject Assignments</NavLink>
+          <NavLink to="/admin/teachers" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>All Teachers</span></NavLink>
+          <NavLink to="/admin/teachers/attendance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Teacher Attendance</span></NavLink>
+          <NavLink to="/admin/teachers/subjects" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Subject Assignments</span></NavLink>
         </details>
 
         {/* Finance */}
