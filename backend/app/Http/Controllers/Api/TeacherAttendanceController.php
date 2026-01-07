@@ -21,7 +21,7 @@ class TeacherAttendanceController extends Controller
             'teacher_id' => 'required|exists:teachers,id',
             'academic_year_id' => 'required|exists:academic_years,id',
             'date' => 'required|date',
-            'status' => 'required|in:present,absent,on_leave',
+            'status' => 'required|in:present,absent,on_leave,late,sick,half-day',
             'check_in_time' => 'nullable|date_format:H:i',
             'check_out_time' => 'nullable|date_format:H:i',
         ]);

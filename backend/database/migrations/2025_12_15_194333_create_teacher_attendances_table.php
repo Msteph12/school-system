@@ -14,6 +14,10 @@ return new class extends Migration {
                   ->constrained('teachers')
                   ->cascadeOnDelete();
 
+            $table->foreignId('academic_year_id')
+                  ->constrained('academic_years')
+                  ->cascadeOnDelete();
+
             $table->date('date');
             $table->enum('status', ['present', 'absent', 'late', 'on_leave', 'sick', 'half-day']);
             $table->time('check_in_time')->nullable();
