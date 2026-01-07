@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->string('email')->nullable();
             $table->string('department')->nullable();
 
-            $table->enum('status', ['active', 'inactive'])
+            $table->enum('status', ['active', 'inactive', 'on_leave'])
                   ->default('active');
 
             $table->timestamps();
