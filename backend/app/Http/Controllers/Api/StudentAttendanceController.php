@@ -4,79 +4,65 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClassStudent;
+use App\Models\Student;
 use App\Models\StudentAttendance;
+use App\Models\AcademicYear;
+use App\Models\Term;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-
 
 class StudentAttendanceController extends Controller
 {
     public function index()
     {
-        return response()->json(
-            StudentAttendance::orderBy('id', 'desc')->get()
-        );
+        return StudentAttendance::with(['student', 'classStudent.class'])
+            ->orderByDesc('id')
+            ->get();
     }
 
-    // POST /api/student-attendance
     public function store(Request $request)
     {
-    
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
-            'class_student_id' => 'required|exists:class_students,id',
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'term_id' => 'required|exists:terms,id',
-            'status' => 'required|in:present,absent,excused',
-            'reason' => 'nullable|string',
-            'from_date' => 'nullable|date',
+            'admission_number' => 'required|string|exists:students,admission_number',
+            'grade_id' => 'required|exists:grades,id',
+            'class_id' => 'required|exists:classes,id',
+            'status' => 'required|in:reported,present,sent_home,returned,withdrawn',
+            'from_date' => 'required|date',
             'to_date' => 'nullable|date|after_or_equal:from_date',
+            'reason' => 'nullable|string',
             'remarks' => 'nullable|string',
         ]);
 
-        // Ensure class enrollment matches student + academic year
-        $classStudent = ClassStudent::where('id', $validated['class_student_id'])
-            ->where('student_id', $validated['student_id'])
-            ->where('academic_year_id', $validated['academic_year_id'])
+        $student = Student::where('admission_number', $validated['admission_number'])->first();
+
+        $classStudent = ClassStudent::where('student_id', $student->id)
+            ->where('class_id', $validated['class_id'])
             ->first();
+
+            $academicYear = AcademicYear::where('is_active', true)->first();
+            $term = Term::where('is_active', true)->first();
+
+        if (!$academicYear || !$term) {
+            return response()->json([
+                'message' => 'Active academic year or term not set'
+            ], 422);
+        }
 
         if (!$classStudent) {
             return response()->json([
-                'message' => 'Invalid class enrollment for student'
+                'message' => 'Student not enrolled in selected class'
             ], 422);
         }
 
-        // Status-based date rules
-        if ($validated['status'] === 'present') {
-            $validated['from_date'] = null;
-            $validated['to_date'] = null;
-        }
-
-        if (in_array($validated['status'], ['absent', 'excused']) && empty($validated['from_date'])) {
-            return response()->json([
-                'message' => 'Absent or excused attendance requires a date'
-            ], 422);
-        }
-
-        // Prevent exact duplicate attendance entry
-        $exists = StudentAttendance::where('student_id', $validated['student_id'])
-            ->where('academic_year_id', $validated['academic_year_id'])
-            ->where('term_id', $validated['term_id'])
-            ->where('from_date', $validated['from_date'])
-            ->where('to_date', $validated['to_date'])
-            ->exists();
-
-        if ($exists) {
-            return response()->json([
-                'message' => 'Attendance already recorded for this period'
-            ], 409);
-        }
-
-        return StudentAttendance::create($validated);
+        return StudentAttendance::create([
+            'student_id' => $student->id,
+            'class_student_id' => $classStudent->id,
+            'academic_year_id' => $academicYear->id,
+            'term_id' => $term->id,
+            'status' => $validated['status'],
+            'from_date' => $validated['from_date'],
+            'to_date' => $validated['to_date'],
+            'reason' => $validated['reason'] ?? null,
+            'remarks' => $validated['remarks'] ?? null,
+        ]);
     }
-
-    /**
-     * NO HARD DELETE
-     * Attendance records are historical and must never be deleted.
-     */
 }

@@ -117,13 +117,25 @@ Route::middleware(['auth:sanctum', 'role:admin,registrar'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| ADMIN + TEACHER 
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'role:admin,teacher'])->group(function () {
+
+    Route::get('student-attendance', [StudentAttendanceController::class, 'index']);
+    Route::get('student-attendance/{studentAttendance}', [StudentAttendanceController::class, 'show']);
+    Route::post('student-attendance', [StudentAttendanceController::class, 'store']);
+
+});
+
+
+
+/*
+|--------------------------------------------------------------------------
 | TEACHER ONLY
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', 'role:teacher'])->group(function () {
-
-    // Attendance
-    Route::apiResource('student-attendance', StudentAttendanceController::class)->except(['destroy']);
 
     // Teacher's own attendance records
     Route::get('my/attendance', [TeacherAttendanceController::class, 'myAttendance']);

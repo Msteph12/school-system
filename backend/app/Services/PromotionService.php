@@ -79,6 +79,11 @@ class PromotionService
                     'status'            => $decision === 'repeat' ? 'repeated' : 'active',
                 ]);
 
+                // Mark student as promoted
+                if ($decision === 'promote') {
+                    $student->update(['is_promoted' => true]);
+                }
+
                 // 6. Close previous enrollment
                 $enrollment->update(['status' => 'promoted']);
             }
