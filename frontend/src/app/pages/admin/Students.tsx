@@ -78,6 +78,34 @@ const Students = () => {
         </button>
       </div>
 
+      {/* Student quick navigation */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded shadow-md">
+        <button
+          onClick={() => window.location.href = "/admin/students-promotion"}
+          className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition"
+        >
+          <h3 className="font-semibold">Student Promotion</h3>
+          <p className="text-sm">Promote students to next class</p>
+        </button>
+
+        <button
+          onClick={() => window.location.href = "/admin/students-promotion/history"}
+          className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition"
+        >
+          <h3 className="font-semibold">Promotion History</h3>
+          <p className="text-sm">View past promotions</p>
+        </button>
+
+        <button
+          onClick={() => window.location.href = "/admin/student-attendance"}
+          className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition"
+        >
+          <h3 className="font-semibold">Student Attendance</h3>
+          <p className="text-sm">View & record attendance</p>
+        </button>
+      </div>
+
+
       {/* Filters / Actions */}
       <div className="flex flex-wrap items-center gap-4 bg-white p-4 rounded shadow-md shadow-red-200">
         <button

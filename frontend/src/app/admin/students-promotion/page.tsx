@@ -14,7 +14,7 @@ const StudentsPromotionPage = () => {
     getStudents().then(res => setStudents(res.data));
   }, []);
 
-  const handlePromote = async () => {
+const handlePromote = async () => {
   try {
     setLoading(true);
     const allStudentIds = students.map(s => s.id);
@@ -27,7 +27,13 @@ const StudentsPromotionPage = () => {
     await promoteStudents({
       promoted_ids: promotedIds,
       repeated_ids: repeatedIds,
+      from_academic_year_id: 1, // TODO: Get from current academic year
+      to_academic_year_id: 2,   // TODO: Get from next academic year
     });
+    
+    // Refresh students list to show updated is_promoted status
+    const res = await getStudents();
+    setStudents(res.data);
     setSelected([]);
   } finally {
     setLoading(false);

@@ -37,7 +37,7 @@ const Sidebar = () => {
           <FiCircle className="w-2 h-2" />
           <span>Promotion History</span>
         </Link>
-         <NavLink to="/admin/students/attendance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Student Attendance</span></NavLink>
+         <NavLink to="/admin/student-attendance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Student Attendance</span></NavLink>
         </details>
 
         {/* Teachers */}

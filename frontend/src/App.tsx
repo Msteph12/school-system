@@ -4,6 +4,7 @@ import AdminDashboard from "./app/admin/AdminDashboard";
 import Students from "./app/pages/admin/Students";
 import StudentsPromotion from "@/app/admin/students-promotion/page";
 import StudentsPromotionHistory from "@/app/admin/students-promotion/history/page";
+import StudentAttendancePage from "@/app/admin/student-attendance";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="students" element={<Students />} />
         <Route path="students-promotion" element={<StudentsPromotion />}/>
         <Route path="students-promotion/history" element={<StudentsPromotionHistory />}/>
+        <Route path="student-attendance" element={<StudentAttendancePage />} /> 
       </Route>
     </Routes>
   );
