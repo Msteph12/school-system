@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import TopBar from "@/components/admin/TopBar";
 import TeachersTable from "@/components/admin/TeachersTable";
 import TeacherModal from "@/components/admin/TeacherModal";
@@ -71,22 +72,34 @@ const Teachers = () => {
         </button>
       </div>
 
-      {/* Quick Actions (kept – you can update later) */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded shadow-md">
-        <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
-          <h3 className="font-semibold">Total Teachers</h3>
-          <p className="text-sm">Overview of teaching staff</p>
-        </div>
+        {/* Teacher Attendance */}
+        <Link
+          to="/admin/teachers-attendance"
+          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
+        >
+          <h3 className="font-semibold">Teacher Attendance</h3>
+          <p className="text-sm">Overview of teachers attendance </p>
+        </Link>
 
-        <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
-          <h3 className="font-semibold">Departments</h3>
-          <p className="text-sm">Organize by subject areas</p>
-        </div>
+        {/* Subject Assignments */}
+        <Link
+          to="/admin/subject-assignments"
+          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
+        >
+          <h3 className="font-semibold">Subject Assignments</h3>
+          <p className="text-sm">Specify what teachers teaches</p>
+        </Link>
 
-        <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
-          <h3 className="font-semibold">Assignments</h3>
-          <p className="text-sm">Classes & subjects allocation</p>
-        </div>
+        {/* Class Teachers */}
+        <Link
+          to="/admin/class-teachers"
+          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
+        >
+          <h3 className="font-semibold">Class Teachers</h3>
+          <p className="text-sm">Class Teacher Allocation</p>
+        </Link>
       </div>
 
       {/* Actions */}
