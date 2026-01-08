@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\TeacherAttendanceController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\PromotionHistoryController;
 use App\Http\Controllers\Api\ReportsController;
+use App\Http\Controllers\Api\ClassTeacherController;
 
 use App\Http\Controllers\Api\FeeStructureController;
 use App\Http\Controllers\Api\OptionalFeeController;
@@ -82,6 +83,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Linking
     Route::apiResource('grade-subjects', GradeSubjectController::class)->only(['index','store','destroy']);
     Route::apiResource('subject-teachers', SubjectTeacherController::class)->only(['index','store','destroy']);
+
+    // Class teachers
+    Route::apiResource('class-teachers', ClassTeacherController::class)->only(['index', 'store', 'destroy']);
+    Route::patch( 'class-teachers/{id}/unassign',[ClassTeacherController::class, 'unassign']);
 
     // Student fees manual adjustment
     Route::put('student-fees/{studentFee}', [StudentFeesController::class, 'update']);

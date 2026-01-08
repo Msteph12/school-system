@@ -20,8 +20,9 @@ return new class extends Migration {
 
             $table->timestamps();
 
+            $table->boolean('is_active')->default(true);
+
             // one teacher per subject per class
-            $table->unique(['teacher_id', 'class_subject_id']);
         });
     }
 
