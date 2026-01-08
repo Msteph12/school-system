@@ -49,7 +49,8 @@ const Sidebar = () => {
           </summary>
           <NavLink to="/admin/teachers" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>All Teachers</span></NavLink>
           <NavLink to="/admin/teachers-attendance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Teacher Attendance</span></NavLink>
-          <NavLink to="/admin/teachers/subjects" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Subject Assignments</span></NavLink>
+          <NavLink to="/admin/subject-assignments" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Subject Assignments</span></NavLink>
+          <NavLink to="/admin/class-teachers" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Class Teachers</span></NavLink>   
         </details>
 
         {/* Finance */}
