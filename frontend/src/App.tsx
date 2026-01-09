@@ -10,6 +10,7 @@ import TeacherAttendancePage from "@/app/admin/teacher-attendance";
 import SubjectAssignmentsPage from "@/app/admin/subject-assignments/page";
 import ClassTeachersPage from "@/app/admin/class-teachers/page";
 import FeesStructure from "@/app/pages/admin/Finance";
+import PaymentsPage from "@/app/admin/payments/page";
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path="subject-assignments" element={<SubjectAssignmentsPage />} />
         <Route path="class-teachers" element={<ClassTeachersPage />} />
         <Route path="finance" element={<FeesStructure />} />
+        <Route path="payments" element={<PaymentsPage />} />
       </Route>
     </Routes>
   );

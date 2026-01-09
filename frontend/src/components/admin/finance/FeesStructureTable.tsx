@@ -36,7 +36,7 @@ const FeesStructureTable = ({ fees, onView, onEdit }: Props) => {
   return (
     <div className="bg-white rounded shadow-md shadow-red-200 overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-red-50">
+        <thead className="bg-red-100">
           <tr>
             <th className="p-3 text-left">Grade</th>
             <th className="p-3 text-left">Term</th>
