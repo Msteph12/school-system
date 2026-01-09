@@ -60,10 +60,10 @@ const Sidebar = () => {
             <span className="flex-1">Finance</span>
             <FiChevronRight className="transition-transform group-open:rotate-90" />
           </summary>
-          <NavLink to="/admin/finance/fees" className={dropdownItem}>Fees Structure</NavLink>
-          <NavLink to="/admin/finance/payments" className={dropdownItem}>Payments</NavLink>
-          <NavLink to="/admin/finance/receipts" className={dropdownItem}>Receipts</NavLink>
-          <NavLink to="/admin/finance/reports" className={dropdownItem}>Financial Reports</NavLink>
+          <NavLink to="/admin/finance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Fees Structure</span></NavLink>
+          <NavLink to="/admin/finance/payments" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Payments</span></NavLink>
+          <NavLink to="/admin/finance/receipts" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Receipts</span></NavLink>
+          <NavLink to="/admin/finance/reports" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Financial Reports</span></NavLink>
         </details>
 
         {/* Grades */}
