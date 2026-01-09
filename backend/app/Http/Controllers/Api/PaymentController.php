@@ -40,7 +40,7 @@ class PaymentController extends Controller
             'student_id'        => 'required|exists:students,id',
             'academic_year_id'  => 'required|exists:academic_years,id',
             'term_id'           => 'required|exists:terms,id',
-            'amount_paid'       => 'required|numeric|min:0.01',
+            'amount_paid'       => 'required|numeric|min:0',
             'payment_date'      => 'required|date',
             'payment_method'    => 'required|string',
             'reference'         => 'nullable|string',

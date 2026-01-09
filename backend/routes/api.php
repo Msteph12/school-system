@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\TermController;
+use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\SchoolClassController;
 use App\Http\Controllers\Api\SubjectController;
@@ -204,7 +205,8 @@ Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () 
     // Payments
     Route::get('payments', [PaymentController::class, 'index']);
     Route::post('payments', [PaymentController::class, 'store']);
-    Route::get('payments/{payment}', [PaymentController::class, 'show']);
+    Route::get('payments/{payment}', [PaymentController::class, 'show']); 
+    Route::get('/students/by-admission/{admissionNo}', [StudentController::class, 'findByAdmission']);
 
     // Fee receipts
     Route::get('fee-receipts/{payment}', [FeeReceiptController::class, 'show']);

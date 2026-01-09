@@ -13,18 +13,33 @@ class StudentController extends Controller
     {
         return Student::select([
             'id',
-            'first_name', 
+            'first_name',
             'last_name',
             'admission_number',
             'is_promoted'
         ])
         ->orderBy('last_name')
         ->get()
-        ->map(fn($s) => [
+        ->map(fn ($s) => [
             'id' => $s->id,
             'name' => $s->first_name . ' ' . $s->last_name,
             'is_promoted' => $s->is_promoted,
         ]);
+    }
+
+    // 🔍 GET /api/students/by-admission/{admissionNo}
+    public function findByAdmission($admissionNo)
+    {
+        $student = Student::with(['grade', 'class'])
+            ->where('admission_number', $admissionNo)
+            ->firstOrFail();
+
+        return [
+            'id'    => $student->id,
+            'name'  => $student->first_name . ' ' . $student->last_name,
+            'grade' => $student->grade?->name,
+            'class' => $student->class?->name,
+        ];
     }
 
     // POST /api/students
@@ -37,7 +52,7 @@ class StudentController extends Controller
             'last_name' => 'required|string',
             'gender' => 'nullable|string',
             'date_of_birth' => 'nullable|date',
-            'status' => 'required|string', // e.g. active, inactive
+            'status' => 'required|string',
             'guardian_name' => 'nullable|string',
             'guardian_relationship' => 'nullable|string',
             'guardian_phone' => 'nullable|string',
