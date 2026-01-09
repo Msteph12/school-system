@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\ClassTeacherController;
 
 use App\Http\Controllers\Api\FeeStructureController;
+use App\Http\Controllers\Api\FeeStructurePrintController;
 use App\Http\Controllers\Api\OptionalFeeController;
 use App\Http\Controllers\Api\StudentOptionalFeeController;
 use App\Http\Controllers\Api\StudentFeesController;
@@ -186,6 +187,7 @@ Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () 
 
     // Fee structures
     Route::apiResource('fee-structures', FeeStructureController::class)->only(['index','store','update']);
+    Route::get('fee-structures/{feeStructure}/print',[FeeStructurePrintController::class, 'print']);
 
     // Optional fees
     Route::apiResource('optional-fees', OptionalFeeController::class)->except(['show']);

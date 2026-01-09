@@ -10,16 +10,24 @@ class FeeStructure extends Model
     use HasFactory;
 
     protected $fillable = [
-        'class_id',
-        'academic_year_id',
-        'term_id',
-        'amount',
+    'grade_id',
+    'academic_year_id',
+    'term_id',
+    'mandatory_amount',
+    'optional_fees',
+    'payment_details',
+    'remarks',
     ];
 
-    // Fee structure belongs to a class
-    public function class()
+    protected $casts = [
+    'optional_fees' => 'array',
+    'payment_details' => 'array',
+    ];
+
+    // Fee structure belongs to a grade
+    public function grade()
     {
-        return $this->belongsTo(SchoolClass::class);
+        return $this->belongsTo(Grade::class);
     }
 
     // Fee structure belongs to an academic year

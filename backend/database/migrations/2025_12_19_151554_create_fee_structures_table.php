@@ -12,19 +12,26 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('fee_structures', function (Blueprint $table) {
-        $table->id();
+            $table->id();
 
-        $table->foreignId('class_id')->constrained()->cascadeOnDelete();
-        $table->foreignId('academic_year_id')->constrained()->cascadeOnDelete();
-        $table->foreignId('term_id')->constrained()->cascadeOnDelete();
+            // Grade-based (NOT class-based)
+            $table->foreignId('grade_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('academic_year_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('term_id')->constrained()->cascadeOnDelete();
 
-        $table->decimal('amount', 10, 2);
+            // Fees data
+            $table->decimal('mandatory_amount', 10, 2);
+            $table->json('optional_fees')->nullable();
 
-        $table->timestamps();
+            // Payment + document info
+            $table->json('payment_details')->nullable();
+            $table->text('remarks')->nullable();
 
-        $table->unique(['class_id', 'academic_year_id', 'term_id']);
-    });
+            $table->timestamps();
 
+            // One fee structure per grade per term per year
+            $table->unique(['grade_id', 'academic_year_id', 'term_id']);
+        });
     }
 
     /**
