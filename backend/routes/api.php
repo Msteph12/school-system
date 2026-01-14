@@ -210,7 +210,7 @@ Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () 
 
     // Fee receipts
     Route::get('fee-receipts/{payment}', [FeeReceiptController::class, 'show']);
-    Route::get('fee-receipts/{payment}/pdf', [FeeReceiptController::class, 'pdf']); 
+    Route::get('fee-receipts/{payment}/print', [FeeReceiptController::class, 'pdf']); 
 });
 
 /*

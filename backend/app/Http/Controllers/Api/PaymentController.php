@@ -71,6 +71,35 @@ class PaymentController extends Controller
     }
 
     /**
+     * PUT /api/payments/{payment}
+     * Admin / Accountant only (route middleware)
+     */
+    public function update(Request $request, Payment $payment)
+    {
+        // 🔒 HARD LOCK: no edits after receipt is generated
+        if ($payment->receipt_generated_at !== null) {
+            return response()->json([
+                'message' => 'Payment is locked. Receipt already generated.'
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'amount_paid'    => 'required|numeric|min:0',
+            'payment_date'   => 'required|date',
+            'payment_method' => 'required|string',
+            'reference'      => 'nullable|string',
+        ]);
+
+        $payment->update($data);
+
+        return response()->json([
+            'message' => 'Payment updated successfully',
+            'payment' => $payment,
+        ]);
+    }
+
+
+    /**
      * GET /api/payments/{payment}
      * Access controlled at route level
      */

@@ -24,6 +24,10 @@ return new class extends Migration
         $table->string('payment_method'); // cash, mpesa, bank
         $table->string('reference')->nullable();
 
+        $table->string('receipt_number')->nullable()->unique();
+        $table->timestamp('receipt_generated_at')->nullable();
+
+
         $table->timestamps();
     });
     }

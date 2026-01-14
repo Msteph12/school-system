@@ -18,6 +18,9 @@ class Payment extends Model
         'payment_date',
         'payment_method',
         'reference',
+
+        'receipt_number',
+        'receipt_generated_at',
     ];
 
     // Payment belongs to a student

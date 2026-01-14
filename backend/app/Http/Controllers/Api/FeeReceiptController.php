@@ -21,6 +21,8 @@ class FeeReceiptController extends Controller
             'student',
             'academicYear',
             'term',
+            'student.grade',
+            'student.class',
         ]);
 
         return response()->json([
@@ -30,6 +32,8 @@ class FeeReceiptController extends Controller
                 'id'               => $payment->student->id,
                 'name'             => $payment->student->first_name . ' ' . $payment->student->last_name,
                 'admission_number' => $payment->student->admission_number,
+                'grade'            => $payment->student->grade->name ?? '-',
+                'class'            => $payment->student->class->name ?? '-',
             ],
 
             'academic_year' => $payment->academicYear->name,
@@ -60,9 +64,11 @@ class FeeReceiptController extends Controller
             'student',
             'academicYear',
             'term',
+            'student.grade',
+            'student.class',
         ]);
 
-        $pdf = Pdf::loadView('receipts.fee', [
+        $pdf = Pdf::loadView('pdf.feereceipt', [
             'payment' => $payment,
         ])->setPaper([0, 0, 226.77, 566.93]); // 80mm receipt paper
 
