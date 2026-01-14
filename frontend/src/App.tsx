@@ -12,6 +12,8 @@ import ClassTeachersPage from "@/app/admin/class-teachers/page";
 import FeesStructure from "@/app/pages/admin/Finance";
 import PaymentsPage from "@/app/admin/payments/page";
 
+import RegistrarLayout from "./app/registrar/registrarLayout";
+import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
 function App() {
   return (
@@ -30,6 +32,10 @@ function App() {
         <Route path="class-teachers" element={<ClassTeachersPage />} />
         <Route path="finance" element={<FeesStructure />} />
         <Route path="payments" element={<PaymentsPage />} />
+      </Route>
+
+      <Route path="/registrar" element={<RegistrarLayout />}>
+        <Route index element={<RegistrarDashboard />} />
       </Route>
     </Routes>
   );
