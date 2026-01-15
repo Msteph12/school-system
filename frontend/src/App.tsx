@@ -81,6 +81,16 @@ function App() {
         {(isRegistrar || isAdmin) && (
           <Route path="/registrar" element={<RegistrarLayout />}>
             <Route index element={<RegistrarDashboard />} />
+            <Route path="students" element={<Students />} />
+            <Route path="students-promotion" element={<StudentsPromotion />} />
+            <Route
+              path="students-promotion/history"
+              element={<StudentsPromotionHistory />}
+            />
+            <Route
+              path="teachers-attendance"
+              element={<TeacherAttendancePage />}
+            />
           </Route>
         )}
 
