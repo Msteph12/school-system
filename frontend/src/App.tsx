@@ -1,4 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/context/useAuth";
+import RoleSwitcher from "./components/dev/RoleSwitcher";
+
 import AdminLayout from "./app/admin/AdminLayout";
 import AdminDashboard from "./app/admin/AdminDashboard";
 import Students from "./app/pages/admin/Students";
@@ -13,36 +16,82 @@ import FeesStructure from "@/app/pages/admin/Finance";
 import PaymentsPage from "@/app/admin/payments/page";
 import StudentFeesPage from "@/app/admin/student-fees/page";
 
-import RegistrarLayout from "./app/registrar/registrarLayout";
+import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
 function App() {
+  const { user, isAdmin, isRegistrar } = useAuth();
+
+  // TEMP dev-safe fallback (prevents blank page)
+  if (!user) {
+    return <div>Loading user...</div>;
+  }
+
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/admin" />} />
+    <>
+      <Routes>
+        {/* Root redirect */}
+        <Route
+          path="/"
+          element={
+            isAdmin ? (
+              <Navigate to="/admin" />
+            ) : isRegistrar ? (
+              <Navigate to="/registrar" />
+            ) : (
+              <Navigate to="/admin" />
+            )
+          }
+        />
 
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="students" element={<Students />} />
-        <Route path="students-promotion" element={<StudentsPromotion />}/>
-        <Route path="students-promotion/history" element={<StudentsPromotionHistory />}/>
-        <Route path="student-attendance" element={<StudentAttendancePage />} /> 
-        <Route path="teachers" element={<Teachers />} />
-        <Route path="teachers-attendance" element={<TeacherAttendancePage />} />
-        <Route path="subject-assignments" element={<SubjectAssignmentsPage />} />
-        <Route path="class-teachers" element={<ClassTeachersPage />} />
-        <Route path="finance" element={<FeesStructure />} />
-        <Route path="payments" element={<PaymentsPage />} />
-        <Route path="finance/student-fees" element={<StudentFeesPage />} />
-      </Route>
+        {/* ADMIN */}
+        {isAdmin && (
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="students" element={<Students />} />
+            <Route path="students-promotion" element={<StudentsPromotion />} />
+            <Route
+              path="students-promotion/history"
+              element={<StudentsPromotionHistory />}
+            />
+            <Route
+              path="student-attendance"
+              element={<StudentAttendancePage />}
+            />
+            <Route path="teachers" element={<Teachers />} />
+            <Route
+              path="teachers-attendance"
+              element={<TeacherAttendancePage />}
+            />
+            <Route
+              path="subject-assignments"
+              element={<SubjectAssignmentsPage />}
+            />
+            <Route path="class-teachers" element={<ClassTeachersPage />} />
+            <Route path="finance" element={<FeesStructure />} />
+            <Route path="payments" element={<PaymentsPage />} />
+            <Route
+              path="finance/student-fees"
+              element={<StudentFeesPage />}
+            />
+          </Route>
+        )}
 
-      <Route path="/registrar" element={<RegistrarLayout />}>
-        <Route index element={<RegistrarDashboard />} />
-      </Route>
-    </Routes>
+        {/* REGISTRAR */}
+        {(isRegistrar || isAdmin) && (
+          <Route path="/registrar" element={<RegistrarLayout />}>
+            <Route index element={<RegistrarDashboard />} />
+          </Route>
+        )}
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+
+      {/* DEV ONLY */}
+      <RoleSwitcher />
+    </>
   );
 }
 
 export default App;
-
-
