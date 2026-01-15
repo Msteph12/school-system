@@ -49,7 +49,8 @@ const PromotionTable = ({ students, selected, setSelected }: Props) => {
                   type="checkbox"
                   checked={selected.includes(s.id)}
                   onChange={() => toggle(s.id)}
-                  disabled={s.is_promoted} 
+                  disabled={s.is_promoted}
+                  aria-label={`Promote ${s.name}`}
                 />
               </td>
               <td className="p-3">
