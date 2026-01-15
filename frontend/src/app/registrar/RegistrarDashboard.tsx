@@ -1,14 +1,14 @@
-import DashboardCard from "@/app/registrar/dashboardCard";
+import DashboardCard from "@/app/registrar/DashboardCard";
 import TopBar from "../../components/admin/TopBar";
 
 const cards = [
-  { title: "Students", count: 320, route: "/admin/classes", icon: "👨‍🎓" },
   { title: "Classes", count: 28, route: "/admin/students", icon: "🏫" },
-  { title: "Notes", route: "/admin/finance", icon: "📝" },
-  { title: "Teacher Attendance", route: "/admin/grades", icon: "👨‍🏫" },
+  { title: "Students", count: 320, route: "/admin/classes", icon: "👨‍🎓" },
   { title: "Grades", route: "/admin/timetable", icon: "⭐" },
-  { title: "Reports", route: "/admin/reports", icon: "📊" },
+  { title: "Teacher Attendance", route: "/admin/grades", icon: "👨‍🏫" },
   { title: "Academic Calendar", route: "/admin/calendar", icon: "🗓️" },
+  { title: "Reports", route: "/admin/reports", icon: "📊" },
+  { title: "Notes", route: "/admin/finance", icon: "📝" },
 ];
 
 const RegistrarDashboard = () => {

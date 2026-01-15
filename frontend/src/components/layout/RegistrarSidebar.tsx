@@ -66,40 +66,6 @@ const RegistrarSidebar = () => {
           </NavLink>
         </details>
 
-        {/* Notes */}
-        <details className="group">
-          <summary className={`${linkClass} flex items-center gap-3 cursor-pointer list-none`}>
-            <span>📝</span>
-            <span className="flex-1">Notes</span>
-            <FiChevronRight className="transition-transform group-open:rotate-90" />
-          </summary>
-          <NavLink to="/registrar/notes/class" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Class Notes</span>
-          </NavLink>
-          <NavLink to="/registrar/notes/announcements" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Announcements</span>
-          </NavLink>
-          <NavLink to="/registrar/notes/circulars" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Circulars</span>
-          </NavLink>
-          <NavLink to="/registrar/notes/records" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Student Records</span>
-          </NavLink>
-        </details>
-
-        {/* Teacher Attendance */}
-        <NavLink 
-          to="/registrar/teacher-attendance" 
-          className={`${linkClass} flex items-center gap-3`}
-        >
-          <span>👨‍🏫</span>
-          <span>Teacher Attendance</span>
-        </NavLink>
-
         {/* Grades */}
         <details className="group">
           <summary className={`${linkClass} flex items-center gap-3 cursor-pointer list-none`}>
@@ -125,6 +91,15 @@ const RegistrarSidebar = () => {
           </NavLink>
         </details>
 
+        {/* Teacher Attendance */}
+        <NavLink 
+          to="/registrar/teacher-attendance" 
+          className={`${linkClass} flex items-center gap-3`}
+        >
+          <span>👨‍🏫</span>
+          <span>Teacher Attendance</span>
+        </NavLink>
+
         {/* Academic Calendar */}
         <NavLink 
           to="/registrar/calendar" 
@@ -141,6 +116,15 @@ const RegistrarSidebar = () => {
         >
           <span>📊</span>
           <span>Reports</span>
+        </NavLink>
+
+        {/* Notes */}
+        <NavLink 
+          to="/registrar/notes" 
+          className={`${linkClass} flex items-center gap-3`}
+        >
+          <span>📝</span>
+          <span>Notes</span>
         </NavLink>
 
       </nav>
