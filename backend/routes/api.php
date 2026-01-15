@@ -198,6 +198,7 @@ Route::middleware(['auth:sanctum', 'role:admin,accountant'])->group(function () 
     Route::get('student-fees', [StudentFeesController::class, 'index']);
     Route::post('student-fees/recalculate', [StudentFeesController::class, 'store']);
     Route::get('students/{student}/fees', [StudentFeesController::class, 'show']);
+    Route::get('/student-fees/preview/{student}', [StudentFeesController::class, 'preview']);
 
     // Balances
     Route::get('students/{student}/balance', [StudentBalanceController::class, 'show']);

@@ -82,4 +82,35 @@ class StudentFeesController extends Controller
             'data'    => $studentFee,
         ]);
     }
+
+    /**
+     * GET /api/student-fees/preview/{student}
+     * Get fee structure + mandatory + optional fees for modal
+     */
+    public function preview(Student $student, Request $request)
+    {
+        $data = $request->validate([
+        'academic_year_id' => 'required|exists:academic_years,id',
+        'term_id'          => 'required|exists:terms,id',
+    ]);
+
+        $feeStructure = FeeStructure::where('grade_id', $student->grade_id)
+            ->where('academic_year_id', $data['academic_year_id'])
+            ->where('term_id', $data['term_id'])
+            ->with('optionalFees')
+            ->firstOrFail();
+
+        return response()->json([
+            'fee_structure_id' => $feeStructure->id,
+            'mandatory_amount' => $feeStructure->mandatory_amount,
+            'optional_fees'    => $feeStructure->optionalFees->map(fn ($fee) => [
+                'id'     => $fee->id,
+                'name'   => $fee->name,
+                'amount' => $fee->amount,
+            ]),
+            'academic_year_id' => $data['academic_year_id'],
+            'term_id'          => $data['term_id'],
+        ]);
+    }
+
 }
