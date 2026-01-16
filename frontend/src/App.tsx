@@ -16,6 +16,7 @@ import FeesStructure from "@/app/pages/admin/Finance";
 import PaymentsPage from "@/app/admin/payments/page";
 import StudentFeesPage from "@/app/admin/student-fees/page";
 import FinanceOverviewPage from "@/app/admin/finance-overview/page";
+import StudentBalancesPage from "@/app/admin/student-balances/page";
 
 import GradesPage from "@/app/pages/admin/Grades";
 
@@ -75,6 +76,8 @@ function App() {
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="finance/student-fees" element={<StudentFeesPage />}/>
             <Route path="finance/finance-overview" element={<FinanceOverviewPage />}/>
+            <Route path="finance/student-balances" element={<StudentBalancesPage />}/>
+
             <Route path="grades" element={<GradesPage />} /> 
           </Route>
         )}
