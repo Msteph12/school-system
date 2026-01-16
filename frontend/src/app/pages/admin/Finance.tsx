@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import TopBar from "@/components/admin/TopBar";
 import FeesStructureModal from "@/components/admin/finance/FeesStructureModal";
 import FeesStructureTable from "@/components/admin/finance/FeesStructureTable";
@@ -41,22 +42,34 @@ const FeesStructure = () => {
         </button>
       </div>
 
-      {/* Finance quick navigation */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded shadow-md">
-        <button className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition">
-          <h3 className="font-semibold">Fees Structure</h3>
-          <p className="text-sm">Manage fees per grade & term</p>
-        </button>
-
-        <button className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition">
-          <h3 className="font-semibold">Student Invoicing</h3>
-          <p className="text-sm">Generate student fee invoices</p>
-        </button>
-
-        <button className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition">
+        {/* Payments */}
+        <Link
+          to="/admin/payments"
+          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
+        >
           <h3 className="font-semibold">Payments</h3>
-          <p className="text-sm">Track and manage payments</p>
-        </button>
+          <p className="text-sm">Manage payments in the school</p>
+        </Link>
+
+        {/* Student Fees */}
+        <Link
+          to="/admin/finance/student-fees"
+          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
+        >
+          <h3 className="font-semibold">Student Fees</h3>
+          <p className="text-sm">Manages fees per student</p>
+        </Link>
+
+        {/* Class Teachers */}
+        <Link
+          to="/admin/*"
+          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
+        >
+          <h3 className="font-semibold">Class Teachers</h3>
+          <p className="text-sm">Class Teacher Allocation</p>
+        </Link>
       </div>
 
       {/* Actions */}

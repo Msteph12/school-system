@@ -130,6 +130,7 @@ const StudentFeeModal = ({
         fee_structure_id: feeStructure.id,
         academic_year_id: academicYearId,
         term_id: termId,
+        optional_fee_ids: selectedOptionalFeeIds,
       });
 
       onClose();
@@ -172,9 +173,9 @@ const StudentFeeModal = ({
         {/* Student Info */}
         {student && (
           <div className="grid grid-cols-3 gap-3">
-            <input disabled value={student.name} className="border px-3 py-2 bg-gray-100 rounded" />
-            <input disabled value={student.grade} className="border px-3 py-2 bg-gray-100 rounded" />
-            <input disabled value={student.class} className="border px-3 py-2 bg-gray-100 rounded" />
+            <input disabled placeholder="Student Name" value={student.name} className="border px-3 py-2 bg-gray-100 rounded" />
+            <input disabled placeholder="Grade" value={student.grade} className="border px-3 py-2 bg-gray-100 rounded" />
+            <input disabled placeholder="Class" value={student.class} className="border px-3 py-2 bg-gray-100 rounded" />
           </div>
         )}
 
