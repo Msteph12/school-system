@@ -18,10 +18,28 @@ class StudentFeesController extends Controller
     public function index()
     {
         return StudentFee::with([
-            'student',
-            'feeStructure',
-        ])->get();
+            'student.grade',
+            'student.class',
+            'feeStructure.term',
+            'feeStructure.academicYear',
+        ])->get()->map(fn ($f) => [
+            'id' => $f->id,
+            'studentId' => $f->student_id,
+            'admissionNumber' => $f->student->admission_number,
+            'studentName' => $f->student->first_name . ' ' . $f->student->last_name,
+            'grade' => $f->student->grade->name,
+            'class' => $f->student->class->name,
+            'mandatoryAmount' => $f->feeStructure->mandatory_amount,
+            'optionalFees' => $f->optional_fees ?? [],
+            'totalAmount' => $f->total_amount,
+            'amountPaid' => $f->amount_paid,
+            'balance' => $f->balance,
+            'academicYear' => $f->feeStructure->academicYear->name,
+            'term' => $f->feeStructure->term->name,
+            'createdAt' => $f->created_at,
+        ]);
     }
+
 
     /**
      * GET /api/students/{student}/fees
