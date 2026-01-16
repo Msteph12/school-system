@@ -2,11 +2,13 @@
 
 import api from "@/services/api";
 import { useEffect, useState } from "react";
+import type { StudentFeeListItem } from "@/types/studentFee";
 
 interface Props {
   onClose: () => void;
   academicYearId: number;
   termId: number;
+  existingFee?: StudentFeeListItem | null;
 }
 
 interface Student {
@@ -22,104 +24,110 @@ interface OptionalFee {
   amount: number;
 }
 
-interface FeePreviewResponse {
-  fee_structure_id: number;
+interface FeeStructure {
+  id: number;
   mandatory_amount: number;
   optional_fees: OptionalFee[];
 }
 
-const StudentFeeModal = ({ onClose, academicYearId, termId }: Props) => {
-  const [admissionNo, setAdmissionNo] = useState("");
-  const [student, setStudent] = useState<Student | null>(null);
+const StudentFeeModal = ({
+  onClose,
+  academicYearId,
+  termId,
+  existingFee,
+}: Props) => {
+  const isEdit = !!existingFee;
 
-  const [feeStructureId, setFeeStructureId] = useState<number | null>(null);
-  const [mandatoryAmount, setMandatoryAmount] = useState(0);
-  const [optionalFees, setOptionalFees] = useState<OptionalFee[]>([]);
+  const [admissionNo, setAdmissionNo] = useState(
+    existingFee?.admissionNumber ?? ""
+  );
+  const [student, setStudent] = useState<Student | null>(null);
+  const [feeStructure, setFeeStructure] = useState<FeeStructure | null>(null);
   const [selectedOptionalFeeIds, setSelectedOptionalFeeIds] = useState<number[]>(
     []
   );
-
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  // 🔍 Fetch student by admission number
+  // 🔍 Fetch student
   const fetchStudent = async () => {
     if (!admissionNo) return;
 
     try {
       setLoading(true);
-      setError("");
+      setError(null);
 
       const res = await api.get(`/students/by-admission/${admissionNo}`);
       setStudent(res.data);
     } catch {
       setStudent(null);
+      setFeeStructure(null);
       setError("Student not found");
     } finally {
       setLoading(false);
     }
   };
 
-  // 📦 Load fee preview once student is found
+  // Auto-load student in edit mode
+  useEffect(() => {
+    if (isEdit) fetchStudent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 📦 Load fee structure (GRADE + YEAR + TERM)
   useEffect(() => {
     if (!student) return;
 
-    const loadFeePreview = async () => {
+    const loadFeeStructure = async () => {
       try {
-        const res = await api.get<FeePreviewResponse>(
-          `/student-fees/preview/${student.id}`,
-          {
-            params: {
-              academic_year_id: academicYearId,
-              term_id: termId,
-            },
-          }
-        );
+        const res = await api.get("/student-fees/preview/" + student.id, {
+          params: {
+            academic_year_id: academicYearId,
+            term_id: termId,
+          },
+        });
 
-        setFeeStructureId(res.data.fee_structure_id);
-        setMandatoryAmount(res.data.mandatory_amount);
-        setOptionalFees(res.data.optional_fees);
+        setFeeStructure({
+          id: res.data.fee_structure_id,
+          mandatory_amount: res.data.mandatory_amount,
+          optional_fees: res.data.optional_fees,
+        });
+
         setSelectedOptionalFeeIds([]);
       } catch {
-        setError("Fee structure not found for this student");
+        setFeeStructure(null);
+        setError("Fee structure not found");
       }
     };
 
-    loadFeePreview();
+    loadFeeStructure();
   }, [student, academicYearId, termId]);
 
-  const toggleOptionalFee = (id: number) => {
+  const toggleOptionalFee = (feeId: number) => {
     setSelectedOptionalFeeIds((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+      prev.includes(feeId)
+        ? prev.filter((id) => id !== feeId)
+        : [...prev, feeId]
     );
   };
 
   const total =
-    mandatoryAmount +
-    optionalFees
+    (feeStructure?.mandatory_amount ?? 0) +
+    (feeStructure?.optional_fees
       .filter((f) => selectedOptionalFeeIds.includes(f.id))
-      .reduce((sum, f) => sum + f.amount, 0);
+      .reduce((sum, f) => sum + f.amount, 0) ?? 0);
 
-  // 💾 Save student fee
+  // 💾 Save / Recalculate
   const saveStudentFee = async () => {
-    if (!student || !feeStructureId) return;
+    if (!student || !feeStructure) return;
 
     try {
       setLoading(true);
-      setError("");
+      setError(null);
 
-      // 1️⃣ Save optional fees
-      await api.post(`/students/${student.id}/optional-fees`, {
-        optional_fee_ids: selectedOptionalFeeIds,
-        academic_year_id: academicYearId,
-        term_id: termId,
-        fee_structure_id: feeStructureId,
-      });
-
-      // 2️⃣ Recalculate & store student fee
       await api.post("/student-fees/recalculate", {
         student_id: student.id,
-        fee_structure_id: feeStructureId,
+        fee_structure_id: feeStructure.id,
         academic_year_id: academicYearId,
         term_id: termId,
       });
@@ -135,51 +143,53 @@ const StudentFeeModal = ({ onClose, academicYearId, termId }: Props) => {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-xl rounded-lg p-6 space-y-5">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Add Student Fee</h2>
-          <button onClick={onClose}>✕</button>
-        </div>
+        <h2 className="text-lg font-semibold">
+          {isEdit ? "Edit Student Fee" : "Add Student Fee"}
+        </h2>
 
-        {/* Admission Number */}
+        {/* Admission */}
         <div>
           <label className="text-sm font-medium">Admission Number</label>
           <div className="flex gap-2">
             <input
-              className="border rounded px-3 py-2 w-full"
-              placeholder="Enter admission number"
+              disabled={isEdit}
               value={admissionNo}
               onChange={(e) => setAdmissionNo(e.target.value)}
+              className="border px-3 py-2 rounded w-full"
             />
-            <button
-              onClick={fetchStudent}
-              className="bg-blue-600 text-white px-4 rounded"
-            >
-              Search
-            </button>
+            {!isEdit && (
+              <button
+                onClick={fetchStudent}
+                className="bg-blue-600 text-white px-4 rounded"
+              >
+                Search
+              </button>
+            )}
           </div>
-          {loading && <p className="text-sm">Loading…</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
 
         {/* Student Info */}
-        <div className="grid grid-cols-3 gap-3">
-          <input disabled placeholder="Student Name" value={student?.name ?? ""} className="border px-3 py-2 bg-gray-100 rounded" />
-          <input disabled placeholder="Grade" value={student?.grade ?? ""} className="border px-3 py-2 bg-gray-100 rounded" />
-          <input disabled placeholder="Class" value={student?.class ?? ""} className="border px-3 py-2 bg-gray-100 rounded" />
-        </div>
+        {student && (
+          <div className="grid grid-cols-3 gap-3">
+            <input disabled value={student.name} className="border px-3 py-2 bg-gray-100 rounded" />
+            <input disabled value={student.grade} className="border px-3 py-2 bg-gray-100 rounded" />
+            <input disabled value={student.class} className="border px-3 py-2 bg-gray-100 rounded" />
+          </div>
+        )}
 
         {/* Fees */}
-        {feeStructureId && (
-          <div className="space-y-3">
+        {feeStructure && (
+          <>
             <div className="flex justify-between">
               <span>Tuition Fee</span>
-              <span>KES {mandatoryAmount}</span>
+              <span>KES {feeStructure.mandatory_amount}</span>
             </div>
 
-            {optionalFees.length > 0 && (
+            {feeStructure.optional_fees.length > 0 && (
               <div>
                 <p className="font-medium">Optional Fees</p>
-                {optionalFees.map((fee) => (
+                {feeStructure.optional_fees.map((fee) => (
                   <label key={fee.id} className="flex justify-between text-sm">
                     <span>
                       <input
@@ -195,7 +205,7 @@ const StudentFeeModal = ({ onClose, academicYearId, termId }: Props) => {
                 ))}
               </div>
             )}
-          </div>
+          </>
         )}
 
         {/* Total */}
@@ -204,15 +214,17 @@ const StudentFeeModal = ({ onClose, academicYearId, termId }: Props) => {
           <span>KES {total}</span>
         </div>
 
+        {/* Actions */}
         <div className="flex justify-end gap-3">
           <button onClick={onClose} className="border px-4 py-2 rounded">
             Cancel
           </button>
           <button
             onClick={saveStudentFee}
+            disabled={loading}
             className="bg-red-600 text-white px-4 py-2 rounded"
           >
-            Save Student Fee
+            {isEdit ? "Recalculate" : "Save"}
           </button>
         </div>
       </div>
