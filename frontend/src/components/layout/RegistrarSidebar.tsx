@@ -33,11 +33,7 @@ const RegistrarSidebar = () => {
           </NavLink>
           <NavLink to="/registrar/classes/create" className={`${dropdownItem} flex items-center gap-2`}>
             <FiCircle className="w-2 h-2" />
-            <span>Create Class</span>
-          </NavLink>
-          <NavLink to="/registrar/classes/assignments" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Class Assignments</span>
+            <span>All Grades</span>
           </NavLink>
         </details>
 
@@ -75,19 +71,11 @@ const RegistrarSidebar = () => {
           </summary>
           <NavLink to="/registrar/grades/manage" className={`${dropdownItem} flex items-center gap-2`}>
             <FiCircle className="w-2 h-2" />
-            <span>Manage Grades</span>
+            <span>All Grades</span>
           </NavLink>
           <NavLink to="/registrar/grades/transcripts" className={`${dropdownItem} flex items-center gap-2`}>
             <FiCircle className="w-2 h-2" />
-            <span>Student Transcripts</span>
-          </NavLink>
-          <NavLink to="/registrar/grades/reports" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Grade Reports</span>
-          </NavLink>
-          <NavLink to="/registrar/grades/distribution" className={`${dropdownItem} flex items-center gap-2`}>
-            <FiCircle className="w-2 h-2" />
-            <span>Grade Distribution</span>
+            <span>Classes/Streams</span>
           </NavLink>
         </details>
 

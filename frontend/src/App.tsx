@@ -15,6 +15,7 @@ import ClassTeachersPage from "@/app/admin/class-teachers/page";
 import FeesStructure from "@/app/pages/admin/Finance";
 import PaymentsPage from "@/app/admin/payments/page";
 import StudentFeesPage from "@/app/admin/student-fees/page";
+import GradesPage from "@/app/pages/admin/Grades";
 
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
@@ -74,6 +75,7 @@ function App() {
               path="finance/student-fees"
               element={<StudentFeesPage />}
             />
+            <Route path="grades" element={<GradesPage />} /> 
           </Route>
         )}
 
@@ -81,6 +83,16 @@ function App() {
         {(isRegistrar || isAdmin) && (
           <Route path="/registrar" element={<RegistrarLayout />}>
             <Route index element={<RegistrarDashboard />} />
+            <Route path="students" element={<Students />} />
+            <Route path="students-promotion" element={<StudentsPromotion />} />
+            <Route
+              path="students-promotion/history"
+              element={<StudentsPromotionHistory />}
+            />
+            <Route
+              path="teachers-attendance"
+              element={<TeacherAttendancePage />}
+            />
           </Route>
         )}
 
