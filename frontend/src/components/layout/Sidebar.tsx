@@ -63,7 +63,7 @@ const Sidebar = () => {
           <NavLink to="/admin/finance" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Fees Structure</span></NavLink>
           <NavLink to="/admin/payments" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Payments</span></NavLink>
           <NavLink to="/admin/finance/student-fees" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Student Fees</span></NavLink>
-          <NavLink to="/admin/finance/reports" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Financial Reports</span></NavLink>
+          <NavLink to="/admin/finance/finance-overview" className={`${dropdownItem} flex items-center gap-2`}><FiCircle className="w-2 h-2" /><span>Finance Overview</span></NavLink>
         </details>
 
         {/* Grades */}
