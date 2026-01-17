@@ -35,6 +35,7 @@ use App\Http\Controllers\Api\StudentBalanceController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\FeeReceiptController;
 use App\Http\Controllers\Api\FinancialReportController;
+use App\Http\Controllers\Api\FinanceOverviewController;
 
 use App\Http\Controllers\Api\GradeScaleController;
 use App\Http\Controllers\Api\MarksController;
@@ -95,6 +96,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Financial reports
     Route::get('reports/financial', [FinancialReportController::class, 'index']);
+
+    // Finance overview
+    Route::get('finance-overview', [FinanceOverviewController::class, 'index']);
 
     // Grade scales (full CRUD)
     Route::apiResource('grade-scales', GradeScaleController::class);
