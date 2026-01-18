@@ -4,7 +4,7 @@ interface Props {
   grades: Grade[];
   onView: (grade: Grade) => void;
   onEdit: (grade: Grade) => void;
-  onViewStreams?: (grade: Grade) => void; // New prop for opening streams
+  onViewStreams?: (grade: Grade) => void;
 }
 
 const GradesTable = ({ grades, onView, onEdit, onViewStreams }: Props) => {
@@ -16,29 +16,45 @@ const GradesTable = ({ grades, onView, onEdit, onViewStreams }: Props) => {
     );
   }
 
+  const handleColumnClick = (grade: Grade) => {
+    if (onViewStreams) {
+      onViewStreams(grade);
+    }
+  };
+
   return (
     <div className="bg-white rounded shadow-md shadow-blue-200 overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-blue-50">
           <tr>
-            <th className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-                onClick={() => onViewStreams && onViewStreams(grades[0])}>
+            <th 
+              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
+              onClick={() => onViewStreams && onViewStreams(grades[0])}
+            >
               Grade Name
             </th>
-            <th className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-                onClick={() => onViewStreams && onViewStreams(grades[0])}>
+            <th 
+              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
+              onClick={() => onViewStreams && onViewStreams(grades[0])}
+            >
               Grade Code
             </th>
-            <th className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-                onClick={() => onViewStreams && onViewStreams(grades[0])}>
+            <th 
+              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
+              onClick={() => onViewStreams && onViewStreams(grades[0])}
+            >
               Stream Count
             </th>
-            <th className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-                onClick={() => onViewStreams && onViewStreams(grades[0])}>
+            <th 
+              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
+              onClick={() => onViewStreams && onViewStreams(grades[0])}
+            >
               Display Order
             </th>
-            <th className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-                onClick={() => onViewStreams && onViewStreams(grades[0])}>
+            <th 
+              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
+              onClick={() => onViewStreams && onViewStreams(grades[0])}
+            >
               Status
             </th>
             <th className="p-3 text-left">Actions</th>
@@ -48,20 +64,28 @@ const GradesTable = ({ grades, onView, onEdit, onViewStreams }: Props) => {
         <tbody>
           {grades.map((grade) => (
             <tr key={grade.id} className="border-t hover:bg-blue-50">
-              <td className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                  onClick={() => onViewStreams && onViewStreams(grade)}>
+              <td 
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
+                onClick={() => handleColumnClick(grade)}
+              >
                 {grade.name}
               </td>
-              <td className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                  onClick={() => onViewStreams && onViewStreams(grade)}>
+              <td 
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
+                onClick={() => handleColumnClick(grade)}
+              >
                 {grade.code}
               </td>
-              <td className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                  onClick={() => onViewStreams && onViewStreams(grade)}>
+              <td 
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
+                onClick={() => handleColumnClick(grade)}
+              >
                 {grade.streamCount || 0}
               </td>
-              <td className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                  onClick={() => onViewStreams && onViewStreams(grade)}>
+              <td 
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
+                onClick={() => handleColumnClick(grade)}
+              >
                 {grade.display_order || "-"}
               </td>
               <td className="p-3">
