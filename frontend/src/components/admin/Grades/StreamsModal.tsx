@@ -27,6 +27,13 @@ interface Grade {
   status: string;
 }
 
+interface Teacher {
+  id: string;
+  name: string;
+  email?: string;
+  status?: string;
+}
+
 interface ApiErrorResponse {
   status?: number;
   data?: {
@@ -40,6 +47,7 @@ interface StreamFormData {
   name: string;
   code?: string | null;
   status: StreamStatus;
+  teacher_id: string | null;
   capacity?: number | null;
   description?: string | null;
   is_active?: boolean;
@@ -51,15 +59,19 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
   const [streamCode, setStreamCode] = useState<string>(editingStream?.code || "");
   const [capacity, setCapacity] = useState<number | "">(editingStream?.capacity || "");
   const [description, setDescription] = useState<string>(editingStream?.description || "");
+  const [teacherId, setTeacherId] = useState<string>(editingStream?.teacher_id || "");
   const [streamStatus, setStreamStatus] = useState<StreamStatus>(editingStream?.status || "active");
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingGrades, setIsFetchingGrades] = useState(false);
+  const [isFetchingTeachers, setIsFetchingTeachers] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Fetch grades on component mount
+  // Fetch grades and teachers on component mount
   useEffect(() => {
     fetchGrades();
+    fetchTeachers();
   }, []);
 
   const fetchGrades = async () => {
@@ -72,6 +84,19 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
       alert("Failed to fetch grades. Please try again.");
     } finally {
       setIsFetchingGrades(false);
+    }
+  };
+
+  const fetchTeachers = async () => {
+    setIsFetchingTeachers(true);
+    try {
+      const response = await api.get("/teachers");
+      setTeachers(response.data);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      alert("Failed to fetch teachers. Please try again.");
+    } finally {
+      setIsFetchingTeachers(false);
     }
   };
 
@@ -88,6 +113,10 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
 
     if (streamName.trim().length < 2) {
       newErrors.streamName = "Stream name must be at least 2 characters";
+    }
+
+    if (!teacherId.trim()) {
+      newErrors.teacherId = "Please select a class teacher";
     }
 
     if (capacity !== "" && (Number(capacity) < 1 || isNaN(Number(capacity)))) {
@@ -110,6 +139,7 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
         name: streamName.trim(),
         code: streamCode.trim() || null,
         status: streamStatus,
+        teacher_id: teacherId || null,
         capacity: capacity === "" ? null : Number(capacity),
         description: description.trim() || null,
       };
@@ -171,6 +201,7 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
     setStreamCode("");
     setCapacity("");
     setDescription("");
+    setTeacherId("");
     setStreamStatus("active");
     setErrors({});
   };
@@ -259,6 +290,44 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
           {errors.streamName && (
             <p id="name-error" className="text-red-500 text-sm mt-1" role="alert">
               {errors.streamName}
+            </p>
+          )}
+        </div>
+
+        {/* Class Teacher */}
+        <div>
+          <label htmlFor="teacher-select" className="block text-sm font-medium mb-1">
+            Class Teacher <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="teacher-select"
+            className={`w-full border rounded px-4 py-2 ${errors.teacherId ? 'border-red-500' : ''}`}
+            value={teacherId}
+            onChange={(e) => {
+              setTeacherId(e.target.value);
+              if (errors.teacherId) setErrors(prev => ({ ...prev, teacherId: "" }));
+            }}
+            disabled={isFetchingTeachers || isLoading}
+            aria-label="Select class teacher"
+            aria-describedby={errors.teacherId ? "teacher-error" : undefined}
+          >
+            <option value="">Select a teacher</option>
+            {teachers
+              .filter(teacher => teacher.status === "active" || teacher.id === editingStream?.teacher_id)
+              .map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.name} {teacher.email ? `(${teacher.email})` : ''}
+                </option>
+              ))}
+          </select>
+          {isFetchingTeachers && (
+            <p className="text-sm text-gray-500 mt-1" aria-live="polite">
+              Loading teachers...
+            </p>
+          )}
+          {errors.teacherId && (
+            <p id="teacher-error" className="text-red-500 text-sm mt-1" role="alert">
+              {errors.teacherId}
             </p>
           )}
         </div>

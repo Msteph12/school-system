@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import api from "@/services/api";
+import type { Grade } from "@/types/grade";
 
 type GradeStatus = "Active" | "Inactive";
 
 interface AddGradeModalProps {
   onClose: () => void;
-  onGradeAdded?: () => void;
+  onGradeAdded?: (newGrade: Grade) => void;
 }
 
 const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
@@ -44,7 +45,7 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
 
     setIsLoading(true);
     try {
-      await api.post("/grades", {
+      const response = await api.post("/grades", {
         name: gradeName.trim(),
         code: gradeCode.trim(),
         display_order: displayOrder === "" ? null : Number(displayOrder),
@@ -59,7 +60,9 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
       setErrors({});
 
       // Notify parent component if callback provided
-      onGradeAdded?.();
+      if (onGradeAdded) {
+        onGradeAdded(response.data as Grade);
+      }
 
       // Close modal
       onClose();
