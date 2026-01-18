@@ -1,8 +1,9 @@
-export interface Grade {
-  id: number;
+export interface Stream {
+  id: string;
   name: string;
   code: string;
   display_order?: number;
   status: "Active" | "Inactive";
-  streamCount?: number; // Added stream count
+  gradeId: string;
+  gradeName: string;
 }

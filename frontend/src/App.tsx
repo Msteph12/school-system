@@ -19,6 +19,7 @@ import FinanceOverviewPage from "@/app/admin/finance-overview/page";
 import StudentBalancesPage from "@/app/admin/student-balances/page";
 
 import GradesPage from "@/app/pages/admin/Grades";
+import StreamsPage from "@/app/admin/grades/Streams";
 import Timetable from "@/app/pages/admin/Timetable";
 
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
@@ -80,7 +81,7 @@ function App() {
             <Route path="finance/student-balances" element={<StudentBalancesPage />}/>
 
             <Route path="grades" element={<GradesPage />} /> 
-
+            <Route path="grades/streams" element={<StreamsPage />} />
             <Route path="timetable" element={<Timetable />} />
           </Route>
         )}
