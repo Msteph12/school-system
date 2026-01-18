@@ -64,11 +64,11 @@ const FeesStructure = () => {
 
         {/* Class Teachers */}
         <Link
-          to="/admin/*"
+          to="/admin/finance/student-balances"
           className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
         >
-          <h3 className="font-semibold">Class Teachers</h3>
-          <p className="text-sm">Class Teacher Allocation</p>
+          <h3 className="font-semibold">Student Balances</h3>
+          <p className="text-sm">List of student with balances</p>
         </Link>
       </div>
 
