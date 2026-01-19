@@ -4,5 +4,5 @@ export interface Grade {
   code: string;
   display_order?: number;
   status: "Active" | "Inactive";
-  streamCount?: number; // Added stream count
+  classCount?: number; // Added class count
 }

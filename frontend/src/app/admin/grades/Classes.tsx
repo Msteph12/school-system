@@ -2,52 +2,51 @@
 
 import { useState, useEffect } from "react";
 import TopBar from "@/components/admin/TopBar";
-import StreamsModal from "@/components/admin/Grades/StreamsModal";
-import StreamsTable from "@/components/admin/Grades/StreamsTable";
+import ClassesModal from "@/components/admin/Grades/ClassesModal";
+import ClassesTable from "@/components/admin/Grades/ClassesTable";
 import type { Grade } from "@/types/grade";
-import type { Stream } from "@/types/stream";
+import type { Class } from "@/types/class";
 
-const StreamsPage = () => { 
+const ClassesPage = () => { 
   const [showModal, setShowModal] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
-  const [allStreams, setAllStreams] = useState<Stream[]>([]);
-  const [filteredStreams, setFilteredStreams] = useState<Stream[]>([]);
+  const [allClasses, setAllClasses] = useState<Class[]>([]);
+  const [filteredClasses, setFilteredClasses] = useState<Class[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingStreams, setIsLoadingStreams] = useState(false);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(false);
 
-  // Fetch grades and streams on component mount
+  // Fetch grades and classes on component mount
   useEffect(() => {
     fetchGrades();
-    fetchAllStreams();
+    fetchAllClasses();
   }, []);
 
-  // Filter streams when selectedGrade changes
+  // Filter classes when selectedGrade changes
   useEffect(() => {
     if (!selectedGrade) {
-      // Show all streams sorted by grade name
-      const sortedStreams = [...allStreams].sort((a, b) => {
+      // Show all classes sorted by grade name
+      const sortedClasses = [...allClasses].sort((a, b) => {
         // First sort by grade name
         const gradeCompare = a.gradeName.localeCompare(b.gradeName);
         if (gradeCompare !== 0) return gradeCompare;
         
-        // Then sort by stream display order if same grade
+        // Then sort by class display order if same grade
         return (a.display_order || 0) - (b.display_order || 0);
       });
-      setFilteredStreams(sortedStreams);
+      setFilteredClasses(sortedClasses);
     } else {
-      // Filter streams for selected grade
-      const filtered = allStreams
-        .filter(stream => String(stream.gradeId) === String(selectedGrade.id))
+      // Filter classes for selected grade
+      const filtered = allClasses
+        .filter(classItem => String(classItem.gradeId) === String(selectedGrade.id))
         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-      setFilteredStreams(filtered);
+      setFilteredClasses(filtered);
     }
-  }, [selectedGrade, allStreams]);
+  }, [selectedGrade, allClasses]);
 
   const fetchGrades = async () => {
     try {
       setIsLoading(true);
-      // Replace with your actual API call
       const response = await fetch('/api/grades');
       const data = await response.json();
       const sortedGrades = (data.grades || []).sort((a: Grade, b: Grade) => 
@@ -62,19 +61,17 @@ const StreamsPage = () => {
     }
   };
 
-  const fetchAllStreams = async () => {
+  const fetchAllClasses = async () => {
     try {
-      setIsLoadingStreams(true);
-      // Replace with your actual API call
-      // Make sure your API returns streams with gradeId and gradeName
-      const response = await fetch('/api/streams');
+      setIsLoadingClasses(true);
+      const response = await fetch('/api/classes');
       const data = await response.json();
-      setAllStreams(data.streams || []);
+      setAllClasses(data.classes || []);
     } catch (error) {
-      console.error("Error fetching streams:", error);
-      setAllStreams([]);
+      console.error("Error fetching classes:", error);
+      setAllClasses([]);
     } finally {
-      setIsLoadingStreams(false);
+      setIsLoadingClasses(false);
     }
   };
 
@@ -82,26 +79,26 @@ const StreamsPage = () => {
     setSelectedGrade(null);
   };
 
-  const handleViewStream = (stream: Stream) => {
-    console.log("View stream", stream);
+  const handleViewClass = (classItem: Class) => {
+    console.log("View class", classItem);
   };
 
-  const handleEditStream = (stream: Stream) => {
-    console.log("Edit stream", stream);
+  const handleEditClass = (classItem: Class) => {
+    console.log("Edit class", classItem);
   };
 
   // Get display title based on selection
   const getTableTitle = () => {
     if (selectedGrade) {
-      return `Streams for ${selectedGrade.name}`;
+      return `Classes for ${selectedGrade.name}`;
     }
-    return "All Streams (Grouped by Grade)";
+    return "All Classes (Grouped by Grade)";
   };
 
   // Get unique grade count for display
   const getUniqueGradeCount = () => {
     if (!selectedGrade) {
-      const gradeIds = new Set(allStreams.map(stream => stream.gradeId));
+      const gradeIds = new Set(allClasses.map(classItem => classItem.gradeId));
       return gradeIds.size;
     }
     return 1;
@@ -113,7 +110,7 @@ const StreamsPage = () => {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Streams</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Classes</h1>
         <button
           onClick={() => window.history.back()}
           className="text-blue-600 mr-5 hover:underline"
@@ -128,7 +125,7 @@ const StreamsPage = () => {
           onClick={() => setShowModal(true)}
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
         >
-          + Add Stream
+          + Add Class
         </button>
         
         {/* Grade Selection Dropdown */}
@@ -162,29 +159,29 @@ const StreamsPage = () => {
       </div>
 
       {/* Main Content Area */}
-      {isLoading || isLoadingStreams ? (
+      {isLoading || isLoadingClasses ? (
         <div className="bg-white p-10 rounded shadow-md shadow-blue-200 text-center">
-          Loading streams data...
+          Loading classes data...
         </div>
       ) : (
-        <StreamsTable
-          streams={filteredStreams}
+        <ClassesTable
+          classes={filteredClasses}
           gradeName={getTableTitle()}
           onClose={selectedGrade ? handleCloseFilter : undefined}
-          onView={handleViewStream}
-          onEdit={handleEditStream}
+          onView={handleViewClass}
+          onEdit={handleEditClass}
           showGradeColumn={!selectedGrade}
           gradeCount={getUniqueGradeCount()}
-          totalStreams={allStreams.length}
+          totalClasses={allClasses.length}
         />
       )}
 
       {/* Modal */}
       {showModal && (
-        <StreamsModal onClose={() => setShowModal(false)} />
+        <ClassesModal onClose={() => setShowModal(false)} />
       )}
     </div>
   );
 };
 
-export default StreamsPage;
+export default ClassesPage;

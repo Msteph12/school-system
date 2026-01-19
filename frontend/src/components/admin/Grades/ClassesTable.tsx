@@ -1,25 +1,25 @@
-import type { Stream } from "@/types/stream";
+import type { Class } from "@/types/class";
 
 interface Props {
-  streams: Stream[];
+  classes: Class[];
   gradeName: string;
   onClose?: () => void;
-  onView: (stream: Stream) => void;
-  onEdit: (stream: Stream) => void;
+  onView: (classItem: Class) => void;
+  onEdit: (classItem: Class) => void;
   showGradeColumn?: boolean;
   gradeCount?: number;
-  totalStreams?: number;
+  totalClasses?: number;
 }
 
-const StreamsTable = ({ 
-  streams, 
+const ClassesTable = ({ 
+  classes, 
   gradeName, 
   onClose, 
   onView, 
   onEdit,
   showGradeColumn = false,
   gradeCount = 0,
-  totalStreams = 0
+  totalClasses = 0
 }: Props) => {
   return (
     <div className="bg-white rounded shadow-md shadow-blue-200 overflow-x-auto">
@@ -31,12 +31,12 @@ const StreamsTable = ({
           <p className="text-sm text-gray-500">
             {showGradeColumn ? (
               <>
-                Showing {streams.length} stream{streams.length !== 1 ? 's' : ''} 
+                Showing {classes.length} class{classes.length !== 1 ? 'es' : ''} 
                 from {gradeCount} grade{gradeCount !== 1 ? 's' : ''}
-                {totalStreams > 0 && ` (${totalStreams} total streams)`}
+                {totalClasses > 0 && ` (${totalClasses} total classes)`}
               </>
             ) : (
-              `Total Streams: ${streams.length}`
+              `Total Classes: ${classes.length}`
             )}
           </p>
         </div>
@@ -50,11 +50,11 @@ const StreamsTable = ({
         )}
       </div>
 
-      {streams.length === 0 ? (
+      {classes.length === 0 ? (
         <div className="p-10 text-center text-gray-500">
           {showGradeColumn ? 
-            "No streams found across all grades." : 
-            "No streams found for this grade."
+            "No classes found across all grades." : 
+            "No classes found for this grade."
           }
         </div>
       ) : (
@@ -62,8 +62,8 @@ const StreamsTable = ({
           <thead className="bg-blue-50">
             <tr>
               {showGradeColumn && <th className="p-3 text-left">Grade</th>}
-              <th className="p-3 text-left">Stream Name</th>
-              <th className="p-3 text-left">Stream Code</th>
+              <th className="p-3 text-left">Class Name</th>
+              <th className="p-3 text-left">Class Code</th>
               <th className="p-3 text-left">Display Order</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Actions</th>
@@ -71,21 +71,21 @@ const StreamsTable = ({
           </thead>
 
           <tbody>
-            {streams.map((stream) => (
-              <tr key={stream.id} className="border-t hover:bg-blue-50">
+            {classes.map((classItem) => (
+              <tr key={classItem.id} className="border-t hover:bg-blue-50">
                 {showGradeColumn && (
                   <td className="p-3">
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      {stream.gradeName || "Unknown Grade"}
+                      {classItem.gradeName || "Unknown Grade"}
                     </span>
                   </td>
                 )}
-                <td className="p-3 font-medium">{stream.name}</td>
-                <td className="p-3 font-mono text-gray-600">{stream.code}</td>
+                <td className="p-3 font-medium">{classItem.name}</td>
+                <td className="p-3 font-mono text-gray-600">{classItem.code}</td>
                 <td className="p-3">
-                  {stream.display_order ? (
+                  {classItem.display_order ? (
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                      {stream.display_order}
+                      {classItem.display_order}
                     </span>
                   ) : (
                     "-"
@@ -94,24 +94,24 @@ const StreamsTable = ({
                 <td className="p-3">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      stream.status === "Active"
+                      classItem.status === "Active"
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {stream.status}
+                    {classItem.status}
                   </span>
                 </td>
 
                 <td className="p-3 flex gap-4">
                   <button
-                    onClick={() => onView(stream)}
+                    onClick={() => onView(classItem)}
                     className="text-blue-600 hover:underline hover:text-blue-800"
                   >
                     View
                   </button>
                   <button
-                    onClick={() => onEdit(stream)}
+                    onClick={() => onEdit(classItem)}
                     className="text-blue-600 hover:underline hover:text-blue-800"
                   >
                     Edit
@@ -126,4 +126,4 @@ const StreamsTable = ({
   );
 };
 
-export default StreamsTable;
+export default ClassesTable;

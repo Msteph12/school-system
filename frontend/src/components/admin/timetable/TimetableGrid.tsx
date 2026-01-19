@@ -8,30 +8,35 @@ interface Props {
 }
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-const timeSlots = [
-  { id: 1, label: "08:00 - 08:40", type: "lesson" },
-  { id: 2, label: "08:40 - 09:20", type: "lesson" },
-  { id: 3, label: "09:20 - 09:40", type: "break" },
-];
-
 const breakLetters = ["B", "R", "E", "A", "K"];
+const lunchLetters = ["L", "U", "N", "C", "H"];
 
 const TimetableGrid = ({ timetable }: Props) => {
-    void timetable; // placeholder to avoid unused prop warning
-    
+  if (!timetable) {
+    return (
+      <div className="text-center text-gray-400 py-12">
+        No timetable created yet. Click "Create Timetable" to start.
+      </div>
+    );
+  }
+
+  if (timetable.timeSlots.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-12">
+        No time slots configured. Click "+ Time Slots" to add time slots.
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse shadow-sm mt-3">
+      <table className="w-full border-collapse mt-4">
         <thead>
           <tr>
-            <th className="border bg-gray-100 p-3 text-sm">Day / Time</th>
-            {timeSlots.map((slot) => (
-              <th
-                key={slot.id}
-                className="border bg-gray-100 p-3 text-sm text-center"
-              >
-                {slot.label}
+            <th className="border p-2 bg-gray-100">Day / Time</th>
+            {timetable.timeSlots.map((slot) => (
+              <th key={slot.id} className="border p-2 text-sm">
+                {slot.startTime} - {slot.endTime}
               </th>
             ))}
           </tr>
@@ -40,42 +45,54 @@ const TimetableGrid = ({ timetable }: Props) => {
         <tbody>
           {days.map((day, dayIndex) => (
             <tr key={day}>
-              {/* Day column */}
-              <td className="border bg-gray-50 p-3 font-medium text-sm">
-                {day}
-              </td>
-
-              {timeSlots.map((slot) => {
+              <td className="border p-2 font-medium">{day}</td>
+              {timetable.timeSlots.map((slot) => {
                 if (slot.type === "break") {
-                  // Render break cell ONLY once (Monday)
-                  if (dayIndex === 0) {
-                    return (
-                      <td
-                        key={slot.id}
-                        rowSpan={days.length}
-                        className="p-0 text-center align-middle"
-                      >
-                        <div className="h-full flex flex-col justify-around font-bold text-gray-400">
-                          {breakLetters.map((letter) => (
-                            <span key={letter}>{letter}</span>
-                          ))}
+                  return (
+                    <td
+                      key={`${day}-${slot.id}`}
+                      className="border-l border-r border-gray-200 p-0 align-middle bg-yellow-50"
+                    >
+                      <div className="h-full flex flex-col justify-center items-center bg-yellow-50">
+                        <div className="text-2xl font-bold text-yellow-700">
+                          {breakLetters[dayIndex]}
                         </div>
-                      </td>
-                    );
-                  }
-                  return null; // skip break cell for other days
+                      </div>
+                    </td>
+                  );
                 }
 
+                if (slot.type === "lunch") {
+                  return (
+                    <td
+                      key={`${day}-${slot.id}`}
+                      className="border-l border-r border-gray-200 p-0 align-middle bg-green-50"
+                    >
+                      <div className="h-full flex flex-col justify-center items-center bg-green-50">
+                        <div className="text-2xl font-bold text-green-700">
+                          {lunchLetters[dayIndex]}
+                        </div>
+                      </div>
+                    </td>
+                  );
+                }
+
+                // For lessons
+                const entry = timetable.entries.find(
+                  (e) => e.day === day && e.timeSlotId === slot.id
+                );
+
                 return (
-                  <td
-                    key={slot.id}
-                    className="border p-3 h-24 align-top text-sm"
-                  >
-                    <TimetableCell
-                      subject="Math"
-                      teacher={null}
-                      room={null}
-                    />
+                  <td key={`${day}-${slot.id}`} className="border h-20">
+                    {entry?.data?.subject ? (
+                      <TimetableCell
+                        subject={entry.data.subject}
+                      />
+                    ) : (
+                      <div className="h-full flex items-center justify-center text-gray-400">
+                        Empty
+                      </div>
+                    )}
                   </td>
                 );
               })}

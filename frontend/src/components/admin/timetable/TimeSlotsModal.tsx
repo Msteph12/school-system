@@ -1,82 +1,158 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import type { TimeSlot } from "@/types/timetable";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialSlots: TimeSlot[];
+  onSave: (slots: TimeSlot[]) => void;
 }
 
-const TimeSlotsModal = ({ isOpen, onClose }: Props) => {
-  const [hasSlots] = useState(false); // placeholder (will come from DB)
-  const [error, setError] = useState("");
+const TimeSlotsModal = ({
+  isOpen,
+  onClose,
+  initialSlots,
+  onSave,
+}: Props) => {
+  const [slots, setSlots] = useState<TimeSlot[]>([]);
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [type, setType] = useState<TimeSlot["type"]>("lesson");
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    setSlots(initialSlots);
+  }, [initialSlots]);
 
   if (!isOpen) return null;
 
-  const handleSave = () => {
-    if (!hasSlots) {
-      setError("Please add at least one time slot before saving.");
+  const addSlot = () => {
+    setError("");
+
+     console.log("Validation check:", { start, end, startGreater: start >= end });
+
+    // Empty validation
+    if (!start || !end) {
+      console.log("Validation failed: start or end time is missing");
+      setError("Start time and end time are required.");
       return;
     }
 
-    // save logic later
+    if (start >= end) {
+      setError("End time must be later than start time.");
+      return;
+    }
+
+    // Duplicate validation
+    const duplicate = slots.some(
+      (s) => s.startTime === start && s.endTime === end
+    );
+
+    if (duplicate) {
+      setError("This time slot already exists.");
+      return;
+    }
+
+    const newSlot: TimeSlot = {
+      id: Date.now(),
+      startTime: start,
+      endTime: end,
+      type,
+    };
+
+    setSlots((prev) => [...prev, newSlot]);
+
+    // reset inputs
+    setStart("");
+    setEnd("");
+  };
+
+  const removeSlot = (id: number) => {
+    setSlots((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleSave = () => {
+    onSave(slots);
     onClose();
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white w-full max-w-lg rounded shadow-lg p-6 space-y-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-lg font-semibold text-gray-800">
-          Configure Time Slots
-        </h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white w-full max-w-lg rounded p-6 space-y-4">
+        <h2 className="text-lg font-semibold">Configure Time Slots</h2>
 
-        {/* Warning when slots already exist */}
-        {hasSlots && (
-          <div className="text-sm bg-yellow-50 text-yellow-800 p-3 rounded">
-            Updating time slots will affect existing timetables.
-          </div>
-        )}
-
-        {/* Slot Form */}
         <div className="grid grid-cols-3 gap-3">
-          <input type="time" className="border rounded px-3 py-2 text-sm" />
-          <input type="time" className="border rounded px-3 py-2 text-sm" />
-          <select className="border rounded px-3 py-2 text-sm">
+          <input
+            type="time"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="border rounded px-2 py-1"
+          />
+          <input
+            type="time"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            className="border rounded px-2 py-1"
+          />
+          <select
+            value={type}
+            onChange={(e) =>
+              setType(e.target.value as TimeSlot["type"])
+            }
+            className="border rounded px-2 py-1"
+          >
             <option value="lesson">Lesson</option>
             <option value="break">Break</option>
             <option value="lunch">Lunch</option>
           </select>
         </div>
 
-        {/* Error message */}
         {error && (
-          <div className="text-sm text-red-600">
-            {error}
-          </div>
+          <p className="text-sm text-red-600 font-medium">{error}</p>
         )}
 
-        {/* Existing Slots */}
-        <div className="text-sm text-gray-500">
-          Existing slots will appear here
+        <button
+          type="button"
+          onClick={addSlot}
+          className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
+        >
+          Add Slot
+        </button>
+
+        <div className="space-y-2">
+          {slots.map((slot) => (
+            <div
+              key={slot.id}
+              className="flex justify-between items-center border p-2 rounded text-sm"
+            >
+              <span>
+                {slot.startTime} – {slot.endTime} ({slot.type})
+              </span>
+              <button
+                type="button"
+                onClick={() => removeSlot(slot.id)}
+                className="text-red-500"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4">
+        <div className="flex justify-end gap-2 pt-4">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-100 rounded"
+            className="px-3 py-1 border rounded"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSave}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded"
+            className="px-3 py-1 bg-green-600 text-white rounded"
           >
             Save Slots
           </button>

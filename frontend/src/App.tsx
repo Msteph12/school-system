@@ -19,7 +19,7 @@ import FinanceOverviewPage from "@/app/admin/finance-overview/page";
 import StudentBalancesPage from "@/app/admin/student-balances/page";
 
 import GradesPage from "@/app/pages/admin/Grades";
-import StreamsPage from "@/app/admin/grades/Streams";
+import StreamsPage from "@/app/admin/grades/Classes";
 import Timetable from "@/app/pages/admin/Timetable";
 
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
