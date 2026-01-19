@@ -22,6 +22,7 @@ import GradesPage from "@/app/pages/admin/Grades";
 import StreamsPage from "@/app/admin/grades/Streams";
 import SubjectsPerGrade from "@/app/admin/grades/SubjectsPerGrade";
 import GradesSubjects from "@/app/admin/grades/GradesSubjects";
+import Timetable from "@/app/pages/admin/Timetable";
 
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
@@ -85,6 +86,8 @@ function App() {
             <Route path="streams" element={<StreamsPage />} /> 
             <Route path="subjects-per-grade" element={<SubjectsPerGrade />} />
             <Route path="/admin/subjects/grade/:gradeId" element={<GradesSubjects />} />
+            <Route path="grades/streams" element={<StreamsPage />} />
+            <Route path="timetable" element={<Timetable />} />
           </Route>
         )}
 
