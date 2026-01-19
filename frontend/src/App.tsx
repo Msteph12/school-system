@@ -20,6 +20,8 @@ import StudentBalancesPage from "@/app/admin/student-balances/page";
 
 import GradesPage from "@/app/pages/admin/Grades";
 import ClassesPage from "@/app/admin/grades/Classes";
+import SubjectsPerGrade from "@/app/admin/grades/SubjectsPerGrade";
+import GradesSubjects from "@/app/admin/grades/GradesSubjects";
 import Timetable from "@/app/pages/admin/Timetable";
 
 import RegistrarLayout from "./app/registrar/RegistrarLayout";

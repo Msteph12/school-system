@@ -23,19 +23,23 @@ const TimeSlotsModal = ({
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    setSlots(initialSlots);
-  }, [initialSlots]);
+    if (isOpen) {
+      // Reset all state when modal opens
+      setSlots(initialSlots);
+      setStart("");
+      setEnd("");
+      setType("lesson");
+      setError("");
+    }
+  }, [isOpen, initialSlots]);
 
   if (!isOpen) return null;
 
   const addSlot = () => {
     setError("");
 
-     console.log("Validation check:", { start, end, startGreater: start >= end });
-
     // Empty validation
     if (!start || !end) {
-      console.log("Validation failed: start or end time is missing");
       setError("Start time and end time are required.");
       return;
     }
@@ -64,7 +68,7 @@ const TimeSlotsModal = ({
 
     setSlots((prev) => [...prev, newSlot]);
 
-    // reset inputs
+    // Reset inputs
     setStart("");
     setEnd("");
   };
