@@ -76,7 +76,7 @@ const Sidebar = () => {
           </summary>
           <NavLink to="/admin/grades" className={dropdownItem}>Grades</NavLink>
           <NavLink to="/admin/streams" className={dropdownItem}>Streams</NavLink>
-          <NavLink to="/admin/subjects" className={dropdownItem}>Subjects per Grade</NavLink>
+          <NavLink to="/admin/subjects-per-grade" className={dropdownItem}>Subjects per Grade</NavLink>
           <NavLink to="/admin/class-teachers" className={dropdownItem}>Class Teachers</NavLink>
         </details>
 
