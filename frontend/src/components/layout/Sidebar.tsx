@@ -105,7 +105,7 @@ const Sidebar = () => {
             <span className="flex-1">Results</span>
             <FiChevronRight className="transition-transform group-open:rotate-90" />
           </summary>
-          <NavLink to="/admin/results/entry" className={dropdownItem}>Enter Results</NavLink>
+          <NavLink to="/admin/EnterResults" className={dropdownItem}>Enter Results</NavLink>
           <NavLink to="/admin/results/review" className={dropdownItem}>Grade Scale</NavLink>
           <NavLink to="/admin/results/term-lock" className={dropdownItem}>Term Lock Status</NavLink>
           <NavLink to="/admin/results/student-review" className={dropdownItem}>Student Result Review</NavLink>

@@ -24,6 +24,7 @@ import SubjectsPerGrade from "@/app/admin/grades/SubjectsPerGrade";
 import GradesSubjects from "@/app/admin/grades/GradesSubjects";
 import Timetable from "@/app/pages/admin/Timetable";
 
+import EnterResults from "@/app/pages/admin/EnterResults";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
@@ -88,6 +89,8 @@ function App() {
             <Route path="/admin/subjects/grade/:gradeId" element={<GradesSubjects />} />
             <Route path="grades/classes" element={<ClassesPage />} />
             <Route path="timetable" element={<Timetable />} />
+
+            <Route path="/admin/EnterResults" element={<EnterResults />} />
           </Route>
         )}
 
