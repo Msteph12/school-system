@@ -104,7 +104,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::apiResource('grade-scales', GradeScaleController::class);
 
     // Timetables (full CRUD)
-    Route::apiResource('timetables', TimetableController::class);
+   Route::get('timetables/by-class/{classId}', [TimetableController::class, 'byClass']);
+   Route::get('timetables/export/{classId}', [TimetableController::class, 'export']);
 
     // Exams (create/update/view – no delete)
     Route::apiResource('exams', ExamsController::class)->except(['destroy']);

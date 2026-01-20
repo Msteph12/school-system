@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Timetable;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TimetableController extends Controller
 {
     /**
      * GET /api/timetables
-     * View timetable (filterable)
      */
     public function index(Request $request)
     {
@@ -41,64 +41,47 @@ class TimetableController extends Controller
 
     /**
      * POST /api/timetables
-     * Create timetable entry
      */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'class_id'          => 'required|exists:school_classes,id',
-            'subject_id'        => 'nullable|exists:subjects,id',
-            'teacher_id'        => 'nullable|exists:teachers,id',
-            'academic_year_id'  => 'required|exists:academic_years,id',
-
-            'date'              => 'required|date',
-            'day_of_week'       => 'required|string',
-
-            'start_time'        => 'required',
-            'end_time'          => 'required|after:start_time',
-
-            'room'              => 'nullable|string',
+            'class_id'         => 'required|exists:school_classes,id',
+            'subject_id'       => 'nullable|exists:subjects,id',
+            'teacher_id'       => 'nullable|exists:teachers,id',
+            'academic_year_id' => 'required|exists:academic_years,id',
+            'date'             => 'required|date',
+            'day_of_week'      => 'required|string',
+            'start_time'       => 'required',
+            'end_time'         => 'required|after:start_time',
+            'room'             => 'nullable|string',
         ]);
 
-        /**
-         * 1. CLASS CLASH CHECK
-         */
         $classClash = Timetable::where('class_id', $data['class_id'])
             ->where('date', $data['date'])
             ->where(function ($q) use ($data) {
                 $q->whereBetween('start_time', [$data['start_time'], $data['end_time']])
-                ->orWhereBetween('end_time', [$data['start_time'], $data['end_time']]);
+                  ->orWhereBetween('end_time', [$data['start_time'], $data['end_time']]);
             })
             ->exists();
 
         if ($classClash) {
-            return response()->json([
-                'message' => 'This class already has an activity during this time',
-            ], 422);
+            return response()->json(['message' => 'This class already has an activity during this time'], 422);
         }
 
-        /**
-         * 2. TEACHER CLASH CHECK
-         */
         if (!empty($data['teacher_id'])) {
             $teacherClash = Timetable::where('teacher_id', $data['teacher_id'])
                 ->where('date', $data['date'])
                 ->where(function ($q) use ($data) {
                     $q->whereBetween('start_time', [$data['start_time'], $data['end_time']])
-                    ->orWhereBetween('end_time', [$data['start_time'], $data['end_time']]);
+                      ->orWhereBetween('end_time', [$data['start_time'], $data['end_time']]);
                 })
                 ->exists();
 
             if ($teacherClash) {
-                return response()->json([
-                    'message' => 'Teacher has a timetable clash at this time',
-                ], 422);
+                return response()->json(['message' => 'Teacher has a timetable clash at this time'], 422);
             }
         }
 
-        /**
-         * 3. CREATE TIMETABLE ENTRY
-         */
         $timetable = Timetable::create($data);
 
         return response()->json([
@@ -107,19 +90,17 @@ class TimetableController extends Controller
         ], 201);
     }
 
-
     /**
      * PUT /api/timetables/{timetable}
-     * Update timetable entry
      */
     public function update(Request $request, Timetable $timetable)
     {
         $data = $request->validate([
-            'subject_id'  => 'nullable|exists:subjects,id',
-            'teacher_id'  => 'nullable|exists:teachers,id',
-            'start_time'  => 'required',
-            'end_time'    => 'required|after:start_time',
-            'room'        => 'nullable|string',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'teacher_id' => 'nullable|exists:teachers,id',
+            'start_time' => 'required',
+            'end_time'   => 'required|after:start_time',
+            'room'       => 'nullable|string',
         ]);
 
         $timetable->update($data);
@@ -141,5 +122,43 @@ class TimetableController extends Controller
             'teacher',
             'academicYear',
         ]);
+    }
+
+    /**
+     * POST /api/timetables/{timetable}/publish
+     */
+    public function publish(Timetable $timetable)
+    {
+        $timetable->update(['is_published' => true]);
+
+        return response()->json(['message' => 'Timetable published']);
+    }
+
+    /**
+     * POST /api/timetables/{timetable}/unpublish
+     */
+    public function unpublish(Timetable $timetable)
+    {
+        $timetable->update(['is_published' => false]);
+
+        return response()->json(['message' => 'Timetable unpublished']);
+    }
+
+    /**
+     * GET /api/timetables/export/{classId}
+     */
+    public function export($classId)
+    {
+        $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
+            ->where('class_id', $classId)
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.timetable', [
+            'timetables' => $timetables,
+        ]);
+
+        return $pdf->download('timetable.pdf');
     }
 }
