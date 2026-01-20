@@ -5,8 +5,8 @@ import TopBar from "@/components/admin/TopBar";
 import PageHeader from "@/components/admin/timetable/PageHeader";
 import TimetableControls from "@/components/admin/timetable/TimetableControls";
 import TimetableGrid from "@/components/admin/timetable/TimetableGrid";
-import EditableTimetable from "@/components/admin/timetable/EditTimetable"; // Add this
-import type { Timetable, TimeSlot, TimetableEntry } from "@/types/timetable"; // Update import
+import EditableTimetable from "@/components/admin/timetable/EditTimetable";
+import type { Timetable, TimeSlot, TimetableEntry } from "@/types/timetable";
 import type { CellData } from "@/components/admin/timetable/EditTimetable";
 import { timetableService } from "@/services/timetable";
 
@@ -14,24 +14,40 @@ const TimetablePage = () => {
   const [timetable, setTimetable] = useState<Timetable | null>(null);
   const [loading, setLoading] = useState<"create" | "auto" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false); // Add this
-  const [editedData, setEditedData] = useState<TimetableEntry[]>([]); // Add this
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedData, setEditedData] = useState<TimetableEntry[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isDuplicating, setIsDuplicating] = useState(false); // Add this
-  const [isPublishing, setIsPublishing] = useState(false); 
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  // Load initial timetable data
+  useEffect(() => {
+    const loadTimetable = async () => {
+      try {
+        // Load first available class timetable (you might want to select class)
+        const data = await timetableService.getByClass(1);
+        if (data) {
+          setTimetable(data);
+          setEditedData(data.entries);
+        }
+      } catch (err) {
+        console.error("Failed to load timetable:", err);
+      }
+    };
+    
+    loadTimetable();
+  }, []);
 
   const handleCreate = async () => {
     setError(null);
     setLoading("create");
     try {
+      // Create new timetable via API
       const data = await timetableService.create(0);
-      console.log("Created timetable:", data);
-      console.log("Time slots count:", data.timeSlots.length);
       setTimetable(data);
-      // Initialize edited data
-      if (data.entries) {
-        setEditedData(data.entries);
-      }
+      setEditedData(data.entries);
+      setSuccessMessage("Timetable created successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError("Failed to create timetable. Please try again.");
       console.error("Create timetable error:", err);
@@ -44,12 +60,12 @@ const TimetablePage = () => {
     setError(null);
     setLoading("auto");
     try {
+      // Auto-generate timetable via API
       const data = await timetableService.autoGenerate(0);
       setTimetable(data);
-      // Initialize edited data
-      if (data.entries) {
-        setEditedData(data.entries);
-      }
+      setEditedData(data.entries);
+      setSuccessMessage("Timetable auto-generated successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError("Failed to auto-generate timetable. Please try again.");
       console.error("Auto-generate error:", err);
@@ -64,119 +80,116 @@ const TimetablePage = () => {
     );
   };
 
-  // Add this function to handle edit mode toggle
   const handleToggleEditMode = () => {
     if (isEditMode) {
-      // Save changes when exiting edit mode
       handleSaveChanges();
     }
     setIsEditMode(!isEditMode);
   };
 
-  // Add this function to handle data changes in edit mode
   const handleDataChange = (updatedData: CellData[]) => {
     setEditedData(updatedData as TimetableEntry[]);
   };
 
-  // Add this function to save changes
   const handleSaveChanges = async () => {
     if (!timetable) return;
     
     try {
-      // Update the timetable with edited data
       const updatedTimetable = {
         ...timetable,
         entries: editedData
       };
       
-      // Call API to save changes
       await timetableService.update(timetable.id, updatedTimetable);
       setTimetable(updatedTimetable);
       
-      console.log("Changes saved successfully");
+      setSuccessMessage("Changes saved successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       setError("Failed to save changes. Please try again.");
       console.error("Save error:", err);
     }
   };
 
-  // Add this handler
-    const handleDuplicate = async () => {
+  const handleDuplicate = async () => {
     if (!timetable) return;
     
     setError(null);
     setIsDuplicating(true);
     
     try {
-        const duplicatedTimetable = {
+      const duplicatedTimetable = {
         ...timetable,
         id: Date.now(),
         isPublished: false,
         entries: timetable.entries.map(entry => ({
-            ...entry,
-            id: `${entry.day}-${entry.timeSlotId}-${Date.now()}-${Math.random()}`
+          ...entry,
+          id: `${entry.day}-${entry.timeSlotId}-${Date.now()}-${Math.random()}`
         }))
-        };
-        
-        setTimetable(duplicatedTimetable);
-        setEditedData(duplicatedTimetable.entries);
-        setSuccessMessage("Timetable duplicated successfully!");
-        setTimeout(() => setSuccessMessage(null), 3000);
-        console.log("Timetable duplicated successfully");
+      };
+      
+      setTimetable(duplicatedTimetable);
+      setEditedData(duplicatedTimetable.entries);
+      setSuccessMessage("Timetable duplicated successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-        setError("Failed to duplicate timetable. Please try again.");
-        console.error("Duplicate error:", err);
+      setError("Failed to duplicate timetable. Please try again.");
+      console.error("Duplicate error:", err);
     } finally {
-        setIsDuplicating(false);
+      setIsDuplicating(false);
     }
-    };
+  };
 
-    // Add this handler to publish/unpublish timetable
-    const handlePublishToggle = async () => {
+  const handlePublishToggle = async () => {
     if (!timetable) return;
     
     setError(null);
     setIsPublishing(true);
     
     try {
-        const newPublishedState = !timetable.isPublished;
-        
-        if (newPublishedState) {
+      const newPublishedState = !timetable.isPublished;
+      
+      if (newPublishedState) {
         await timetableService.publish(timetable.id);
-        } else {
+      } else {
         await timetableService.unpublish(timetable.id);
-        }
-        
-        setTimetable(prev => prev ? { ...prev, isPublished: newPublishedState } : prev);
-        
-        setSuccessMessage(
+      }
+      
+      setTimetable(prev => prev ? { ...prev, isPublished: newPublishedState } : prev);
+      
+      setSuccessMessage(
         newPublishedState 
-            ? "Timetable published successfully! Students can now view it." 
-            : "Timetable unpublished successfully. Hidden from students."
-        );
-        setTimeout(() => setSuccessMessage(null), 3000);
-        
+          ? "Timetable published successfully! It can now be viewed." 
+          : "Timetable unpublished successfully. Hidden from users."
+      );
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-        setError(`Failed to ${timetable.isPublished ? 'unpublish' : 'publish'} timetable. Please try again.`);
-        console.error("Publish error:", err);
+      setError(`Failed to ${timetable.isPublished ? 'unpublish' : 'publish'} timetable. Please try again.`);
+      console.error("Publish error:", err);
     } finally {
-        setIsPublishing(false);
+      setIsPublishing(false);
     }
-    };
+  };
 
-    // Add handlers for print and export
-    const handlePrint = () => {
+  const handlePrint = () => {
     if (!timetable) return;
-    window.print(); // Simple print
-    };
+    window.print();
+  };
 
-    const handleExport = () => {
+  const handleExport = async () => {
     if (!timetable) return;
-    // Will implement export logic
-    console.log("Exporting timetable...");
-    };
+    
+    try {
+      const classId = parseInt(timetable.entries[0]?.classId as string) || 1;
+      await timetableService.export(classId);
+      setSuccessMessage("Timetable exported successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError("Failed to export timetable. Please try again.");
+      console.error("Export error:", err);
+    }
+  };
 
-  // Add this effect to sync editedData with timetable
   useEffect(() => {
     if (timetable?.entries) {
       setEditedData(timetable.entries);
@@ -185,7 +198,7 @@ const TimetablePage = () => {
 
   // Prepare days and timeSlots for the grid
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  const formattedTimeSlots = timetable?.timeSlots.map(slot => 
+  const formattedTimeSlots = timetable?.timeSlots?.map(slot => 
     `${slot.startTime} - ${slot.endTime}`
   ) || [];
 
@@ -213,11 +226,10 @@ const TimetablePage = () => {
           </div>
         )}
 
-        {/* Add success message here */}
         {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded">
+          <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded">
             ✓ {successMessage}
-            </div>
+          </div>
         )}
 
         <TimetableControls
@@ -230,31 +242,38 @@ const TimetablePage = () => {
           timeSlots={timetable?.timeSlots ?? []}
           onSaveTimeSlots={handleSaveTimeSlots}
           loading={loading}
-          isEditMode={isEditMode} // Add this
-          onToggleEditMode={handleToggleEditMode} // Add this
+          isEditMode={isEditMode}
+          onToggleEditMode={handleToggleEditMode}
           canDuplicate={!!timetable}
-          isDuplicating={isDuplicating} // Add this line
+          isDuplicating={isDuplicating}
           canPublish={!!timetable}
           onPrint={handlePrint}
           onExport={handleExport}
           canPrintExport={!!timetable}
         />
 
-        {isEditMode ? (
-          // Render EditableTimetable when in edit mode
-          <EditableTimetable
-            initialData={editedData}
-            days={days}
-            timeSlots={formattedTimeSlots}
-            isEditMode={isEditMode}
-            onDataChange={handleDataChange}
-          />
-        ) : (
-          // Render regular TimetableGrid when not in edit mode
-          <TimetableGrid timetable={timetable} />
-        )}
+        <div id="timetable-print-area">
+          {timetable && (
+            <div className="mb-4 text-center">
+              <h2 className="text-xl font-bold text-gray-800">
+                {timetable.gradeName} – {timetable.className} Timetable
+              </h2>
+            </div>
+          )}
 
-        {/* Edit mode instructions */}
+          {isEditMode ? (
+            <EditableTimetable
+              initialData={editedData}
+              days={days}
+              timeSlots={formattedTimeSlots}
+              isEditMode={isEditMode}
+              onDataChange={handleDataChange}
+            />
+          ) : (
+            <TimetableGrid timetable={timetable} />
+          )}
+        </div>
+
         {isEditMode && (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
             <h3 className="font-medium text-blue-800 mb-2">Edit Mode Instructions</h3>

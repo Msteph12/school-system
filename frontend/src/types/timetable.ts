@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export type TimeSlotType = "lesson" | "break" | "lunch";
 
 export interface TimeSlot {
@@ -37,6 +39,8 @@ export interface TimetableEntry {
 }
 
 export interface Timetable {
+  gradeName: ReactNode;
+  className: ReactNode;
   id: number;
   gradeId: number | null;
   isPublished: boolean;

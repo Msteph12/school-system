@@ -16,3 +16,33 @@ summary::-webkit-details-marker {
 .input {
   @apply border rounded px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-red-400;
 }
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 12mm;
+  }
+
+  h2 {
+    margin-bottom: 12px;
+  }
+
+  /* Hide everything */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only timetable */
+  #timetable-print-area,
+  #timetable-print-area * {
+    visibility: visible;
+  }
+
+  /* Position timetable cleanly */
+  #timetable-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
