@@ -17,21 +17,28 @@ const days: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 
 export const timetableService = {
   create: async (gradeId: number | null): Promise<Timetable> => {
-    // Create empty timetable entries for all time slots and days
     const entries: TimetableEntry[] = [];
     
     defaultTimeSlots.forEach(slot => {
       days.forEach(day => {
+        const timeSlotString = `${slot.startTime} - ${slot.endTime}`;
+        
         entries.push({
+          id: `${day}-${slot.id}-${Date.now()}-${Math.random()}`,
           day,
+          timeSlot: timeSlotString,
           timeSlotId: slot.id,
-          data: slot.type === "lesson" ? null : null // All empty initially
+          subject: "",
+          teacher: undefined,
+          room: undefined,
+          classId: undefined,
+          gradeId: gradeId || undefined,
         });
       });
     });
 
     return {
-      id: Date.now(), // Temporary ID
+      id: Date.now(),
       gradeId,
       isPublished: false,
       timeSlots: defaultTimeSlots,
@@ -40,36 +47,49 @@ export const timetableService = {
   },
 
   autoGenerate: async (gradeId: number | null): Promise<Timetable> => {
-    // Create sample data for auto-generation
     const entries: TimetableEntry[] = [];
     const sampleSubjects = ["Math", "Science", "English", "History", "Art", "PE"];
+    const sampleTeachers = ["Mr. Smith", "Ms. Johnson", "Dr. Brown", "Mrs. Wilson", "Mr. Davis"];
+    const sampleRooms = ["101", "202", "303", "404", "505"];
     
     defaultTimeSlots.forEach(slot => {
       days.forEach(day => {
-        // For breaks and lunch, leave data as null
+        const timeSlotString = `${slot.startTime} - ${slot.endTime}`;
+        
         if (slot.type === "break" || slot.type === "lunch") {
           entries.push({
+            id: `${day}-${slot.id}-${Date.now()}-${Math.random()}`,
             day,
+            timeSlot: timeSlotString,
             timeSlotId: slot.id,
-            data: null
+            subject: slot.type === "break" ? "Break" : "Lunch",
+            teacher: undefined,
+            room: undefined,
+            classId: undefined,
+            gradeId: gradeId || undefined,
           });
         } else {
-          // For lessons, generate random sample data
           const randomSubject = sampleSubjects[Math.floor(Math.random() * sampleSubjects.length)];
+          const randomTeacher = sampleTeachers[Math.floor(Math.random() * sampleTeachers.length)];
+          const randomRoom = sampleRooms[Math.floor(Math.random() * sampleRooms.length)];
           
           entries.push({
+            id: `${day}-${slot.id}-${Date.now()}-${Math.random()}`,
             day,
+            timeSlot: timeSlotString,
             timeSlotId: slot.id,
-            data: {
-              subject: randomSubject,
-            }
+            subject: randomSubject,
+            teacher: randomTeacher,
+            room: randomRoom,
+            classId: undefined,
+            gradeId: gradeId || undefined,
           });
         }
       });
     });
 
     return {
-      id: Date.now(), // Temporary ID
+      id: Date.now(),
       gradeId,
       isPublished: false,
       timeSlots: defaultTimeSlots,
@@ -78,15 +98,11 @@ export const timetableService = {
   },
 
   getByGrade: async (gradeId: number | null): Promise<Timetable | null> => {
-    // Use the parameter to avoid the "unused" warning
     console.log("Fetching timetable for grade:", gradeId);
-    return null; // Return null for now, could implement later
+    return null;
   },
 
-  saveTimeSlots: async (
-    gradeId: number | null,
-    slots: TimeSlot[]
-  ): Promise<boolean> => {
+  saveTimeSlots: async (gradeId: number | null, slots: TimeSlot[]): Promise<boolean> => {
     console.log("Saving time slots for grade", gradeId, slots);
     return true;
   },
@@ -99,5 +115,10 @@ export const timetableService = {
   unpublish: async (timetableId: number): Promise<boolean> => {
     console.log("Unpublishing timetable", timetableId);
     return true;
+  },
+
+  update: async (timetableId: number, data: Timetable): Promise<Timetable> => {
+    console.log("Updating timetable", timetableId, data);
+    return data;
   },
 };

@@ -79,21 +79,23 @@ const TimetableGrid = ({ timetable }: Props) => {
 
                 // For lessons
                 const entry = timetable.entries.find(
-                  (e) => e.day === day && e.timeSlotId === slot.id
+                (e) => e.day === day && e.timeSlotId === slot.id
                 );
 
                 return (
-                  <td key={`${day}-${slot.id}`} className="border h-20">
-                    {entry?.data?.subject ? (
-                      <TimetableCell
-                        subject={entry.data.subject}
-                      />
+                <td key={`${day}-${slot.id}`} className="border h-20">
+                    {entry?.subject ? (  // Changed from entry?.data?.subject to entry?.subject
+                    <TimetableCell
+                        subject={entry.subject}  // Changed from entry.data.subject
+                        teacher={entry.teacher}
+                        room={entry.room}
+                    />
                     ) : (
-                      <div className="h-full flex items-center justify-center text-gray-400">
+                    <div className="h-full flex items-center justify-center text-gray-400">
                         Empty
-                      </div>
+                    </div>
                     )}
-                  </td>
+                </td>
                 );
               })}
             </tr>
