@@ -25,6 +25,7 @@ import GradesSubjects from "@/app/admin/grades/GradesSubjects";
 import Timetable from "@/app/pages/admin/Timetable";
 
 import EnterResults from "@/app/pages/admin/EnterResults";
+import StudentResults from "@/app/pages/admin/StudentResults";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
@@ -91,6 +92,7 @@ function App() {
             <Route path="timetable" element={<Timetable />} />
 
             <Route path="/admin/EnterResults" element={<EnterResults />} />
+            <Route path="/admin/StudentResults" element={<StudentResults />} />
           </Route>
         )}
 
