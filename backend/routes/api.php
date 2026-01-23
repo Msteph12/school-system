@@ -102,7 +102,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('finance-overview', [FinanceOverviewController::class, 'index']);
 
     // Grade scales (full CRUD)
-    Route::apiResource('grade-scales', GradeScaleController::class);
+    Route::get('/grade-scales', [GradeScaleController::class, 'index']);
+    Route::post('/grade-scales', [GradeScaleController::class, 'store']);
+    Route::put('/grade-scales/{id}', [GradeScaleController::class, 'update']);
+    Route::patch('/grade-scales/{id}/toggle-status', [GradeScaleController::class, 'toggleStatus']);
+    Route::delete('/grade-scales/{id}', [GradeScaleController::class, 'destroy']);
 
     // Timetables (full CRUD)
    Route::get('timetables/by-class/{classId}', [TimetableController::class, 'byClass']);
