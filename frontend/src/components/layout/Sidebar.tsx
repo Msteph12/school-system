@@ -170,9 +170,6 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             {!collapsed && <span className="flex-1">Results</span>}
             {!collapsed && <FiChevronRight className="transition-transform group-open:rotate-90" />}
           </summary>
-          <NavLink to="/admin/EnterResults" className={dropdownItem}>Enter Results</NavLink>
-          <NavLink to="/admin/StudentResults" className={dropdownItem}>Student Results</NavLink>
-          <NavLink to="/admin/results/TermLock" className={dropdownItem}>Term Lock Status</NavLink>
 
           {!collapsed && (
             <>
