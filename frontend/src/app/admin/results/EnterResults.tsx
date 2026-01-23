@@ -58,7 +58,7 @@ const EnterResults = () => {
       title: "Term Lock Status",
       description: "Lock/unlock terms for results",
       gradient: "from-green-600/80 to-green-400/80",
-      onClick: () => navigate("/admin/term-lock"),
+      onClick: () => navigate("/admin/TermLock"),
     },
     {
       title: "Student Results",

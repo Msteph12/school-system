@@ -24,8 +24,9 @@ import SubjectsPerGrade from "@/app/admin/grades/SubjectsPerGrade";
 import GradesSubjects from "@/app/admin/grades/GradesSubjects";
 import Timetable from "@/app/pages/admin/Timetable";
 
-import EnterResults from "@/app/pages/admin/EnterResults";
-import StudentResults from "@/app/pages/admin/StudentResults";
+import EnterResults from "@/app/admin/results/EnterResults";
+import StudentResults from "@/app/admin/results/StudentResults";
+import TermLock from "@/app/admin/results/TermLock";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
@@ -93,6 +94,7 @@ function App() {
 
             <Route path="/admin/EnterResults" element={<EnterResults />} />
             <Route path="/admin/StudentResults" element={<StudentResults />} />
+            <Route path="/admin/TermLock" element={<TermLock />} />
           </Route>
         )}
 

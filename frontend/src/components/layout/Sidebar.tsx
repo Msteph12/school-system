@@ -107,7 +107,7 @@ const Sidebar = () => {
           </summary>
           <NavLink to="/admin/EnterResults" className={dropdownItem}>Enter Results</NavLink>
           <NavLink to="/admin/StudentResults" className={dropdownItem}>Student Results</NavLink>
-          <NavLink to="/admin/results/term-lock" className={dropdownItem}>Term Lock Status</NavLink>
+          <NavLink to="/admin/results/TermLock" className={dropdownItem}>Term Lock Status</NavLink>
           <NavLink to="/admin/results/student-review" className={dropdownItem}>Student Result Review</NavLink>
         </details>
 
