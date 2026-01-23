@@ -1,12 +1,18 @@
 import Sidebar from "../../components/layout/Sidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 const AdminLayout = () => {
+  const location = useLocation();
+
+  const isCalendarPage = location.pathname === "/admin/calendar";
+
   return (
     <div className="flex h-screen bg-red-50">
-      <Sidebar />
+      <Sidebar collapsed={isCalendarPage} />
+
       <Toaster position="top-right" />
+
       <main className="flex-1 overflow-y-auto p-6">
         <Outlet />
       </main>

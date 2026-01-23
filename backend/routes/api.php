@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\FinanceOverviewController;
 use App\Http\Controllers\Api\GradeScaleController;
 use App\Http\Controllers\Api\MarksController;
 use App\Http\Controllers\Api\TimetableController;
+use App\Http\Controllers\Api\CalendarEventController;
 use App\Http\Controllers\Api\ExamsController;
 use App\Http\Controllers\Api\TermClosureController;
 
@@ -104,7 +105,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::apiResource('grade-scales', GradeScaleController::class);
 
     // Timetables (full CRUD)
-    Route::apiResource('timetables', TimetableController::class);
+   Route::get('timetables/by-class/{classId}', [TimetableController::class, 'byClass']);
+   Route::get('timetables/export/{classId}', [TimetableController::class, 'export']);
+
+   // Calendar events (full CRUD)
+   Route::post('calendar-events', [CalendarEventController::class, 'store']);
+   Route::put('calendar-events/{calendarEvent}', [CalendarEventController::class, 'update']);
+   Route::delete('calendar-events/{calendarEvent}', [CalendarEventController::class, 'destroy']);
 
     // Exams (create/update/view – no delete)
     Route::apiResource('exams', ExamsController::class)->except(['destroy']);
@@ -124,6 +131,8 @@ Route::middleware(['auth:sanctum', 'role:admin,registrar'])->group(function () {
     Route::apiResource('class-students', ClassStudentController::class)->only(['index','store','destroy']);
     Route::post('promotions', [PromotionController::class, 'promote']);
     Route::apiResource('teacher-attendance', TeacherAttendanceController::class) ->except(['show']);
+    Route::get('calendar-events', [CalendarEventController::class, 'index']);
+    Route::get('calendar-events/{calendarEvent}', [CalendarEventController::class, 'show']);
 });
 
 /*

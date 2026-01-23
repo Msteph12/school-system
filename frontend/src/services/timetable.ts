@@ -1,103 +1,147 @@
+import api from "@/services/api";
 import type { Timetable, TimeSlot, DayOfWeek, TimetableEntry } from "@/types/timetable";
 
-const defaultTimeSlots: TimeSlot[] = [
-  { id: 1, startTime: "08:00", endTime: "08:45", type: "lesson" },
-  { id: 2, startTime: "08:45", endTime: "09:30", type: "lesson" },
-  { id: 3, startTime: "09:30", endTime: "09:45", type: "break" },
-  { id: 4, startTime: "09:45", endTime: "10:30", type: "lesson" },
-  { id: 5, startTime: "10:30", endTime: "11:15", type: "lesson" },
-  { id: 6, startTime: "11:15", endTime: "11:30", type: "break" },
-  { id: 7, startTime: "11:30", endTime: "12:15", type: "lesson" },
-  { id: 8, startTime: "12:15", endTime: "13:00", type: "lunch" },
-  { id: 9, startTime: "13:00", endTime: "13:45", type: "lesson" },
-  { id: 10, startTime: "13:45", endTime: "14:30", type: "lesson" },
-];
-
-const days: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+interface TimetableApiRow {
+  id: number;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  class_id: number;
+  room?: string | null;
+  subject?: { name: string } | null;
+  teacher?: { name: string } | null;
+  school_class?: {
+    name: string;
+    grade?: { name: string };
+  };
+  is_published?: boolean;
+}
 
 export const timetableService = {
+  /* ---------- CREATE NEW TIMETABLE ---------- */
   create: async (gradeId: number | null): Promise<Timetable> => {
-    // Create empty timetable entries for all time slots and days
-    const entries: TimetableEntry[] = [];
-    
-    defaultTimeSlots.forEach(slot => {
-      days.forEach(day => {
-        entries.push({
-          day,
-          timeSlotId: slot.id,
-          data: slot.type === "lesson" ? null : null // All empty initially
-        });
-      });
+    // You need to implement your actual create endpoint
+    // This should call your Laravel API to create a new timetable
+    const { data } = await api.post("/timetables/create", {
+      grade_id: gradeId,
     });
 
-    return {
-      id: Date.now(), // Temporary ID
-      gradeId,
-      isPublished: false,
-      timeSlots: defaultTimeSlots,
-      entries,
-    };
+    return data;
   },
 
+  /* ---------- AUTO GENERATE TIMETABLE ---------- */
   autoGenerate: async (gradeId: number | null): Promise<Timetable> => {
-    // Create sample data for auto-generation
-    const entries: TimetableEntry[] = [];
-    const sampleSubjects = ["Math", "Science", "English", "History", "Art", "PE"];
-    
-    defaultTimeSlots.forEach(slot => {
-      days.forEach(day => {
-        // For breaks and lunch, leave data as null
-        if (slot.type === "break" || slot.type === "lunch") {
-          entries.push({
-            day,
-            timeSlotId: slot.id,
-            data: null
-          });
-        } else {
-          // For lessons, generate random sample data
-          const randomSubject = sampleSubjects[Math.floor(Math.random() * sampleSubjects.length)];
-          
-          entries.push({
-            day,
-            timeSlotId: slot.id,
-            data: {
-              subject: randomSubject,
-            }
-          });
-        }
-      });
+    // You need to implement your actual auto-generate endpoint
+    // This should call your Laravel API to auto-generate timetable
+    const { data } = await api.post("/timetables/auto-generate", {
+      grade_id: gradeId,
     });
 
+    return data;
+  },
+
+  /* ---------- FETCH TIMETABLE BY CLASS ---------- */
+  getByClass: async (classId: number): Promise<Timetable | null> => {
+    const { data } = await api.get("/timetables", {
+      params: { class_id: classId },
+    });
+
+    if (!data.length) return null;
+
+    const entries: TimetableEntry[] = data.map((row: TimetableApiRow) => ({
+      id: String(row.id),
+      day: row.day_of_week as DayOfWeek,
+      timeSlot: `${row.start_time} - ${row.end_time}`,
+      subject: row.subject?.name ?? "",
+      teacher: row.teacher?.name ?? undefined,
+      room: row.room ?? undefined,
+      classId: String(row.class_id),
+    }));
+
+    // Extract unique time slots from the data
+    const timeSlotMap = new Map<string, TimeSlot>();
+    data.forEach((row: TimetableApiRow) => {
+      const key = `${row.start_time}-${row.end_time}`;
+      if (!timeSlotMap.has(key)) {
+        timeSlotMap.set(key, {
+          id: row.id,
+          startTime: row.start_time,
+          endTime: row.end_time,
+          type: "lesson", // You might want to determine this from your data
+        });
+      }
+    });
+
+    const timeSlots: TimeSlot[] = Array.from(timeSlotMap.values());
+
     return {
-      id: Date.now(), // Temporary ID
-      gradeId,
-      isPublished: false,
-      timeSlots: defaultTimeSlots,
+      id: data[0]?.id || Date.now(),
+      gradeId: null,
+      gradeName: data[0]?.school_class?.grade?.name ?? "",
+      className: data[0]?.school_class?.name ?? "",
+      isPublished: data[0]?.is_published || false,
+      timeSlots,
       entries,
     };
   },
 
-  getByGrade: async (gradeId: number | null): Promise<Timetable | null> => {
-    // Use the parameter to avoid the "unused" warning
-    console.log("Fetching timetable for grade:", gradeId);
-    return null; // Return null for now, could implement later
+  /* ---------- SAVE / UPDATE TIMETABLE ---------- */
+  update: async (timetableId: number, timetable: Timetable): Promise<Timetable> => {
+    // Clear existing timetable for this class
+    const classId = parseInt(timetable.entries[0]?.classId || "1");
+    await api.delete("/timetables", {
+      data: { class_id: classId }
+    });
+
+    // Save new entries
+    for (const entry of timetable.entries) {
+      if (!entry.subject || entry.subject === "Break" || entry.subject === "Lunch") {
+        continue; // Skip empty, break, and lunch cells
+      }
+
+      // TODO: Implement actual subject/teacher ID lookup
+      // For now, you need to add these API calls or use placeholder IDs
+      await api.post("/timetables", {
+        class_id: classId,
+        subject_id: 1, // Replace with actual subject ID lookup
+        teacher_id: 1, // Replace with actual teacher ID lookup
+        day_of_week: entry.day,
+        start_time: entry.timeSlot.split(" - ")[0],
+        end_time: entry.timeSlot.split(" - ")[1],
+        room: entry.room || null,
+        academic_year_id: 1,
+        date: "2025-01-01",
+      });
+    }
+
+    return timetable;
   },
 
-  saveTimeSlots: async (
-    gradeId: number | null,
-    slots: TimeSlot[]
-  ): Promise<boolean> => {
-    console.log("Saving time slots for grade", gradeId, slots);
+  /* ---------- EXPORT TIMETABLE ---------- */
+  export: async (classId: number | string): Promise<void> => {
+    const response = await api.get(`/timetables/export/${classId}`, {
+      responseType: 'blob',
+    });
+    
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `timetable_class_${classId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
+
+  /* ---------- PUBLISH TIMETABLE ---------- */
+  publish: async (id: number): Promise<boolean> => {
+    await api.post(`/timetables/${id}/publish`);
     return true;
   },
 
-  publish: async (timetableId: number): Promise<boolean> => {
-    console.log("Publishing timetable", timetableId);
-    return true;
-  },
-
-  unpublish: async (timetableId: number): Promise<boolean> => {
-    console.log("Unpublishing timetable", timetableId);
+  /* ---------- UNPUBLISH TIMETABLE ---------- */
+  unpublish: async (id: number): Promise<boolean> => {
+    await api.post(`/timetables/${id}/unpublish`);
     return true;
   },
 };

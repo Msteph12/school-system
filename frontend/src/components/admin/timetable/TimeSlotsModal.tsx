@@ -20,25 +20,24 @@ const TimeSlotsModal = ({
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [type, setType] = useState<TimeSlot["type"]>("lesson");
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      // Reset all state when modal opens
       setSlots(initialSlots);
       setStart("");
       setEnd("");
       setType("lesson");
       setError("");
     }
-  }, [isOpen, initialSlots]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const addSlot = () => {
     setError("");
 
-    // Empty validation
     if (!start || !end) {
       setError("Start time and end time are required.");
       return;
@@ -49,7 +48,6 @@ const TimeSlotsModal = ({
       return;
     }
 
-    // Duplicate validation
     const duplicate = slots.some(
       (s) => s.startTime === start && s.endTime === end
     );
@@ -59,16 +57,16 @@ const TimeSlotsModal = ({
       return;
     }
 
-    const newSlot: TimeSlot = {
-      id: Date.now(),
-      startTime: start,
-      endTime: end,
-      type,
-    };
+    setSlots((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        startTime: start,
+        endTime: end,
+        type,
+      },
+    ]);
 
-    setSlots((prev) => [...prev, newSlot]);
-
-    // Reset inputs
     setStart("");
     setEnd("");
   };
@@ -146,15 +144,10 @@ const TimeSlotsModal = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3 py-1 border rounded"
-          >
+          <button onClick={onClose} className="px-3 py-1 border rounded">
             Cancel
           </button>
           <button
-            type="button"
             onClick={handleSave}
             className="px-3 py-1 bg-green-600 text-white rounded"
           >
