@@ -113,6 +113,10 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             {!collapsed && <span className="flex-1">Grades</span>}
             {!collapsed && <FiChevronRight className="transition-transform group-open:rotate-90" />}
           </summary>
+          <NavLink to="/admin/grades" className={dropdownItem}>Grades</NavLink>
+          <NavLink to="/admin/Classes" className={dropdownItem}>Streams</NavLink>
+          <NavLink to="/admin/subjects-per-grade" className={dropdownItem}>Subjects per Grade</NavLink>
+          <NavLink to="/admin/class-teachers" className={dropdownItem}>Class Teachers</NavLink>
 
           {!collapsed && (
             <>
@@ -171,6 +175,10 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             {!collapsed && <span className="flex-1">Results</span>}
             {!collapsed && <FiChevronRight className="transition-transform group-open:rotate-90" />}
           </summary>
+          <NavLink to="/admin/EnterResults" className={dropdownItem}>Enter Results</NavLink>
+          <NavLink to="/admin/StudentResults" className={dropdownItem}>Student Results</NavLink>
+          <NavLink to="/admin/results/TermLock" className={dropdownItem}>Term Lock Status</NavLink>
+          <NavLink to="/admin/results/student-review" className={dropdownItem}>Student Result Review</NavLink>
 
           {!collapsed && (
             <>

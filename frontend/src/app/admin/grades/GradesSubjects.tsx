@@ -123,7 +123,7 @@ const GradesSubjects = () => {
             Subjects for {grade.name} ({grade.code})
           </h1>
           <p className="text-gray-600">
-            {grade.status} • {grade.streamCount || 0} streams
+            {grade.status} • {grade.classCount || 0} streams
           </p>
         </div>
         <button

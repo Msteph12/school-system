@@ -80,7 +80,7 @@ const GradesTable = ({ grades, onView, onEdit, onViewStreams }: Props) => {
                 className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
                 onClick={() => handleColumnClick(grade)}
               >
-                {grade.streamCount || 0}
+                {grade.classCount || 0}
               </td>
               <td 
                 className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 

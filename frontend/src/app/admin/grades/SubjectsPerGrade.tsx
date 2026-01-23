@@ -240,8 +240,8 @@ const SubjectsPerGrade = () => {
                   
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm opacity-90">Streams:</span>
-                      <span className="font-semibold">{grade.streamCount || 0}</span>
+                      <span className="text-sm opacity-90">Classes:</span>
+                      <span className="font-semibold">{grade.classCount || 0}</span>
                     </div>
                   </div>
                 </div>
