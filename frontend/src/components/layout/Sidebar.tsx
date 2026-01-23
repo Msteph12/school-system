@@ -113,11 +113,6 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             {!collapsed && <span className="flex-1">Grades</span>}
             {!collapsed && <FiChevronRight className="transition-transform group-open:rotate-90" />}
           </summary>
-          <NavLink to="/admin/grades" className={dropdownItem}>Grades</NavLink>
-          <NavLink to="/admin/Classes" className={dropdownItem}>Streams</NavLink>
-          <NavLink to="/admin/subjects-per-grade" className={dropdownItem}>Subjects per Grade</NavLink>
-          <NavLink to="/admin/class-teachers" className={dropdownItem}>Class Teachers</NavLink>
-
           {!collapsed && (
             <>
               <NavLink to="/admin/grades" className={`${dropdownItem} flex items-center gap-2`}>
@@ -178,20 +173,19 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           <NavLink to="/admin/EnterResults" className={dropdownItem}>Enter Results</NavLink>
           <NavLink to="/admin/StudentResults" className={dropdownItem}>Student Results</NavLink>
           <NavLink to="/admin/results/TermLock" className={dropdownItem}>Term Lock Status</NavLink>
-          <NavLink to="/admin/results/student-review" className={dropdownItem}>Student Result Review</NavLink>
 
           {!collapsed && (
             <>
-              <NavLink to="/admin/reports/academic" className={`${dropdownItem} flex items-center gap-2`}>
+              <NavLink to="/admin/EnterResults" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Enter Results</span>
               </NavLink>
-              <NavLink to="/admin/reports/financial" className={`${dropdownItem} flex items-center gap-2`}>
+              <NavLink to="/admin/StudentResults" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Student Results</span>
               </NavLink>
-              <NavLink to="/admin/reports/attendance" className={`${dropdownItem} flex items-center gap-2`}>
+              <NavLink to="/admin/results/TermLock" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Term Lock Status</span>
               </NavLink>
-              <NavLink to="/admin/reports/attendance" className={`${dropdownItem} flex items-center gap-2`}>
+              <NavLink to="/admin/results/grade-scale" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Grade Scale</span>
               </NavLink>
             </>

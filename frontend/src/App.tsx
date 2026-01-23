@@ -98,6 +98,7 @@ function App() {
             <Route path="/admin/EnterResults" element={<EnterResults />} />
             <Route path="/admin/StudentResults" element={<StudentResults />} />
             <Route path="/admin/TermLock" element={<TermLock />} />
+            
             <Route path="calendar" element={<Calendar />} />
           </Route>
         )}
