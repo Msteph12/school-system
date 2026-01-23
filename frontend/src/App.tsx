@@ -29,6 +29,7 @@ import Calendar from "@/app/pages/admin/Calendar";
 import EnterResults from "@/app/admin/results/EnterResults";
 import StudentResults from "@/app/admin/results/StudentResults";
 import TermLock from "@/app/admin/results/TermLock";
+import GradeScalePage from "@/app/admin/results/GradeScalePage";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
@@ -98,6 +99,7 @@ function App() {
             <Route path="/admin/EnterResults" element={<EnterResults />} />
             <Route path="/admin/StudentResults" element={<StudentResults />} />
             <Route path="/admin/TermLock" element={<TermLock />} />
+            <Route path="/admin/GradeScalePage" element={<GradeScalePage />} />
             
             <Route path="calendar" element={<Calendar />} />
           </Route>

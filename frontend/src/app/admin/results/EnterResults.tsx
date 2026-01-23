@@ -52,7 +52,7 @@ const EnterResults = () => {
       title: "Grade Scale",
       description: "Set and manage grade scale",
       gradient: "from-red-600/80 to-red-400/80",
-      onClick: () => navigate("/admin/grade-scale"),
+      onClick: () => navigate("/admin/GradeScalePage"),
     },
     {
       title: "Term Lock Status",
