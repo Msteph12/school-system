@@ -25,7 +25,7 @@ const Grades = () => {
 
   const handleViewStreams = (grade: Grade) => {
     console.log("View streams for grade", grade);
-    alert(`Viewing streams for: ${grade.name} - ${grade.streamCount} streams`);
+    alert(`Viewing streams for: ${grade.name} - ${grade.classCount} streams`);
   };
 
   // ✅ Load data on mount

@@ -21,6 +21,11 @@ const CalendarSidebar = () => {
   
   // Get first day of month (0 = Sunday)
   const firstDay = new Date(year, month, 1).getDay();
+  
+  // Get today's date
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+  const todayDate = today.getDate();
 
   return (
     <aside className="w-64 border-r bg-gray-50 flex flex-col">
@@ -40,28 +45,42 @@ const CalendarSidebar = () => {
         </div>
 
         {/* Day labels */}
-        <div className="grid grid-cols-7 text-xs text-gray-500 mb-2">
+        <div className="grid grid-cols-7 text-sm text-gray-500 mb-2">
           {DAYS.map((day) => (
             <div key={day} className="text-center">{day}</div>
           ))}
         </div>
 
         {/* Dates */}
-        <div className="grid grid-cols-7 gap-1 text-sm">
+        <div className="grid grid-cols-7 gap-1 text-sm font-semibold">
           {/* Empty cells for days before 1st */}
           {Array.from({ length: firstDay }).map((_, i) => (
             <div key={`empty-${i}`} className="h-8"></div>
           ))}
           
           {/* Date cells */}
-          {Array.from({ length: daysInMonth }).map((_, i) => (
-            <div
-              key={i}
-              className="h-8 flex items-center justify-center rounded cursor-pointer hover:bg-gray-200"
-            >
-              {i + 1}
-            </div>
-          ))}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const date = i + 1;
+            const isToday = isCurrentMonth && date === todayDate;
+            
+            return (
+              <div
+                key={i}
+                className="h-8 flex items-center justify-center rounded cursor-pointer hover:bg-gray-200"
+              >
+                <div className={`
+                  w-7 h-7 flex items-center justify-center rounded-full
+                  ${isToday ? 'bg-red-100 shadow-inner shadow-red-200' : ''}
+                `}>
+                  <span className={`
+                    ${isToday ? 'text-black font-medium' : ''}
+                  `}>
+                    {date}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

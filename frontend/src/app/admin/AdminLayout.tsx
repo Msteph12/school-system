@@ -1,6 +1,6 @@
 import Sidebar from "../../components/layout/Sidebar";
 import { Outlet, useLocation } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -11,7 +11,7 @@ const AdminLayout = () => {
     <div className="flex h-screen bg-red-50">
       <Sidebar collapsed={isCalendarPage} />
 
-      <Toaster position="top-right" />
+      <Toaster />
 
       <main className="flex-1 overflow-y-auto p-6">
         <Outlet />

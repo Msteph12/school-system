@@ -42,8 +42,9 @@ const CalendarHeader = () => {
 
         <button
           onClick={goToToday}
-          className="ml-2 px-3 py-1 text-sm border rounded hover:bg-gray-100"
+          className="ml-2 px-4 py-1.5 text-sm border rounded-full bg-green-50 text-green-700 border-green-200 hover:bg-green-100 hover:border-green-400 transition-colors flex items-center gap-2"
         >
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
           Today
         </button>
       </div>

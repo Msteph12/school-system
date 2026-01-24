@@ -14,6 +14,7 @@ export interface CalendarEvent {
   date: string; // ISO date: YYYY-MM-DD
   startTime?: string; // HH:mm
   endTime?: string;   // HH:mm
+  meetingLink?: string;
   type: CalendarEventType;
   color?: string; // optional UI override
   description?: string;
@@ -24,14 +25,4 @@ export interface CalendarCellProps {
   events: CalendarEvent[];
   isCurrentMonth: boolean;
   onEventClick?: (event: CalendarEvent) => void;
-}
-
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  date: string;        // YYYY-MM-DD
-  startTime?: string;  // HH:mm
-  endTime?: string;    // HH:mm
-  type: CalendarEventType;
-  description?: string;
 }
