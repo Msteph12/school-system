@@ -42,6 +42,8 @@ use App\Http\Controllers\Api\MarksController;
 use App\Http\Controllers\Api\TimetableController;
 use App\Http\Controllers\Api\CalendarEventController;
 use App\Http\Controllers\Api\ExamsController;
+use App\Http\Controllers\Api\ExamTypeController;
+use App\Http\Controllers\Api\ExamTimetableController;
 use App\Http\Controllers\Api\TermClosureController;
 
 use App\Http\Controllers\Api\ResultsController;
@@ -115,6 +117,17 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Exams (create/update/view – no delete)
     Route::apiResource('exams', ExamsController::class)->except(['destroy']);
+
+    // Exam timetables
+    Route::post('/exam-timetables', [ExamTimetableController::class, 'store']);
+    Route::post('/exam-timetables/auto-generate', [ExamTimetableController::class, 'autoGenerate']);
+    Route::get('/exam-timetables/{id}', [ExamTimetableController::class, 'show']);
+    Route::post('/exam-timetables/{id}/publish', [ExamTimetableController::class, 'publish']);
+
+    // Exam types
+    Route::get('/exam-types', [ExamTypeController::class, 'index']);
+    Route::post('/exam-types', [ExamTypeController::class, 'store']);
+    Route::delete('/exam-types/{id}', [ExamTypeController::class, 'destroy']);
 
     // Term closure
     Route::post('terms/{term}/close', [TermClosureController::class, 'close']);
