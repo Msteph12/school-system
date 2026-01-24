@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->dateTime('end_datetime');
 
             $table->string('event_type'); // exam, holiday, meeting, timetable
+            $table->string('meeting_link')->nullable();
 
             $table->foreignId('academic_year_id')->constrained()->cascadeOnDelete();
             $table->foreignId('term_id')->constrained()->cascadeOnDelete();

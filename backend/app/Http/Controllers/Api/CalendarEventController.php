@@ -29,6 +29,15 @@ class CalendarEventController extends Controller
             ->when($request->event_type, fn ($q) =>
                 $q->where('event_type', $request->event_type)
             )
+            ->when($request->start_date, function ($q) use ($request) {
+            $q->whereDate('start_datetime', '>=', $request->start_date);
+            })
+            ->when($request->end_date, function ($q) use ($request) {
+                $q->whereDate('end_datetime', '<=', $request->end_date);
+            })
+            ->when($request->date, function ($q) use ($request) {
+                $q->whereDate('start_datetime', '=', $request->date);
+            })
             ->where('is_active', true)
             ->orderBy('start_datetime')
             ->get();
@@ -47,6 +56,7 @@ class CalendarEventController extends Controller
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after:start_datetime',
             'event_type' => 'required|string',
+            'meeting_link' => 'nullable|url',
             'academic_year_id' => 'required|exists:academic_years,id',
             'term_id' => 'required|exists:terms,id',
             'grade_id' => 'nullable|exists:grades,id',
@@ -70,6 +80,7 @@ class CalendarEventController extends Controller
             'start_datetime' => 'sometimes|date',
             'end_datetime' => 'sometimes|date|after:start_datetime',
             'event_type' => 'sometimes|string',
+            'meeting_link' => 'nullable|url',
             'academic_year_id' => 'sometimes|exists:academic_years,id',
             'term_id' => 'sometimes|exists:terms,id',
             'grade_id' => 'nullable|exists:grades,id',

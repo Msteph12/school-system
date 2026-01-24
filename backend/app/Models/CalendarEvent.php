@@ -15,6 +15,7 @@ class CalendarEvent extends Model
         'start_datetime',
         'end_datetime',
         'event_type',
+        'meeting_link',
         'academic_year_id',
         'term_id',
         'grade_id',
