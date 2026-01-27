@@ -29,6 +29,14 @@ import Calendar from "@/app/pages/admin/Calendar";
 import EnterResults from "@/app/admin/results/EnterResults";
 import StudentResults from "@/app/admin/results/StudentResults";
 import TermLock from "@/app/admin/results/TermLock";
+import GradeScalePage from "@/app/admin/results/GradeScalePage";
+
+import AssessmentsPage from "@/app/admin/assessments/AssessmentsPage"; 
+import AssessmentSetupPage from "@/app/admin/assessments/AssessmentSetupPage";
+import CompletedExamsPage from "@/components/admin/assessments/CompletedExamsPage";
+import TotalAssessmentsPage from "@/components/admin/assessments/TotalAssessmentsPage";
+import UpcomingExamsPage from "@/components/admin/assessments/UpcomingExamsPage";
+import OngoingExamsPage from "@/components/admin/assessments/OngoingExamsPage";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
@@ -98,7 +106,14 @@ function App() {
             <Route path="/admin/EnterResults" element={<EnterResults />} />
             <Route path="/admin/StudentResults" element={<StudentResults />} />
             <Route path="/admin/TermLock" element={<TermLock />} />
-            
+            <Route path="/admin/GradeScalePage" element={<GradeScalePage />} />
+            <Route path="/admin/AssessmentsPage" element={<AssessmentsPage />} />
+            <Route path="/admin/assessments/completed" element={<CompletedExamsPage />} />
+            <Route path="/admin/assessments/total" element={<TotalAssessmentsPage />} />
+            <Route path="/admin/assessments/upcoming" element={<UpcomingExamsPage />} />
+            <Route path="/admin/assessments/ongoing" element={<OngoingExamsPage />} />
+            <Route path="/admin/assessments/setup" element={<AssessmentSetupPage />} />
+
             <Route path="calendar" element={<Calendar />} />
           </Route>
         )}

@@ -182,14 +182,14 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
               <NavLink to="/admin/TermLock" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Term Lock Status</span>
               </NavLink>
-              <NavLink to="/admin/results/grade-scale" className={`${dropdownItem} flex items-center gap-2`}>
+              <NavLink to="/admin/GradeScalePage" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Grade Scale</span>
               </NavLink>
             </>
           )}
         </details>
 
-         {/* Reports */}
+         {/* Assessments */}
         <details className="group">
           <summary className={`${linkClass} flex items-center gap-3 cursor-pointer list-none`}>
             <span>✒️</span>
@@ -199,7 +199,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
 
           {!collapsed && (
             <>
-              <NavLink to="/admin/assessments/exams" className={`${dropdownItem} flex items-center gap-2`}>
+              <NavLink to="/admin/AssessmentsPage" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Exams</span>
               </NavLink>
               <NavLink to="/admin/assessments/records" className={`${dropdownItem} flex items-center gap-2`}>

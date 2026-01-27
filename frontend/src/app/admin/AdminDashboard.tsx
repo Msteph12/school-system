@@ -9,7 +9,7 @@ const cards = [
   { title: "Timetable", route: "/admin/timetable", icon: "📅" },
   { title: "Reports", route: "/admin/reports", icon: "📊" },
   { title: "Calendar", route: "/admin/calendar", icon: "🗓️" },
-  { title: "Results", route: "/admin/results", icon: "🏆" },
+  { title: "Results", route: "/admin/EnterResults", icon: "🏆" },
   { title: "Assessments", route: "/admin/assessments", icon: "✒️" },
   { title: "Notes", route: "/admin/notes", icon: "📝" },
 ];
