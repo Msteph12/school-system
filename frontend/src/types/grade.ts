@@ -6,3 +6,11 @@ export interface Grade {
   status: "Active" | "Inactive";
   classCount?: number; // Added class count
 }
+
+export interface GradeScale {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  created_at?: string;
+  updated_at?: string;
+}
