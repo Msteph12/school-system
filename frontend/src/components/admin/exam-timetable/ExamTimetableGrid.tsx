@@ -4,9 +4,12 @@ import type { ExamTimetable } from "@/types/examTimetable";
 
 interface Props {
   timetable: ExamTimetable | null;
+  grade?: string;
+  examType?: string;
+  calculatedDays?: string[]; 
 }
 
-const ExamTimetableGrid = ({ timetable }: Props) => {
+const ExamTimetableGrid = ({ timetable, grade = "", examType = "", calculatedDays }: Props) => {
   if (!timetable) {
     return (
       <div className="text-center text-gray-400 py-12">
@@ -25,6 +28,10 @@ const ExamTimetableGrid = ({ timetable }: Props) => {
 
   // Get unique days from entries
   const getUniqueDays = () => {
+    if (calculatedDays && calculatedDays.length > 0) {
+      return calculatedDays;
+    }
+
     const daysSet = new Set(timetable.entries.map(entry => entry.day));
     return Array.from(daysSet).sort((a, b) => {
       const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -35,8 +42,25 @@ const ExamTimetableGrid = ({ timetable }: Props) => {
   const days = getUniqueDays();
 
    return (
-    <div className="overflow-x-auto shadow-sm rounded-lg shadow-red-200">
-      <table className="w-full border-collapse mt-4">
+    <div
+      id="timetable-print-area"  
+      className="overflow-x-auto shadow-sm rounded-lg shadow-red-200 print:overflow-visible print:shadow-none"
+    >
+      {/* Add title section here */}
+      {(grade || examType) && (
+        <div className="mb-4 print:mb-2">
+          <h2 className="text-xl font-bold text-center text-gray-800 print:text-lg">
+            {examType} {grade && `- ${grade}`} Exam Timetable
+          </h2>
+          {timetable.startDate && timetable.endDate && (
+            <p className="text-center text-gray-600 text-sm print:text-xs">
+              {new Date(timetable.startDate).toLocaleDateString()} - {new Date(timetable.endDate).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
+
+     <table className="w-full border-collapse mt-4 print:text-black print:text-sm">
         <thead>
           <tr>
             <th className="border p-2 bg-gray-100 w-32">Day / Time</th> 
@@ -51,21 +75,21 @@ const ExamTimetableGrid = ({ timetable }: Props) => {
         </thead>
 
         <tbody>
-          {days.map((day) => (
-            <tr key={day}>
+          {days.map((day, index) => (
+            <tr key={`${day}-${index}`} className="print:break-inside-avoid">
               <td className="border p-2 font-medium text-center align-middle w-32">{day}</td>
-              {timetable.timeSlots.map((slot, slotIndex) => {
+              {timetable.timeSlots
+              .sort((a, b) => a.startTime.localeCompare(b.startTime))
+              .map((slot, slotIndex) => {
                 // Check slot type for break/lunch
                if (slot.type === "break") {
                   return (
                     <td
                       key={`${day}-${slot.id}-break`}
-                      className="border-l border-r border-gray-200 p-0 align-middle bg-yellow-50 w-20"
+                      className="border border-gray-200 p-0 align-middle bg-yellow-50 w-20"
                     >
                       <div className="h-full flex flex-col justify-center items-center bg-yellow-50">
-                        <div className="text-2xl font-bold text-yellow-700">
-                          B
-                        </div>
+                        <div className="text-2xl font-bold text-yellow-700">B</div>
                         <div className="text-xs text-yellow-600">Break</div>
                       </div>
                     </td>
@@ -76,12 +100,10 @@ const ExamTimetableGrid = ({ timetable }: Props) => {
                   return (
                     <td
                       key={`${day}-${slot.id}-lunch`}
-                      className="border-l border-r border-gray-200 p-0 align-middle bg-green-50 w-20"
+                      className="border border-gray-200 p-0 align-middle bg-green-50 w-20"
                     >
                       <div className="h-full flex flex-col justify-center items-center bg-green-50">
-                        <div className="text-2xl font-bold text-green-700">
-                          L
-                        </div>
+                        <div className="text-2xl font-bold text-green-700">L</div>
                         <div className="text-xs text-green-600">Lunch</div>
                       </div>
                     </td>

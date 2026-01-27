@@ -64,7 +64,7 @@ const AssessmentsPage: React.FC = () => {
       title: "Exam Timetable",
       description: "View exam schedule",
       gradient: "from-orange-600/80 to-orange-400/80",
-      onClick: () => navigate("/admin/assessments/timetable"),
+      onClick: () => navigate("/pages/admin/ExamTimetable"),
     },
     {
       title: "Total Assessments",

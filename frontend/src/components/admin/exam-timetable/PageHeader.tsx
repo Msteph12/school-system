@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { assessmentService } from "@/services/assessment";
+import type { ExamType } from "@/types/assessment";
 
 interface Props {
   onGradeChange?: (gradeId: number | null) => void;
-  onExamTypeChange?: (type: string) => void;
+  onExamTypeChange?: (examTypeId: number | null) => void; // Changed from string to number | null
   onStartDateChange?: (date: string) => void;
   onEndDateChange?: (date: string) => void;
   onMaxPapersChange?: (max: number) => void;
+  isPublished?: boolean;
 }
 
 const PageHeader = ({
@@ -16,17 +19,21 @@ const PageHeader = ({
   onStartDateChange,
   onEndDateChange,
   onMaxPapersChange,
+  isPublished = false,
 }: Props) => {
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-  const [maxPapers, setMaxPapers] = useState<number>(2);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [maxPapers, setMaxPapers] = useState(2);
+  const [examTypes, setExamTypes] = useState<ExamType[]>([]);
 
-  const examTypes = [
-    { id: "midterm", name: "Mid-Term Exam" },
-    { id: "final", name: "Final Exam" },
-    { id: "quarterly", name: "Quarterly Exam" },
-    { id: "unit_test", name: "Unit Test" },
-  ];
+  useEffect(() => {
+    const loadExamTypes = async () => {
+      const res = await assessmentService.getExamTypes();
+      if (res.data) setExamTypes(res.data);
+    };
+
+    loadExamTypes();
+  }, []);
 
   const grades = [
     { id: 1, name: "Grade 1" },
@@ -36,28 +43,20 @@ const PageHeader = ({
     { id: 5, name: "Grade 5" },
   ];
 
-  const handleStartDateChange = (value: string) => {
-    setStartDate(value);
-    onStartDateChange?.(value);
-  };
-
-  const handleEndDateChange = (value: string) => {
-    setEndDate(value);
-    onEndDateChange?.(value);
-  };
-
-  const handleMaxPapersChange = (value: string) => {
-    const num = Number(value);
-    setMaxPapers(num);
-    onMaxPapersChange?.(num);
+  const handleExamTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    // Pass number ID or null
+    onExamTypeChange?.(value ? Number(value) : null);
   };
 
   return (
     <div className="flex items-center justify-between bg-white p-4 rounded shadow-sm">
       <div className="flex flex-wrap gap-4 items-center">
-        {/* Grade Select */}
+        {/* Grade */}
         <select
-          onChange={(e) => onGradeChange?.(e.target.value ? Number(e.target.value) : null)}
+          onChange={(e) =>
+            onGradeChange?.(e.target.value ? Number(e.target.value) : null)
+          }
           className="border rounded px-3 py-2 text-sm min-w-[140px]"
         >
           <option value="">Select Grade</option>
@@ -68,9 +67,9 @@ const PageHeader = ({
           ))}
         </select>
 
-        {/* Exam Type Select */}
+        {/* Exam Type (FROM API) */}
         <select
-          onChange={(e) => onExamTypeChange?.(e.target.value)}
+          onChange={handleExamTypeChange}
           className="border rounded px-3 py-2 text-sm min-w-[160px]"
         >
           <option value="">Exam Type</option>
@@ -82,46 +81,53 @@ const PageHeader = ({
         </select>
 
         {/* Start Date */}
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">Start Date</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => handleStartDateChange(e.target.value)}
-            className="border rounded px-3 py-2 text-sm"
-          />
-        </div>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => {
+            setStartDate(e.target.value);
+            onStartDateChange?.(e.target.value);
+          }}
+          className="border rounded px-3 py-2 text-sm"
+        />
 
         {/* End Date */}
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">End Date</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => handleEndDateChange(e.target.value)}
-            className="border rounded px-3 py-2 text-sm"
-          />
-        </div>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => {
+            setEndDate(e.target.value);
+            onEndDateChange?.(e.target.value);
+          }}
+          className="border rounded px-3 py-2 text-sm"
+        />
 
-        {/* Max Papers Per Day */}
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">Max Papers/Day</label>
-          <select
-            value={maxPapers}
-            onChange={(e) => handleMaxPapersChange(e.target.value)}
-            className="border rounded px-3 py-2 text-sm"
-          >
-            {[1, 2, 3, 4, 5].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Max Papers */}
+        <select
+          value={maxPapers}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            setMaxPapers(val);
+            onMaxPapersChange?.(val);
+          }}
+          className="border rounded px-3 py-2 text-sm"
+        >
+          {[1, 2, 3, 4, 5].map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-700">
-        Draft
+      <span
+        className={`px-3 py-1 text-sm rounded-full ${
+          isPublished
+            ? "bg-green-100 text-green-700"
+            : "bg-yellow-100 text-yellow-700"
+        }`}
+      >
+        {isPublished ? "Published" : "Draft"}
       </span>
     </div>
   );

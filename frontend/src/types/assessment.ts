@@ -19,6 +19,7 @@ export interface AssessmentStats {
 }
 
 export interface ExamType {
-  id: string;
+  id: number;
   name: string;
 }
+

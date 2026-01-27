@@ -229,7 +229,15 @@ const ExamTimetableControls = ({
         <div className="ml-auto flex items-center gap-3">
           {/* Print Button */}
           <button
-            onClick={onPrint}
+            onClick={() => {
+              setShowTimeSlotsModal(false);
+
+              setTimeout(() => {
+                if (onPrint) {
+                  onPrint();
+                }
+              }, 100);
+            }}
             disabled={!canPrintExport || isEditMode}
             className="px-4 py-2 text-sm bg-gray-500 hover:bg-gray-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -244,6 +252,7 @@ const ExamTimetableControls = ({
           >
             📤 Export
           </button>
+          
         </div>
       </div>
 

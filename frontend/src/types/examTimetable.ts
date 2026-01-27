@@ -28,9 +28,9 @@ export interface ExamTimetableEntry {
   duration: number;
   gradeId: number;
   gradeName: string;
-  examType: string;
-    venue: string;
-    invigilator: string
+  examTypeId: number;
+  venue: string;
+  invigilator: string;
 }
 
 export interface ExamTimetable {
@@ -38,7 +38,7 @@ export interface ExamTimetable {
   name: string;
   gradeId: number;
   gradeName: string;
-  examType: string;
+  examTypeId: number;
   startDate: string;
   endDate: string;
   maxPapersPerDay: number;
@@ -53,7 +53,7 @@ export interface ExamTimetable {
 
 export interface ExamTimetableFilters {
   gradeId?: number | null;
-  examType?: string;
+  examTypeId?: number;
   startDate?: string;
   endDate?: string;
   maxPapersPerDay?: number;
@@ -62,7 +62,7 @@ export interface ExamTimetableFilters {
 
 export interface GenerateExamTimetableRequest {
   gradeId: number;
-  examType: string;
+  examTypeId: number;
   startDate: string;
   endDate: string;
   maxPapersPerDay: number;

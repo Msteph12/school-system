@@ -216,7 +216,7 @@ const EditableExamTimetable = ({
       duration: 120,
       gradeId: 0,
       gradeName: '',
-      examType: '',
+      examTypeId: 0,
       venue: '',
       invigilator: '',
     };
