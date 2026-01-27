@@ -25,12 +25,14 @@ import GradesSubjects from "@/app/admin/grades/GradesSubjects";
 
 import Timetable from "@/app/pages/admin/Timetable";
 import Calendar from "@/app/pages/admin/Calendar";
+import ExamTimetable from "@/app/pages/admin/ExamTimetable";
 
 import EnterResults from "@/app/admin/results/EnterResults";
 import StudentResults from "@/app/admin/results/StudentResults";
 import TermLock from "@/app/admin/results/TermLock";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
+
 
 function App() {
   const { user, isAdmin, isRegistrar } = useAuth();
@@ -100,6 +102,8 @@ function App() {
             <Route path="/admin/TermLock" element={<TermLock />} />
             
             <Route path="calendar" element={<Calendar />} />
+
+            <Route path="exam-timetable" element={<ExamTimetable />} />
           </Route>
         )}
 

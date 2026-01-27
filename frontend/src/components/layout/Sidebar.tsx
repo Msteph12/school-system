@@ -202,6 +202,9 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
               <NavLink to="/admin/assessments/exams" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Exams</span>
               </NavLink>
+              <NavLink to="/admin/exam-timetable" className={`${dropdownItem} flex items-center gap-2`}>
+                <FiCircle className="w-2 h-2" /> <span>Exam Timetable</span>
+              </NavLink>
               <NavLink to="/admin/assessments/records" className={`${dropdownItem} flex items-center gap-2`}>
                 <FiCircle className="w-2 h-2" /> <span>Records</span>
               </NavLink>
