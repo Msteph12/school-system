@@ -13,3 +13,8 @@ export interface GradeScale {
   created_at?: string;
   updated_at?: string;
 }
+
+export type GradeFormData = {
+  name: string;
+  status: "active" | "inactive";
+};

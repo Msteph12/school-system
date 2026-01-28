@@ -1,137 +1,60 @@
 import api from './api';
-import type { GradeScale } from '@/types/grade';
+import type { GradeScale, GradeFormData } from '@/types/grade';
+
+// Backend shape
+interface GradeScaleApi {
+  id: string;
+  name: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// API → UI
+const mapApiToUi = (grade: GradeScaleApi): GradeScale => ({
+  id: grade.id,
+  name: grade.name,
+  status: grade.is_active ? 'active' : 'inactive',
+  created_at: grade.created_at,
+  updated_at: grade.updated_at,
+});
+
+// UI → API
+const mapUiToApi = (data: GradeFormData) => ({
+  name: data.name,
+  is_active: data.status === 'active',
+});
 
 export const gradeService = {
-  // Get all grade SCALES (Excellent, Good, etc.)
   async getGradeScales(): Promise<GradeScale[]> {
-    try {
-      const response = await api.get('/grade-scales');
-      // Always return an array, even if response.data is undefined/null
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (error: unknown) {
-      console.error('Error fetching grade scales:', error);
-      
-      // Type-safe error checking
-      if (error && typeof error === 'object' && 'response' in error) {
-        const apiError = error as { response?: { status?: number } };
-        // If endpoint doesn't exist (404), return empty array for now
-        if (apiError.response?.status === 404) {
-          console.log('Grade scales endpoint not found, returning empty array');
-          return [];
-        }
-      }
-      
-      // For other errors, return empty array instead of throwing
-      // This allows the UI to show "No grade scales yet" instead of error
-      return [];
-    }
+    const response = await api.get<GradeScaleApi[]>('/grade-scales');
+    return response.data.map(mapApiToUi);
   },
 
-  // Create a new grade scale
-  async createGradeScale(gradeData: { name: string; status: 'active' | 'inactive' }): Promise<GradeScale> {
-    try {
-      const response = await api.post('/grade-scales', gradeData);
-      return response.data;
-    } catch (error: unknown) {
-      console.error('Error creating grade scale:', error);
-      
-      // Type-safe error checking
-      if (error && typeof error === 'object' && 'response' in error) {
-        const apiError = error as { response?: { status?: number } };
-        // If endpoint doesn't exist, create a mock response for development
-        if (apiError.response?.status === 404) {
-          console.log('Grade scales endpoint not found, creating mock grade');
-          const mockGrade: GradeScale = {
-            id: Date.now().toString(),
-            name: gradeData.name,
-            status: gradeData.status,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          return mockGrade;
-        }
-      }
-      
-      throw new Error('Failed to create grade scale');
-    }
+  async createGradeScale(data: GradeFormData): Promise<GradeScale> {
+    const response = await api.post<GradeScaleApi>(
+      '/grade-scales',
+      mapUiToApi(data)
+    );
+    return mapApiToUi(response.data);
   },
 
-  // Update an existing grade scale
-  async updateGradeScale(id: string, gradeData: { name: string; status: 'active' | 'inactive' }): Promise<GradeScale> {
-    try {
-      const response = await api.put(`/grade-scales/${id}`, gradeData);
-      return response.data;
-    } catch (error: unknown) {
-      console.error('Error updating grade scale:', error);
-      
-      // Type-safe error checking
-      if (error && typeof error === 'object' && 'response' in error) {
-        const apiError = error as { response?: { status?: number } };
-        // If endpoint doesn't exist, create a mock response
-        if (apiError.response?.status === 404) {
-          console.log('Grade scales endpoint not found, returning mock updated grade');
-          const mockGrade: GradeScale = {
-            id: id,
-            name: gradeData.name,
-            status: gradeData.status,
-            updated_at: new Date().toISOString()
-          };
-          return mockGrade;
-        }
-      }
-      
-      throw new Error('Failed to update grade scale');
-    }
+  async updateGradeScale(id: string, data: GradeFormData): Promise<GradeScale> {
+    const response = await api.put<GradeScaleApi>(
+      `/grade-scales/${id}`,
+      mapUiToApi(data)
+    );
+    return mapApiToUi(response.data);
   },
 
-  // Toggle grade scale status
   async toggleGradeScaleStatus(id: string): Promise<GradeScale> {
-    try {
-      const response = await api.patch(`/grade-scales/${id}/toggle-status`);
-      return response.data;
-    } catch (error: unknown) {
-      console.error('Error toggling grade scale status:', error);
-      
-      // Type-safe error checking
-      if (error && typeof error === 'object' && 'response' in error) {
-        const apiError = error as { response?: { status?: number } };
-        // If endpoint doesn't exist, create a mock response
-        if (apiError.response?.status === 404) {
-          console.log('Toggle endpoint not found, returning mock toggled grade');
-          // For now, return a mock grade with toggled status
-          // In real implementation, you would need the current grade status
-          const mockGrade: GradeScale = {
-            id: id,
-            name: 'Mock Grade',
-            status: 'active', // Default to active
-            updated_at: new Date().toISOString()
-          };
-          return mockGrade;
-        }
-      }
-      
-      throw new Error('Failed to toggle grade scale status');
-    }
+    const response = await api.patch<GradeScaleApi>(
+      `/grade-scales/${id}/toggle-status`
+    );
+    return mapApiToUi(response.data);
   },
 
-  // Delete a grade scale
   async deleteGradeScale(id: string): Promise<void> {
-    try {
-      await api.delete(`/grade-scales/${id}`);
-    } catch (error: unknown) {
-      console.error('Error deleting grade scale:', error);
-      
-      // Type-safe error checking
-      if (error && typeof error === 'object' && 'response' in error) {
-        const apiError = error as { response?: { status?: number } };
-        // If endpoint doesn't exist, just log and continue (for development)
-        if (apiError.response?.status === 404) {
-          console.log('Delete endpoint not found, skipping delete operation');
-          return; // Don't throw error for development
-        }
-      }
-      
-      throw new Error('Failed to delete grade scale');
-    }
-  }
+    await api.delete(`/grade-scales/${id}`);
+  },
 };

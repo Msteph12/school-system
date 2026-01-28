@@ -5,10 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/admin/TopBar';
 import QuickNavCards from '@/components/admin/results/QuickNavCards';
 import AddGradeButton from '@/components/admin/results/AddGradeButton';
-import GradesTable from '@/components/admin/results/GradesTable';
-import GradeModal from '@/components/admin/results/GradeModal';
+import GradesTable from '@/components/admin/results/GradeScaleTable';
+import GradeModal from '@/components/admin/results/GradeScaleModal';
 import type { GradeScale } from '@/types/grade';
 import { gradeService } from '@/services/gradeScale';
+import type { GradeFormData } from "@/types/grade";
 
 const GradeScalePage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,8 +49,8 @@ const GradeScalePage: React.FC = () => {
       const gradesData = await gradeService.getGradeScales(); // CHANGED: getGrades → getGradeScales
       setGrades(gradesData);
     } catch (err) {
-      console.error('Failed to load grades:', err);
-      setError('Failed to load grade data. Please try again.');
+      console.error('Failed to load grade scale:', err);
+      setError('Failed to load grade scale data. Please try again.');
       setGrades([]);
     } finally {
       setIsLoading(false);
@@ -71,7 +72,7 @@ const GradeScalePage: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleSaveGrade = async (gradeData: { name: string; status: 'active' | 'inactive' }) => {
+ const handleSaveGrade = async (gradeData: GradeFormData) => {
     try {
       if (editingGrade) {
         // Update existing grade
@@ -79,18 +80,18 @@ const GradeScalePage: React.FC = () => {
         setGrades(prev => prev.map(grade => 
           grade.id === editingGrade.id ? updatedGrade : grade
         ));
-        alert('Grade updated successfully!');
+        alert('Grade Scale updated successfully!');
       } else {
         // Add new grade
         const newGrade = await gradeService.createGradeScale(gradeData); // CHANGED: createGrade → createGradeScale
         setGrades(prev => [...prev, newGrade]);
-        alert('Grade added successfully!');
+        alert('Grade Scale added successfully!');
       }
       setShowModal(false);
       setEditingGrade(null);
     } catch (err) {
-      console.error('Failed to save grade:', err);
-      alert('Failed to save grade. Please try again.');
+      console.error('Failed to save grade scale:', err);
+      alert('Failed to save grade scale. Please try again.');
     }
   };
 
@@ -101,21 +102,21 @@ const GradeScalePage: React.FC = () => {
         grade.id === id ? updatedGrade : grade
       ));
     } catch (err) {
-      console.error('Failed to toggle grade status:', err);
-      alert('Failed to update grade status. Please try again.');
+      console.error('Failed to toggle grade scale status:', err);
+      alert('Failed to update grade scale status. Please try again.');
     }
   };
 
   const handleDeleteGrade = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this grade?')) return;
+    if (!window.confirm('Are you sure you want to delete this grade scale?')) return;
     
     try {
       await gradeService.deleteGradeScale(id); // CHANGED: deleteGrade → deleteGradeScale
       setGrades(prev => prev.filter(grade => grade.id !== id));
-      alert('Grade deleted successfully!');
+      alert('Grade Scale deleted successfully!');
     } catch (err) {
-      console.error('Failed to delete grade:', err);
-      alert('Failed to delete grade. Please try again.');
+      console.error('Failed to delete grade scale:', err);
+      alert('Failed to delete grade scale. Please try again.');
     }
   };
 

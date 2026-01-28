@@ -73,7 +73,7 @@ const GradeModal: React.FC<GradeModalProps> = ({
             {/* Name Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Grade Name
+                Grade Scale Name
               </label>
               <input
                 type="text"
