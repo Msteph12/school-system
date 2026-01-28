@@ -13,7 +13,9 @@ class GradeController extends Controller
     // GET /api/grades
     public function index()
     {
-        return Grade::orderBy('order')->get();
+        return Grade::withCount(['classes as classCount'])
+        ->orderBy('order')
+        ->get();
     }
 
 
