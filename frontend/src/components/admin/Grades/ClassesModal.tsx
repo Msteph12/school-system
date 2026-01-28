@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "@/services/api";
 
-type StreamStatus = "active" | "inactive";
+type ClassStatus = "active" | "inactive";
 
-interface StreamModalProps {
+interface ClassesModalProps {
   onClose: () => void;
-  onStreamAdded?: () => void;
-  editingStream?: {
+  onSuccess: () => void;
+  editingClass?: {
     id: string;
     grade_id: string;
     name: string;
-    code: string | null;
-    status: StreamStatus;
+    status: ClassStatus;
     teacher_id?: string | null;
     capacity?: number | null;
-    description?: string | null;
   } | null;
 }
 
@@ -30,383 +28,228 @@ interface Grade {
 interface Teacher {
   id: string;
   name: string;
-  email?: string;
   status?: string;
 }
 
-interface ApiErrorResponse {
-  status?: number;
-  data?: {
-    message?: string;
-    errors?: Record<string, string[]>;
-  };
-}
-
-interface StreamFormData {
+interface ClassFormData {
   grade_id: string;
   name: string;
-  code?: string | null;
-  status: StreamStatus;
+  status: ClassStatus;
   teacher_id: string | null;
   capacity?: number | null;
-  description?: string | null;
-  is_active?: boolean;
 }
 
-const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProps) => {
-  const [gradeId, setGradeId] = useState<string>(editingStream?.grade_id || "");
-  const [streamName, setStreamName] = useState<string>(editingStream?.name || "");
-  const [streamCode, setStreamCode] = useState<string>(editingStream?.code || "");
-  const [capacity, setCapacity] = useState<number | "">(editingStream?.capacity || "");
-  const [description, setDescription] = useState<string>(editingStream?.description || "");
-  const [teacherId, setTeacherId] = useState<string>(editingStream?.teacher_id || "");
-  const [streamStatus, setStreamStatus] = useState<StreamStatus>(editingStream?.status || "active");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingGrades, setIsFetchingGrades] = useState(false);
-  const [isFetchingTeachers, setIsFetchingTeachers] = useState(false);
+const ClassesModal = ({
+  onClose,
+  onSuccess,
+  editingClass,
+}: ClassesModalProps) => {
+  const [gradeId, setGradeId] = useState<string>(
+    editingClass?.grade_id ?? ""
+  );
+  const [className, setClassName] = useState<string>(
+    editingClass?.name ?? ""
+  );
+  const [teacherId, setTeacherId] = useState<string>(
+    editingClass?.teacher_id ?? ""
+  );
+  const [capacity, setCapacity] = useState<number | "">(
+    editingClass?.capacity ?? ""
+  );
+  const [status, setStatus] = useState<ClassStatus>(
+    editingClass?.status ?? "active"
+  );
+
   const [grades, setGrades] = useState<Grade[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch grades and teachers on component mount
+  /* ---------------- FETCH DATA ---------------- */
+
   useEffect(() => {
     fetchGrades();
     fetchTeachers();
   }, []);
 
   const fetchGrades = async () => {
-    setIsFetchingGrades(true);
-    try {
-      const response = await api.get("/grades");
-      setGrades(response.data);
-    } catch (error) {
-      console.error("Error fetching grades:", error);
-      alert("Failed to fetch grades. Please try again.");
-    } finally {
-      setIsFetchingGrades(false);
-    }
+    const res = await api.get("/grades");
+    setGrades(res.data.grades ?? res.data);
   };
 
   const fetchTeachers = async () => {
-    setIsFetchingTeachers(true);
-    try {
-      const response = await api.get("/teachers");
-      setTeachers(response.data);
-    } catch (error) {
-      console.error("Error fetching teachers:", error);
-      alert("Failed to fetch teachers. Please try again.");
-    } finally {
-      setIsFetchingTeachers(false);
-    }
+    const res = await api.get("/teachers");
+    setTeachers(res.data.teachers ?? res.data);
   };
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+  /* ---------------- VALIDATION ---------------- */
 
-    if (!gradeId.trim()) {
-      newErrors.gradeId = "Please select a grade";
+  const validate = (): boolean => {
+    const e: Record<string, string> = {};
+
+    if (!gradeId) e.grade_id = "Grade is required";
+    if (!className.trim()) e.name = "Class name is required";
+    if (!teacherId) e.teacher_id = "Class teacher is required";
+    if (capacity !== "" && Number(capacity) < 1) {
+      e.capacity = "Capacity must be at least 1";
     }
 
-    if (!streamName.trim()) {
-      newErrors.streamName = "Stream name is required";
-    }
-
-    if (streamName.trim().length < 2) {
-      newErrors.streamName = "Stream name must be at least 2 characters";
-    }
-
-    if (!teacherId.trim()) {
-      newErrors.teacherId = "Please select a class teacher";
-    }
-
-    if (capacity !== "" && (Number(capacity) < 1 || isNaN(Number(capacity)))) {
-      newErrors.capacity = "Capacity must be at least 1";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  const handleSaveStream = async () => {
-    if (!validateForm()) {
-      return;
-    }
+  /* ---------------- SAVE ---------------- */
+
+  const handleSave = async () => {
+    if (!validate()) return;
 
     setIsLoading(true);
-    try {
-      const streamData: StreamFormData = {
-        grade_id: gradeId,
-        name: streamName.trim(),
-        code: streamCode.trim() || null,
-        status: streamStatus,
-        teacher_id: teacherId || null,
-        capacity: capacity === "" ? null : Number(capacity),
-        description: description.trim() || null,
-      };
 
-      if (editingStream) {
-        // Update existing stream
-        await api.put(`/school-classes/${editingStream.id}`, streamData);
+    const payload: ClassFormData = {
+      grade_id: gradeId,
+      name: className.trim(),
+      status,
+      teacher_id: teacherId || null,
+      capacity: capacity === "" ? null : Number(capacity),
+    };
+
+    try {
+      if (editingClass) {
+        await api.put(`/school-classes/${editingClass.id}`, payload);
       } else {
-        // Create new stream
-        await api.post("/school-classes", {
-          ...streamData,
-          is_active: streamStatus === "active",
-        });
+        await api.post("/school-classes", payload);
       }
 
-      // Reset form
-      resetForm();
-
-      // Notify parent component
-      onStreamAdded?.();
-
-      // Close modal
+      onSuccess();
       onClose();
-    } catch (error: unknown) {
-      console.error("Error saving stream:", error);
-      
-      // Handle API errors with proper typing
-      const apiError = error as ApiErrorResponse;
-      
-      if (apiError?.data?.message?.includes("already exists")) {
-        setErrors({ streamName: "Stream name already exists in this grade" });
-      } else if (apiError?.data?.message?.includes("enrolled students")) {
-        alert("Cannot delete stream with enrolled students");
-      } else if (apiError?.status === 422) {
-        // Validation errors from Laravel
-        const validationErrors = apiError.data?.errors;
-        if (validationErrors) {
-          const formattedErrors: { [key: string]: string } = {};
-          
-          Object.keys(validationErrors).forEach(key => {
-            if (validationErrors[key] && validationErrors[key][0]) {
-              formattedErrors[key] = validationErrors[key][0];
-            }
-          });
-          
-          setErrors(formattedErrors);
-        }
+    } catch (err: unknown) {
+      const error = err as { response?: { status?: number } };
+
+      if (error?.response?.status === 409) {
+        setErrors({ name: "Class name already exists in this grade" });
       } else {
-        alert(`Failed to ${editingStream ? 'update' : 'add'} stream. Please try again.`);
+        alert("Failed to save class");
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setGradeId("");
-    setStreamName("");
-    setStreamCode("");
-    setCapacity("");
-    setDescription("");
-    setTeacherId("");
-    setStreamStatus("active");
-    setErrors({});
-  };
-
-  const handleCancel = () => {
-    resetForm();
-    onClose();
-  };
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white w-full max-w-lg rounded-lg shadow-lg p-6 space-y-6 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
+      <div className="bg-white w-full max-w-lg rounded-lg p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">
-            {editingStream ? "Edit Stream" : "Add New Stream"}
+            {editingClass ? "Edit Class" : "Add Class"}
           </h2>
-          <button 
-            onClick={handleCancel} 
-            className="text-gray-500 hover:text-gray-700 text-lg"
-            disabled={isLoading}
-            aria-label="Close modal"
-          >
-            ✕
-          </button>
+          <button onClick={onClose}>✕</button>
         </div>
 
-        {/* Grade Selection */}
+        {/* Grade */}
         <div>
-          <label htmlFor="grade-select" className="block text-sm font-medium mb-1">
-            Grade <span className="text-red-500">*</span>
-          </label>
+          <label className="block mb-1">Grade *</label>
           <select
-            id="grade-select"
-            className={`w-full border rounded px-4 py-2 ${errors.gradeId ? 'border-red-500' : ''}`}
+            className="w-full border rounded px-3 py-2"
             value={gradeId}
-            onChange={(e) => {
-              setGradeId(e.target.value);
-              if (errors.gradeId) setErrors(prev => ({ ...prev, gradeId: "" }));
-            }}
-            disabled={isFetchingGrades || isLoading}
-            aria-label="Select a grade"
-            title="Select a grade for this stream"
-            aria-describedby={errors.gradeId ? "grade-error" : undefined}
+            onChange={(e) => setGradeId(e.target.value)}
           >
-            <option value="">Select a grade</option>
-            {grades
-              .filter(grade => grade.status === "Active" || grade.id === editingStream?.grade_id)
-              .map((grade) => (
-                <option key={grade.id} value={grade.id}>
-                  {grade.name} ({grade.code})
-                </option>
-              ))}
+            <option value="">Select grade</option>
+            {grades.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name} ({g.code})
+              </option>
+            ))}
           </select>
-          {isFetchingGrades && (
-            <p className="text-sm text-gray-500 mt-1" aria-live="polite">
-              Loading grades...
-            </p>
-          )}
-          {errors.gradeId && (
-            <p id="grade-error" className="text-red-500 text-sm mt-1" role="alert">
-              {errors.gradeId}
-            </p>
+          {errors.grade_id && (
+            <p className="text-red-500 text-sm">{errors.grade_id}</p>
           )}
         </div>
 
-        {/* Stream Name */}
+        {/* Name */}
         <div>
-          <label htmlFor="stream-name" className="block text-sm font-medium mb-1">
-            Stream Name <span className="text-red-500">*</span>
-          </label>
+          <label className="block mb-1">Class Name *</label>
           <input
-            id="stream-name"
-            type="text"
-            className={`w-full border rounded px-4 py-2 ${errors.streamName ? 'border-red-500' : ''}`}
-            placeholder="Enter stream name (e.g., Class A, Science Section)"
-            value={streamName}
-            onChange={(e) => {
-              setStreamName(e.target.value);
-              if (errors.streamName) setErrors(prev => ({ ...prev, streamName: "" }));
-            }}
-            disabled={isLoading}
-            aria-label="Stream name"
-            aria-describedby={errors.streamName ? "name-error" : undefined}
+            className="w-full border rounded px-3 py-2"
+            value={className}
+            onChange={(e) => setClassName(e.target.value)}
           />
-          {errors.streamName && (
-            <p id="name-error" className="text-red-500 text-sm mt-1" role="alert">
-              {errors.streamName}
-            </p>
+          {errors.name && (
+            <p className="text-red-500 text-sm">{errors.name}</p>
           )}
         </div>
 
-        {/* Class Teacher */}
+        {/* Teacher */}
         <div>
-          <label htmlFor="teacher-select" className="block text-sm font-medium mb-1">
-            Class Teacher <span className="text-red-500">*</span>
-          </label>
+          <label className="block mb-1">Class Teacher *</label>
           <select
-            id="teacher-select"
-            className={`w-full border rounded px-4 py-2 ${errors.teacherId ? 'border-red-500' : ''}`}
+            className="w-full border rounded px-3 py-2"
             value={teacherId}
-            onChange={(e) => {
-              setTeacherId(e.target.value);
-              if (errors.teacherId) setErrors(prev => ({ ...prev, teacherId: "" }));
-            }}
-            disabled={isFetchingTeachers || isLoading}
-            aria-label="Select class teacher"
-            aria-describedby={errors.teacherId ? "teacher-error" : undefined}
+            onChange={(e) => setTeacherId(e.target.value)}
           >
-            <option value="">Select a teacher</option>
-            {teachers
-              .filter(teacher => teacher.status === "active" || teacher.id === editingStream?.teacher_id)
-              .map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.name} {teacher.email ? `(${teacher.email})` : ''}
-                </option>
-              ))}
+            <option value="">Select teacher</option>
+            {teachers.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
           </select>
-          {isFetchingTeachers && (
-            <p className="text-sm text-gray-500 mt-1" aria-live="polite">
-              Loading teachers...
-            </p>
-          )}
-          {errors.teacherId && (
-            <p id="teacher-error" className="text-red-500 text-sm mt-1" role="alert">
-              {errors.teacherId}
-            </p>
+          {errors.teacher_id && (
+            <p className="text-red-500 text-sm">{errors.teacher_id}</p>
           )}
         </div>
 
-        {/* Stream Code (Unique) */}
+        {/* Capacity */}
         <div>
-          <label htmlFor="stream-code" className="block text-sm font-medium mb-1">
-            Stream Code
-          </label>
+          <label className="block mb-1">Capacity</label>
           <input
-            id="stream-code"
-            type="text"
-            className="w-full border rounded px-4 py-2"
-            placeholder="Enter unique code (optional)"
-            value={streamCode}
-            onChange={(e) => setStreamCode(e.target.value)}
-            disabled={isLoading}
-            aria-label="Stream code"
+            type="number"
+            className="w-full border rounded px-3 py-2"
+            value={capacity}
+            onChange={(e) => setCapacity(e.target.valueAsNumber || "")}
           />
-          <p className="text-sm text-gray-500 mt-1">
-            Unique identifier for the stream
-          </p>
         </div>
 
-        {/* Status */}
-        <fieldset>
-          <legend className="block text-sm font-medium mb-1">Status</legend>
+       {/* Status */}
+        <div>
+          <label className="block mb-1">Status</label>
           <div className="flex gap-4">
-            <label className="flex items-center">
+            <label>
               <input
                 type="radio"
-                name="status"
-                value="active"
-                checked={streamStatus === "active"}
-                onChange={() => setStreamStatus("active")}
-                className="mr-2"
-                disabled={isLoading}
-                aria-label="Set stream status to active"
-              />
+                checked={status === "active"}
+                onChange={() => setStatus("active")}
+              />{" "}
               Active
             </label>
-            <label className="flex items-center">
+            <label>
               <input
                 type="radio"
-                name="status"
-                value="inactive"
-                checked={streamStatus === "inactive"}
-                onChange={() => setStreamStatus("inactive")}
-                className="mr-2"
-                disabled={isLoading}
-                aria-label="Set stream status to inactive"
-              />
+                checked={status === "inactive"}
+                onChange={() => setStatus("inactive")}
+              />{" "}
               Inactive
             </label>
           </div>
-        </fieldset>
+        </div>
+
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-4 py-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={isLoading}
-            aria-label="Cancel and close modal"
-          >
+          <button onClick={onClose} className="px-4 py-2 border rounded">
             Cancel
           </button>
           <button
-            type="button"
-            onClick={handleSaveStream}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleSave}
             disabled={isLoading}
-            aria-label={editingStream ? "Update stream" : "Create new stream"}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
           >
-            {isLoading 
-              ? (editingStream ? "Updating..." : "Creating...") 
-              : (editingStream ? "Update Stream" : "Create Stream")
-            }
+            {isLoading
+              ? "Saving..."
+              : editingClass
+              ? "Update Class"
+              : "Create Class"}
           </button>
         </div>
       </div>
@@ -414,4 +257,4 @@ const StreamsModal = ({ onClose, onStreamAdded, editingStream }: StreamModalProp
   );
 };
 
-export default StreamsModal;
+export default ClassesModal;

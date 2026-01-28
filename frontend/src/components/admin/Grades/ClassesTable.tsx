@@ -4,46 +4,51 @@ interface Props {
   classes: Class[];
   gradeName: string;
   onClose?: () => void;
-  onView: (classItem: Class) => void;
-  onEdit: (classItem: Class) => void;
+  onToggleStatus: (id: string) => Promise<void>;
   showGradeColumn?: boolean;
   gradeCount?: number;
   totalClasses?: number;
 }
 
-const ClassesTable = ({ 
-  classes, 
-  gradeName, 
-  onClose, 
-  onView, 
-  onEdit,
+const ClassesTable = ({
+  classes,
+  gradeName,
+  onClose,
+  onToggleStatus,
   showGradeColumn = false,
   gradeCount = 0,
-  totalClasses = 0
+  totalClasses = 0,
 }: Props) => {
+  const confirmToggle = async (classItem: Class) => {
+    if (
+      classItem.status === "Active" &&
+      !confirm(
+        `Deactivate "${classItem.name}"?\n\nStudents and records will be preserved.`
+      )
+    ) {
+      return;
+    }
+
+    await onToggleStatus(classItem.id);
+  };
+
   return (
-    <div className="bg-white rounded shadow-md shadow-blue-200 overflow-x-auto">
+    <div className="bg-white rounded shadow-md overflow-x-auto">
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">
-            {gradeName}
-          </h3>
+          <h3 className="text-lg font-semibold">{gradeName}</h3>
           <p className="text-sm text-gray-500">
-            {showGradeColumn ? (
-              <>
-                Showing {classes.length} class{classes.length !== 1 ? 'es' : ''} 
-                from {gradeCount} grade{gradeCount !== 1 ? 's' : ''}
-                {totalClasses > 0 && ` (${totalClasses} total classes)`}
-              </>
-            ) : (
-              `Total Classes: ${classes.length}`
-            )}
+            {showGradeColumn
+              ? `${classes.length} classes across ${gradeCount} grades (${totalClasses} total)`
+              : `Total Classes: ${classes.length}`}
           </p>
         </div>
+
         {onClose && (
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded transition-colors"
+            className="px-4 py-2 text-sm bg-gray-100 rounded"
           >
             Show All Grades
           </button>
@@ -52,69 +57,51 @@ const ClassesTable = ({
 
       {classes.length === 0 ? (
         <div className="p-10 text-center text-gray-500">
-          {showGradeColumn ? 
-            "No classes found across all grades." : 
-            "No classes found for this grade."
-          }
+          No classes found
         </div>
       ) : (
         <table className="w-full text-sm">
           <thead className="bg-blue-50">
             <tr>
               {showGradeColumn && <th className="p-3 text-left">Grade</th>}
-              <th className="p-3 text-left">Class Name</th>
-              <th className="p-3 text-left">Class Code</th>
-              <th className="p-3 text-left">Display Order</th>
+              <th className="p-3 text-left">Name</th>
+              <th className="p-3 text-left">Code</th>
+              <th className="p-3 text-left">Order</th>
               <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Actions</th>
+              <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {classes.map((classItem) => (
-              <tr key={classItem.id} className="border-t hover:bg-blue-50">
+            {classes.map((c) => (
+              <tr key={c.id} className="border-t hover:bg-blue-50">
                 {showGradeColumn && (
-                  <td className="p-3">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                      {classItem.gradeName || "Unknown Grade"}
-                    </span>
-                  </td>
+                  <td className="p-3">{c.gradeName}</td>
                 )}
-                <td className="p-3 font-medium">{classItem.name}</td>
-                <td className="p-3 font-mono text-gray-600">{classItem.code}</td>
-                <td className="p-3">
-                  {classItem.display_order ? (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                      {classItem.display_order}
-                    </span>
-                  ) : (
-                    "-"
-                  )}
-                </td>
+                <td className="p-3 font-medium">{c.name}</td>
+                <td className="p-3 font-mono">{c.code}</td>
+                <td className="p-3">{c.display_order ?? "-"}</td>
                 <td className="p-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      classItem.status === "Active"
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      c.status === "Active"
                         ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
+                        : "bg-gray-200 text-gray-800"
                     }`}
                   >
-                    {classItem.status}
+                    {c.status}
                   </span>
                 </td>
-
-                <td className="p-3 flex gap-4">
+                <td className="p-3">
                   <button
-                    onClick={() => onView(classItem)}
-                    className="text-blue-600 hover:underline hover:text-blue-800"
+                    onClick={() => confirmToggle(c)}
+                    className={`text-sm hover:underline ${
+                      c.status === "Active"
+                        ? "text-red-600"
+                        : "text-green-600"
+                    }`}
                   >
-                    View
-                  </button>
-                  <button
-                    onClick={() => onEdit(classItem)}
-                    className="text-blue-600 hover:underline hover:text-blue-800"
-                  >
-                    Edit
+                    {c.status === "Active" ? "Deactivate" : "Activate"}
                   </button>
                 </td>
               </tr>

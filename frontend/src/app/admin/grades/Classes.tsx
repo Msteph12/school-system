@@ -1,108 +1,103 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import TopBar from "@/components/admin/TopBar";
 import ClassesModal from "@/components/admin/Grades/ClassesModal";
 import ClassesTable from "@/components/admin/Grades/ClassesTable";
 import type { Grade } from "@/types/grade";
 import type { Class } from "@/types/class";
 
-const ClassesPage = () => { 
+const ClassesPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
-  const [allClasses, setAllClasses] = useState<Class[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [filteredClasses, setFilteredClasses] = useState<Class[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingClasses, setIsLoadingClasses] = useState(false);
+  const [loadingGrades, setLoadingGrades] = useState(true);
+  const [loadingClasses, setLoadingClasses] = useState(true);
 
-  // Fetch grades and classes on component mount
-  useEffect(() => {
-    fetchGrades();
-    fetchAllClasses();
-  }, []);
-
-  // Filter classes when selectedGrade changes
-  useEffect(() => {
-    if (!selectedGrade) {
-      // Show all classes sorted by grade name
-      const sortedClasses = [...allClasses].sort((a, b) => {
-        // First sort by grade name
-        const gradeCompare = a.gradeName.localeCompare(b.gradeName);
-        if (gradeCompare !== 0) return gradeCompare;
-        
-        // Then sort by class display order if same grade
-        return (a.display_order || 0) - (b.display_order || 0);
-      });
-      setFilteredClasses(sortedClasses);
-    } else {
-      // Filter classes for selected grade
-      const filtered = allClasses
-        .filter(classItem => String(classItem.gradeId) === String(selectedGrade.id))
-        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-      setFilteredClasses(filtered);
-    }
-  }, [selectedGrade, allClasses]);
+  /* ---------------- FETCH DATA ---------------- */
 
   const fetchGrades = async () => {
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/grades');
-      const data = await response.json();
-      const sortedGrades = (data.grades || []).sort((a: Grade, b: Grade) => 
-        a.name.localeCompare(b.name)
+      setLoadingGrades(true);
+      const res = await fetch("/api/grades");
+      const data = await res.json();
+
+      setGrades(
+        (data.grades || []).sort((a: Grade, b: Grade) =>
+          a.name.localeCompare(b.name)
+        )
       );
-      setGrades(sortedGrades);
-    } catch (error) {
-      console.error("Error fetching grades:", error);
+    } catch (err) {
+      console.error("Failed to fetch grades", err);
       setGrades([]);
     } finally {
-      setIsLoading(false);
+      setLoadingGrades(false);
     }
   };
 
-  const fetchAllClasses = async () => {
+  const fetchClasses = async () => {
     try {
-      setIsLoadingClasses(true);
-      const response = await fetch('/api/classes');
-      const data = await response.json();
-      setAllClasses(data.classes || []);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      setAllClasses([]);
+      setLoadingClasses(true);
+      const res = await fetch("/api/school-classes");
+      const data = await res.json();
+      setClasses(data.classes || []);
+    } catch (err) {
+      console.error("Failed to fetch classes", err);
+      setClasses([]);
     } finally {
-      setIsLoadingClasses(false);
+      setLoadingClasses(false);
     }
   };
 
-  const handleCloseFilter = () => {
-    setSelectedGrade(null);
-  };
+  /* ---------------- EFFECTS ---------------- */
 
-  const handleViewClass = (classItem: Class) => {
-    console.log("View class", classItem);
-  };
+  useEffect(() => {
+    fetchGrades();
+    fetchClasses();
+  }, []);
 
-  const handleEditClass = (classItem: Class) => {
-    console.log("Edit class", classItem);
-  };
-
-  // Get display title based on selection
-  const getTableTitle = () => {
-    if (selectedGrade) {
-      return `Classes for ${selectedGrade.name}`;
-    }
-    return "All Classes (Grouped by Grade)";
-  };
-
-  // Get unique grade count for display
-  const getUniqueGradeCount = () => {
+  useEffect(() => {
     if (!selectedGrade) {
-      const gradeIds = new Set(allClasses.map(classItem => classItem.gradeId));
-      return gradeIds.size;
+      const sorted = [...classes].sort((a, b) => {
+        const gradeCompare = a.gradeName.localeCompare(b.gradeName);
+        if (gradeCompare !== 0) return gradeCompare;
+        return (a.display_order || 0) - (b.display_order || 0);
+      });
+      setFilteredClasses(sorted);
+    } else {
+      setFilteredClasses(
+        classes
+          .filter((c) => String(c.gradeId) === String(selectedGrade.id))
+          .sort(
+            (a, b) =>
+              (a.display_order || 0) - (b.display_order || 0)
+          )
+      );
     }
-    return 1;
+  }, [classes, selectedGrade]);
+
+  /* ---------------- ACTIONS ---------------- */
+
+  const handleToggleStatus = async (id: string) => {
+    await fetch(`/api/school-classes/${id}/status`, {
+      method: "PATCH",
+    });
+    fetchClasses();
   };
+
+  const handleCloseFilter = () => setSelectedGrade(null);
+
+  /* ---------------- UI HELPERS ---------------- */
+
+  const tableTitle = selectedGrade
+    ? `Classes for ${selectedGrade.name}`
+    : "All Classes (Grouped by Grade)";
+
+  const uniqueGradeCount = new Set(classes.map((c) => c.gradeId)).size;
+
+  /* ---------------- RENDER ---------------- */
 
   return (
     <div className="space-y-6">
@@ -113,72 +108,70 @@ const ClassesPage = () => {
         <h1 className="text-2xl font-semibold text-gray-800">Classes</h1>
         <button
           onClick={() => window.history.back()}
-          className="text-blue-600 mr-5 hover:underline"
+          className="text-blue-600 hover:underline"
         >
           ← Back
         </button>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-4 bg-white p-4 rounded shadow-md">
+      <div className="flex items-center gap-4 bg-white p-4 rounded shadow">
         <button
           onClick={() => setShowModal(true)}
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
         >
           + Add Class
         </button>
-        
-        {/* Grade Selection Dropdown */}
+
         <div className="ml-auto">
-          <label htmlFor="gradeSelect" className="mr-2 text-gray-700">
-            Filter by Grade:
-          </label>
+          <label className="mr-2 text-gray-700">Filter by Grade:</label>
           <select
-            id="gradeSelect"
             value={selectedGrade?.id || ""}
             onChange={(e) => {
-              const gradeId = e.target.value;
-              if (!gradeId) {
-                setSelectedGrade(null);
-              } else {
-                const grade = grades.find(g => String(g.id) === gradeId);
-                setSelectedGrade(grade || null);
-              }
+              const grade = grades.find(
+                (g) => String(g.id) === e.target.value
+              );
+              setSelectedGrade(grade || null);
             }}
-            className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoading}
+            className="px-4 py-2 border rounded"
+            disabled={loadingGrades}
           >
             <option value="">All Grades</option>
-            {grades.map((grade) => (
-              <option key={grade.id} value={grade.id}>
-                {grade.name} ({grade.code})
+            {grades.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name} ({g.code})
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      {isLoading || isLoadingClasses ? (
-        <div className="bg-white p-10 rounded shadow-md shadow-blue-200 text-center">
-          Loading classes data...
+      {/* Table */}
+      {loadingGrades || loadingClasses ? (
+        <div className="bg-white p-10 rounded shadow text-center">
+          Loading classes...
         </div>
       ) : (
         <ClassesTable
           classes={filteredClasses}
-          gradeName={getTableTitle()}
+          gradeName={tableTitle}
           onClose={selectedGrade ? handleCloseFilter : undefined}
-          onView={handleViewClass}
-          onEdit={handleEditClass}
+          onToggleStatus={handleToggleStatus}
           showGradeColumn={!selectedGrade}
-          gradeCount={getUniqueGradeCount()}
-          totalClasses={allClasses.length}
+          gradeCount={uniqueGradeCount}
+          totalClasses={classes.length}
         />
       )}
 
       {/* Modal */}
       {showModal && (
-        <ClassesModal onClose={() => setShowModal(false)} />
+        <ClassesModal
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            fetchClasses();
+            setShowModal(false);
+          }}
+        />
       )}
     </div>
   );
