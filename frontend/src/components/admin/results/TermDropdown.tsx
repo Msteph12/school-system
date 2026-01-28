@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  FaChevronDown, 
-  FaLock, 
-  FaExclamationCircle,
+import {
+  FaChevronDown,
+  FaLock,
   FaCircle
 } from 'react-icons/fa';
 import type { Term } from '@/types/term';
@@ -26,7 +25,7 @@ const TermDropdown: React.FC<TermDropdownProps> = ({
     <div className="relative w-full md:w-64">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 text-left hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 text-left hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <div className="flex items-center gap-3">
           {selectedTerm.isLocked ? (
@@ -36,8 +35,8 @@ const TermDropdown: React.FC<TermDropdownProps> = ({
           )}
           <span className="font-medium">{selectedTerm.name}</span>
         </div>
-        <FaChevronDown 
-          className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+        <FaChevronDown
+          className={`w-5 h-5 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -52,16 +51,12 @@ const TermDropdown: React.FC<TermDropdownProps> = ({
               <button
                 key={term.id}
                 onClick={() => {
-                  if (!term.disabled) {
-                    onSelectTerm(term);
-                    setIsOpen(false);
-                  }
+                  onSelectTerm(term);
+                  setIsOpen(false);
                 }}
-                disabled={term.disabled}
-                className={`w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                  term.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                } ${selectedTerm.id === term.id ? 'bg-blue-50' : ''}`}
-                title={term.disabled ? term.tooltip : ''}
+                className={`w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                  selectedTerm.id === term.id ? 'bg-blue-50' : ''
+                }`}
               >
                 <div className="flex items-center gap-3">
                   {term.isLocked ? (
@@ -69,20 +64,11 @@ const TermDropdown: React.FC<TermDropdownProps> = ({
                   ) : (
                     <FaCircle className="w-2 h-2 text-green-500" />
                   )}
-                  <div>
-                    <span className={`font-medium ${term.disabled ? 'text-gray-500' : 'text-gray-800'}`}>
-                      {term.name}
-                    </span>
-                    {term.disabled && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <FaExclamationCircle className="w-3 h-3 text-amber-500" />
-                        <span className="text-xs text-amber-600">
-                          Previous term must be locked
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <span className="font-medium text-gray-800">
+                    {term.name}
+                  </span>
                 </div>
+
                 {selectedTerm.id === term.id && (
                   <FaCircle className="w-2 h-2 text-blue-500" />
                 )}

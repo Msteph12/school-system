@@ -77,7 +77,7 @@ const StatusCard: React.FC<StatusCardProps> = ({
         )}
       </button>
 
-      {term.order > 1 && !term.isLocked && !term.disabled && (
+      {term.order > 1 && !term.isLocked && (
         <div className="mt-4 flex items-start gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
           <FaExclamationTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <p>

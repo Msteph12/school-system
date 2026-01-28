@@ -14,7 +14,7 @@ const InfoCard: React.FC<InfoCardProps> = ({ term }) => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -73,7 +73,7 @@ const InfoCard: React.FC<InfoCardProps> = ({ term }) => {
           <div>
             <p className="text-sm text-gray-500 mb-1">Term Sequence</p>
             <p className="font-medium text-gray-800">
-              Order {term.order} of {term.order} {/* You might want to get total terms count from API */}
+              Term {term.order}
             </p>
           </div>
         </div>

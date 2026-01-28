@@ -1,26 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import TopBar from '@/components/admin/TopBar';
-import QuickNavCards from '@/components/admin/results/QuickNavCards';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import TermDropdown from '@/components/admin/results/TermDropdown';
-import StatusCard from '@/components/admin/results/StatusCard';
-import InfoCard from '@/components/admin/results/InfoCard';
-import LockConfirmationModal from '@/components/admin/results/LockConfirmationModal';
-import type { Term } from '@/types/term';
-import { termService } from '@/services/termService';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import TopBar from "@/components/admin/TopBar";
+import QuickNavCards from "@/components/admin/results/QuickNavCards";
+import { FaExclamationTriangle } from "react-icons/fa";
+import TermDropdown from "@/components/admin/results/TermDropdown";
+import StatusCard from "@/components/admin/results/StatusCard";
+import InfoCard from "@/components/admin/results/InfoCard";
+import LockConfirmationModal from "@/components/admin/results/LockConfirmationModal";
+import type { Term } from "@/types/term";
+import { termService } from "@/services/termService";
 
 const TermLock: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
+
   const [terms, setTerms] = useState<Term[]>([]);
+  const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Quick navigation cards
+  /** ---------------- Quick Nav ---------------- */
   const quickNavCards = [
     {
       title: "Grade Scale",
@@ -42,66 +43,59 @@ const TermLock: React.FC = () => {
     },
   ];
 
-  // Load terms from API
+  /** ---------------- Load Terms ---------------- */
   const loadTerms = useCallback(async () => {
     setIsLoading(true);
     try {
-      const termsData = await termService.getTerms();
-      setTerms(termsData);
-      
-      // Select first term by default
-      if (termsData.length > 0 && !selectedTerm) {
-        setSelectedTerm(termsData[0]);
+      const data = await termService.getTerms();
+      setTerms(data);
+
+      // Ensure a selected term always exists if data exists
+      if (data.length > 0) {
+        setSelectedTerm(prev =>
+          prev ? data.find(t => t.id === prev.id) ?? data[0] : data[0]
+        );
       }
-    } catch (err) {
-      console.error('Failed to load terms:', err);
-      alert('Failed to load term data. Please try again.');
+    } catch (error) {
+      console.error("Failed to load terms:", error);
+      alert("Failed to load term data.");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedTerm]);
+  }, []);
 
-  // Initialize terms on mount
   useEffect(() => {
     loadTerms();
   }, [loadTerms]);
 
-  // Memoize the update function
-  const updateTermsDisabledState = useCallback((currentTerms: Term[]) => {
-    return currentTerms.map(term => ({
-      ...term,
-      disabled: term.order > 1 && !currentTerms.find(t => t.order === term.order - 1)?.isLocked
-    }));
-  }, []);
+  /** ---------------- Derived Disabled State ---------------- */
+  const computedTerms = useMemo(() => {
+    return terms.map(term => {
+      const previousTerm = terms.find(t => t.order === term.order - 1);
 
-  // Update terms with disabled state
-  useEffect(() => {
-    if (terms.length > 0) {
-      const updatedTerms = updateTermsDisabledState(terms);
-      setTerms(updatedTerms);
-    }
-  }, [terms, updateTermsDisabledState]);
+      return {
+        ...term,
+        disabled:
+          term.order > 1 &&
+          (!previousTerm || !previousTerm.isLocked),
+      };
+    });
+  }, [terms]);
 
-  const handleTermSelect = (term: Term) => {
-    setSelectedTerm(term);
+  /** ---------------- Actions ---------------- */
+ const handleTermSelect = (term: Term) => {
+  const computedTerm = computedTerms.find(t => t.id === term.id);
+
+  if (computedTerm?.disabled) return;
+
+  setSelectedTerm(term);
   };
 
   const handleLockToggle = async () => {
-    if (!selectedTerm) return;
-    
+    if (!selectedTerm || isProcessing) return;
+
     if (!selectedTerm.isLocked) {
-      // Validate before showing confirmation
-      try {
-        const validation = await termService.validateTermLock(selectedTerm.id);
-        if (!validation.isValid) {
-          alert(validation.message || 'Cannot lock this term');
-          return;
-        }
-        setShowConfirmation(true);
-      } catch (err) {
-        console.error('Validation error:', err);
-        alert('Failed to validate term lock');
-      }
+      setShowConfirmation(true);
     } else {
       await unlockTerm();
     }
@@ -114,21 +108,24 @@ const TermLock: React.FC = () => {
 
   const lockTerm = async () => {
     if (!selectedTerm) return;
-    
+
+    // Enforce sequencing rule before API call
+    const previousTerm = terms.find(
+      t => t.order === selectedTerm.order - 1
+    );
+
+    if (selectedTerm.order > 1 && !previousTerm?.isLocked) {
+      alert("You must lock the previous term first.");
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const updatedTerm = await termService.lockTerm(selectedTerm.id);
-      
-      // Update selected term
-      setSelectedTerm(updatedTerm);
-      
-      // Reload terms to get updated data
+      const updated = await termService.lockTerm(selectedTerm.id);
+      setSelectedTerm(updated);
       await loadTerms();
-      
-      alert(`Term ${updatedTerm.name} locked successfully`);
-    } catch (err) {
-      console.error('Failed to lock term:', err);
-      alert('Failed to lock term. Please try again.');
+    } catch {
+      alert("Failed to lock term.");
     } finally {
       setIsProcessing(false);
     }
@@ -136,50 +133,27 @@ const TermLock: React.FC = () => {
 
   const unlockTerm = async () => {
     if (!selectedTerm) return;
-    
+
     setIsProcessing(true);
     try {
-      const updatedTerm = await termService.unlockTerm(selectedTerm.id);
-      
-      // Update selected term
-      setSelectedTerm(updatedTerm);
-      
-      // Reload terms to get updated data
+      const updated = await termService.unlockTerm(selectedTerm.id);
+      setSelectedTerm(updated);
       await loadTerms();
-      
-      alert(`Term ${updatedTerm.name} unlocked successfully`);
-    } catch (err) {
-      console.error('Failed to unlock term:', err);
-      alert('Failed to unlock term. Please try again.');
+    } catch {
+      alert("Failed to unlock term.");
     } finally {
       setIsProcessing(false);
     }
   };
 
+  /** ---------------- UI States ---------------- */
   if (isLoading) {
     return (
       <div className="space-y-6 p-6">
         <TopBar />
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-800">Term Lock Management</h1>
-            <p className="text-gray-600">Control term access for result entry and editing</p>
-          </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 hover:underline"
-          >
-            ← Back
-          </button>
-        </div>
-        
         <div className="animate-pulse space-y-6">
-          <div className="h-32 bg-gray-200 rounded-2xl"></div>
-          <div className="h-24 bg-gray-200 rounded-xl"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="h-64 bg-gray-200 rounded-xl"></div>
-            <div className="h-64 bg-gray-200 rounded-xl"></div>
-          </div>
+          <div className="h-32 bg-gray-200 rounded-2xl" />
+          <div className="h-24 bg-gray-200 rounded-xl" />
         </div>
       </div>
     );
@@ -189,98 +163,69 @@ const TermLock: React.FC = () => {
     return (
       <div className="space-y-6 p-6">
         <TopBar />
-        <div className="flex items-center justify-between">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex gap-3">
+          <FaExclamationTriangle className="text-yellow-600 w-6 h-6" />
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800">Term Lock Management</h1>
-            <p className="text-gray-600">Control term access for result entry and editing</p>
-          </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 hover:underline"
-          >
-            ← Back
-          </button>
-        </div>
-        
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-          <div className="flex items-center gap-3">
-            <FaExclamationTriangle className="w-6 h-6 text-yellow-600" />
-            <div>
-              <h3 className="font-semibold text-yellow-800">No Terms Found</h3>
-              <p className="text-yellow-700 mt-1">
-                No terms are currently configured. Please contact your administrator.
-              </p>
-            </div>
+            <h3 className="font-semibold text-yellow-800">No Terms Found</h3>
+            <p className="text-yellow-700 text-sm">
+              No academic terms are configured.
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
+  /** ---------------- Main ---------------- */
   return (
     <div className="space-y-6 p-6">
       <TopBar />
 
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Term Lock Management</h1>
-          <p className="text-gray-600">Control term access for result entry and editing</p>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Term Lock Management
+          </h1>
+          <p className="text-gray-600">
+            Control term access for result entry and editing
+          </p>
         </div>
-        <button
-          onClick={() => navigate(-1)}
-          className="text-blue-600 hover:underline"
-        >
+        <button onClick={() => navigate(-1)} className="text-blue-600">
           ← Back
         </button>
       </div>
 
-      {/* Quick Navigation Cards */}
       <QuickNavCards cards={quickNavCards} />
 
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-700 mb-1">Select Term</h2>
-              <p className="text-sm text-gray-500">Terms must be locked sequentially</p>
-            </div>
-            {selectedTerm && (
-              <TermDropdown
-                terms={terms}
-                selectedTerm={selectedTerm}
-                onSelectTerm={handleTermSelect}
-              />
-            )}
-          </div>
-        </div>
-
+      <div className="bg-white rounded-xl shadow-sm p-6">
         {selectedTerm && (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <StatusCard
-                term={selectedTerm}
-                onLockToggle={handleLockToggle}
-                isProcessing={isProcessing}
-              />
-              <InfoCard term={selectedTerm} />
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-              <div className="flex items-start gap-3">
-                <FaExclamationTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold text-amber-800 mb-1">Important Notice</h3>
-                  <p className="text-amber-700 text-sm">
-                    Locking a term makes all results read-only across the system. 
-                    Teachers cannot edit or enter new results. 
-                    This action should only be performed after term completion and verification.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </>
+          <TermDropdown
+            terms={computedTerms}
+            selectedTerm={selectedTerm}
+            onSelectTerm={handleTermSelect}
+          />
         )}
       </div>
+
+      {selectedTerm && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <StatusCard
+              term={selectedTerm}
+              onLockToggle={handleLockToggle}
+              isProcessing={isProcessing}
+            />
+            <InfoCard term={selectedTerm} />
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-3">
+            <FaExclamationTriangle className="text-amber-600 w-5 h-5 mt-1" />
+            <p className="text-amber-700 text-sm">
+              Locking a term makes all results read-only across the system.
+            </p>
+          </div>
+        </>
+      )}
 
       {selectedTerm && (
         <LockConfirmationModal

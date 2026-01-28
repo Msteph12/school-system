@@ -31,33 +31,4 @@ export const termService = {
       throw error;
     }
   },
-
-  async validateTermLock(termId: string): Promise<{ isValid: boolean; message?: string }> {
-    try {
-      const response = await api.get(`/terms/${termId}/validate-lock`);
-      return response.data;
-    } catch (error) {
-      console.error('Error validating term lock:', error);
-      // Return a default validation error if API fails
-      return { 
-        isValid: false, 
-        message: 'Unable to validate term lock. Please try again.' 
-      };
-    }
-  },
-
-  async getTermHistory(): Promise<Array<{
-    action: string;
-    date: string;
-    user: string;
-    note: string;
-  }>> {
-    try {
-      const response = await api.get('/terms/history');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching term history:', error);
-      throw error;
-    }
-  }
 };
