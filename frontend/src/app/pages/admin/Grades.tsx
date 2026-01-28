@@ -6,39 +6,41 @@ import TopBar from "@/components/admin/TopBar";
 import GradesModal from "@/components/admin/Grades/GradesModal";
 import GradesTable from "@/components/admin/Grades/GradesTable";
 import type { Grade } from "@/types/grade";
+import api from "@/services/api";
 
-const Grades = () => { 
+const Grades = () => {
   const [showModal, setShowModal] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingGrade, setEditingGrade] = useState<Grade | null>(null);
 
-  // ✅ Handlers
+  // View (placeholder)
   const handleView = (grade: Grade) => {
     console.log("View grade", grade);
     alert(`Viewing: ${grade.name} (${grade.code})`);
   };
 
+  // Edit
   const handleEdit = (grade: Grade) => {
-    console.log("Edit grade", grade);
-    alert(`Editing: ${grade.name} (${grade.code})`);
+    setEditingGrade(grade);
+    setShowModal(true);
   };
 
+  // View streams (placeholder)
   const handleViewStreams = (grade: Grade) => {
     console.log("View streams for grade", grade);
     alert(`Viewing streams for: ${grade.name} - ${grade.classCount} streams`);
   };
 
-  // ✅ Load data on mount
+  // Load grades
   useEffect(() => {
     const loadGrades = async () => {
       setLoading(true);
-      
       try {
-        const response = await fetch('/api/grades');
-        const data = await response.json();
-        setGrades(data);
+        const response = await api.get("/grades");
+        setGrades(response.data);
       } catch (error) {
-        console.error('Error fetching grades:', error);
+        console.error("Error fetching grades:", error);
       } finally {
         setLoading(false);
       }
@@ -46,23 +48,6 @@ const Grades = () => {
 
     loadGrades();
   }, []);
-
-  // ✅ Add new grade handler (for modal)
-  const handleAddGrade = async (newGrade: Grade) => {
-    try {
-      const response = await fetch('/api/grades', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newGrade)
-      });
-      const data = await response.json();
-      setGrades([...grades, data]);
-    } catch (error) {
-      console.error('Error adding grade:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -77,6 +62,7 @@ const Grades = () => {
             ← Back
           </button>
         </div>
+
         <div className="bg-white p-10 rounded shadow-md shadow-blue-200 text-center">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
@@ -116,7 +102,10 @@ const Grades = () => {
       {/* Actions */}
       <div className="flex items-center gap-4 bg-white p-4 rounded shadow-md">
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setEditingGrade(null);
+            setShowModal(true);
+          }}
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
         >
           + Add Grade
@@ -134,8 +123,20 @@ const Grades = () => {
       {/* Modal */}
       {showModal && (
         <GradesModal
-          onClose={() => setShowModal(false)}
-          onGradeAdded={handleAddGrade}
+          gradeToEdit={editingGrade}
+          onClose={() => {
+            setShowModal(false);
+            setEditingGrade(null);
+          }}
+          onGradeAdded={(savedGrade) => {
+            setGrades((prev) =>
+              editingGrade
+                ? prev.map((g) =>
+                    g.id === savedGrade.id ? savedGrade : g
+                  )
+                : [...prev, savedGrade]
+            );
+          }}
         />
       )}
     </div>

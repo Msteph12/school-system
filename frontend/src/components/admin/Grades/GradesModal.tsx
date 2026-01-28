@@ -1,37 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "@/services/api";
 import type { Grade } from "@/types/grade";
 
-type GradeStatus = "Active" | "Inactive";
-
-interface AddGradeModalProps {
+interface GradesModalProps {
   onClose: () => void;
-  onGradeAdded?: (newGrade: Grade) => void;
+  onGradeAdded?: (grade: Grade) => void;
+  gradeToEdit?: Grade | null;
 }
 
-const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
+const GradesModal = ({
+  onClose,
+  onGradeAdded,
+  gradeToEdit,
+}: GradesModalProps) => {
   const [gradeName, setGradeName] = useState("");
   const [gradeCode, setGradeCode] = useState("");
-  const [displayOrder, setDisplayOrder] = useState<number | "">("");
-  const [gradeStatus, setGradeStatus] = useState<GradeStatus>("Active");
+  const [order, setOrder] = useState<number | "">("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Populate form when editing
+  useEffect(() => {
+    if (gradeToEdit) {
+      setGradeName(gradeToEdit.name);
+      setGradeCode(gradeToEdit.code);
+      setOrder(gradeToEdit.order ?? "");
+    }
+  }, [gradeToEdit]);
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+    const newErrors: Record<string, string> = {};
 
-    if (!gradeName.trim()) {
-      newErrors.gradeName = "Grade Name is required";
-    }
-
-    if (!gradeCode.trim()) {
-      newErrors.gradeCode = "Grade Code is required";
-    }
-
-    if (displayOrder !== "" && (Number(displayOrder) < 0 || isNaN(Number(displayOrder)))) {
-      newErrors.displayOrder = "Display Order must be a positive number";
+    if (!gradeName.trim()) newErrors.gradeName = "Grade Name is required";
+    if (!gradeCode.trim()) newErrors.gradeCode = "Grade Code is required";
+    if (order === "" || Number(order) < 1 || isNaN(Number(order))) {
+      newErrors.order = "Display Order must be a positive number";
     }
 
     setErrors(newErrors);
@@ -39,52 +44,30 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
   };
 
   const handleSaveGrade = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
     try {
-      const response = await api.post("/grades", {
+      const payload = {
         name: gradeName.trim(),
         code: gradeCode.trim(),
-        display_order: displayOrder === "" ? null : Number(displayOrder),
-        status: gradeStatus,
-      });
+        order: Number(order),
+      };
 
-      // Reset form
-      setGradeName("");
-      setGradeCode("");
-      setDisplayOrder("");
-      setGradeStatus("Active");
-      setErrors({});
+      const response = gradeToEdit
+        ? await api.put(`/grades/${gradeToEdit.id}`, payload)
+        : await api.post("/grades", payload);
 
-      // Notify parent component if callback provided
-      if (onGradeAdded) {
-        onGradeAdded(response.data as Grade);
-      }
-
-      // Close modal
+      onGradeAdded?.(response.data as Grade);
       onClose();
-    } catch (error: unknown) {
-      console.error("Error adding grade:", error);
-      
-      // Handle specific API errors
-      if (error instanceof Error && error.message.includes("unique")) {
-        setErrors({ gradeCode: "Grade Code must be unique" });
-      } else {
-        alert("Failed to add grade. Please try again.");
-      }
+    } catch {
+      setErrors({ gradeCode: "Grade name or code must be unique" });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    setGradeName("");
-    setGradeCode("");
-    setDisplayOrder("");
-    setGradeStatus("Active");
     setErrors({});
     onClose();
   };
@@ -94,8 +77,12 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
       <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Add Grade</h2>
-          <button onClick={handleCancel} className="text-gray-500">✕</button>
+          <h2 className="text-xl font-semibold">
+            {gradeToEdit ? "Edit Grade" : "Add Grade"}
+          </h2>
+          <button onClick={handleCancel} className="text-gray-500">
+            ✕
+          </button>
         </div>
 
         {/* Grade Name */}
@@ -105,12 +92,15 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
           </label>
           <input
             type="text"
-            className={`w-full border rounded px-4 py-2 ${errors.gradeName ? 'border-red-500' : ''}`}
-            placeholder="Enter grade name"
+            placeholder="e.g. Grade 1, Playgroup"
+            className={`w-full border rounded px-4 py-2 ${
+              errors.gradeName ? "border-red-500" : ""
+            }`}
             value={gradeName}
             onChange={(e) => {
               setGradeName(e.target.value);
-              if (errors.gradeName) setErrors(prev => ({ ...prev, gradeName: "" }));
+              if (errors.gradeName)
+                setErrors((p) => ({ ...p, gradeName: "" }));
             }}
           />
           {errors.gradeName && (
@@ -125,12 +115,15 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
           </label>
           <input
             type="text"
-            className={`w-full border rounded px-4 py-2 ${errors.gradeCode ? 'border-red-500' : ''}`}
-            placeholder="Enter unique grade code"
+            placeholder="e.g. G1, PG, PP1"
+            className={`w-full border rounded px-4 py-2 ${
+              errors.gradeCode ? "border-red-500" : ""
+            }`}
             value={gradeCode}
             onChange={(e) => {
               setGradeCode(e.target.value);
-              if (errors.gradeCode) setErrors(prev => ({ ...prev, gradeCode: "" }));
+              if (errors.gradeCode)
+                setErrors((p) => ({ ...p, gradeCode: "" }));
             }}
           />
           {errors.gradeCode && (
@@ -138,31 +131,27 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
           )}
         </div>
 
-        {/* Status */}
+        {/* Display Order */}
         <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
-          <div className="flex gap-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="status"
-                checked={gradeStatus === "Active"}
-                onChange={() => setGradeStatus("Active")}
-                className="mr-2"
-              />
-              Active
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="status"
-                checked={gradeStatus === "Inactive"}
-                onChange={() => setGradeStatus("Inactive")}
-                className="mr-2"
-              />
-              Inactive
-            </label>
-          </div>
+          <label className="block text-sm font-medium mb-1">
+            Display Order <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            min={1}
+            className={`w-full border rounded px-4 py-2 ${
+              errors.order ? "border-red-500" : ""
+            }`}
+            value={order}
+            onChange={(e) => {
+              setOrder(e.target.value === "" ? "" : Number(e.target.value));
+              if (errors.order)
+                setErrors((p) => ({ ...p, order: "" }));
+            }}
+          />
+          {errors.order && (
+            <p className="text-red-500 text-sm mt-1">{errors.order}</p>
+          )}
         </div>
 
         {/* Actions */}
@@ -176,10 +165,14 @@ const GradesModal = ({ onClose, onGradeAdded }: AddGradeModalProps) => {
           </button>
           <button
             onClick={handleSaveGrade}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             disabled={isLoading}
           >
-            {isLoading ? "Saving..." : "Save Grade"}
+            {isLoading
+              ? "Saving..."
+              : gradeToEdit
+              ? "Update Grade"
+              : "Save Grade"}
           </button>
         </div>
       </div>

@@ -16,7 +16,7 @@ const GradesTable = ({ grades, onView, onEdit, onViewStreams }: Props) => {
     );
   }
 
-  const handleColumnClick = (grade: Grade) => {
+  const handleRowClick = (grade: Grade) => {
     if (onViewStreams) {
       onViewStreams(grade);
     }
@@ -27,77 +27,46 @@ const GradesTable = ({ grades, onView, onEdit, onViewStreams }: Props) => {
       <table className="w-full text-sm">
         <thead className="bg-blue-50">
           <tr>
-            <th 
-              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-              onClick={() => onViewStreams && onViewStreams(grades[0])}
-            >
-              Grade Name
-            </th>
-            <th 
-              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-              onClick={() => onViewStreams && onViewStreams(grades[0])}
-            >
-              Grade Code
-            </th>
-            <th 
-              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-              onClick={() => onViewStreams && onViewStreams(grades[0])}
-            >
-              Stream Count
-            </th>
-            <th 
-              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-              onClick={() => onViewStreams && onViewStreams(grades[0])}
-            >
-              Display Order
-            </th>
-            <th 
-              className="p-3 text-left cursor-pointer hover:bg-blue-100" 
-              onClick={() => onViewStreams && onViewStreams(grades[0])}
-            >
-              Status
-            </th>
+            <th className="p-3 text-left">Grade Name</th>
+            <th className="p-3 text-left">Grade Code</th>
+            <th className="p-3 text-left">Stream Count</th>
+            <th className="p-3 text-left">Display Order</th>
             <th className="p-3 text-left">Actions</th>
           </tr>
         </thead>
 
         <tbody>
           {grades.map((grade) => (
-            <tr key={grade.id} className="border-t hover:bg-blue-50">
-              <td 
-                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                onClick={() => handleColumnClick(grade)}
+            <tr
+              key={grade.id}
+              className="border-t hover:bg-blue-50"
+            >
+              <td
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline"
+                onClick={() => handleRowClick(grade)}
               >
                 {grade.name}
               </td>
-              <td 
-                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                onClick={() => handleColumnClick(grade)}
+
+              <td
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline"
+                onClick={() => handleRowClick(grade)}
               >
                 {grade.code}
               </td>
-              <td 
-                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                onClick={() => handleColumnClick(grade)}
+
+              <td
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline"
+                onClick={() => handleRowClick(grade)}
               >
-                {grade.classCount || 0}
+                {grade.classCount ?? 0}
               </td>
-              <td 
-                className="p-3 cursor-pointer hover:text-blue-600 hover:underline" 
-                onClick={() => handleColumnClick(grade)}
+
+              <td
+                className="p-3 cursor-pointer hover:text-blue-600 hover:underline"
+                onClick={() => handleRowClick(grade)}
               >
-                {grade.display_order || "-"}
-              </td>
-              <td className="p-3">
-                <span
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    grade.status === "Active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {grade.status}
-                </span>
+                {grade.order ?? "-"}
               </td>
 
               <td className="p-3 flex gap-4">
