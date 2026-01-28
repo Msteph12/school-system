@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Term;
-use App\Models\AcademicYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,121 +14,141 @@ class TermController extends Controller
     public function index()
     {
         return Term::with('academicYear')
-            ->orderBy('start_date')
-            ->get();
+            ->orderBy('order')
+            ->get()
+            ->map(fn ($term) => $this->transformTerm($term));
+    }
+
+    // GET /api/terms/{id}
+    public function show($id)
+    {
+        $term = Term::with('academicYear')->findOrFail($id);
+        return $this->transformTerm($term);
     }
 
     // POST /api/terms
     public function store(Request $request)
     {
-
         $validated = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'name' => 'required|string',
             'order' => 'required|integer|min:1',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'is_active' => 'boolean',
-            'is_closed' => 'boolean',
         ]);
 
-        // Ensure only one active term per academic year
-        if (!empty($validated['is_active']) && $validated['is_active']) {
-            Term::where('academic_year_id', $validated['academic_year_id'])
-                ->where('is_active', true)
-                ->update(['is_active' => false]);
-        }
-
-        $year = AcademicYear::findOrFail($validated['academic_year_id']);
-
-        if ($year->isClosed()) {
-            return response()->json([
-                'message' => 'This academic year is closed. Terms cannot be created.',
-            ], 423);
-        }
-
         return Term::create($validated);
-    }
-
-    // GET /api/terms/{id}
-    public function show($id)
-    {
-        return Term::with('academicYear')->findOrFail($id);
     }
 
     // PUT /api/terms/{id}
     public function update(Request $request, $id)
     {
-        if (Auth::user()->role->name !== 'admin') {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
-    
+        $this->authorizeAdmin();
+
         $term = Term::findOrFail($id);
-        
 
         $validated = $request->validate([
-            'academic_year_id' => 'nullable|exists:academic_years,id',
             'name' => 'nullable|string',
-            'order' => 'nullable|integer|min:1',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after:start_date',
-            'is_active' => 'nullable|boolean',
-            'is_closed' => 'nullable|boolean',
         ]);
-
-        // Determine which academic year to apply the active-term rule to
-        $yearId = $validated['academic_year_id'] ?? $term->academic_year_id;
-
-        if (!empty($validated['is_active']) && $validated['is_active']) {
-            Term::where('academic_year_id', $yearId)
-                ->where('is_active', true)
-                ->where('id', '!=', $term->id)
-                ->update(['is_active' => false, 'is_closed' => false]);
-        }
 
         $term->update($validated);
 
-        return $term;
+        return $this->transformTerm($term);
     }
 
-    public function activate(Term $term)
+    /**
+     * POST /api/terms/{term}/lock
+     * Lock a term (close it permanently)
+     */
+    public function lock(Term $term)
     {
+        $this->authorizeAdmin();
+
+        if ($term->is_closed) {
+            return response()->json([
+                'message' => 'Term is already locked.',
+            ], 422);
+        }
+
+        // Enforce sequential locking
+        if ($term->order > 1) {
+            $previous = Term::where('academic_year_id', $term->academic_year_id)
+                ->where('order', $term->order - 1)
+                ->first();
+
+            if (!$previous || !$previous->is_closed) {
+                return response()->json([
+                    'message' => 'Previous term must be locked first.',
+                ], 422);
+            }
+        }
+
+        $term->update([
+            'is_active' => false,
+            'is_closed' => true,
+        ]);
+
+        return $this->transformTerm($term);
+    }
+
+    /**
+     * POST /api/terms/{term}/unlock
+     * Re-open a locked term (admin only)
+     */
+    public function unlock(Term $term)
+    {
+        $this->authorizeAdmin();
+
+        if (!$term->is_closed) {
+            return response()->json([
+                'message' => 'Term is not locked.',
+            ], 422);
+        }
+
         DB::transaction(function () use ($term) {
             Term::where('academic_year_id', $term->academic_year_id)
                 ->update(['is_active' => false]);
 
-            $term->update(['is_active' => true]);
+            $term->update([
+                'is_closed' => false,
+                'is_active' => true,
+            ]);
         });
 
-        return response()->json([
-            'message' => 'Term activated successfully',
-            'term' => $term,
-        ]);
-    }
-
-    public function close(Term $term)
-    {
-        if (!$term->is_active) {
-            return response()->json([
-                'message' => 'Only the active term can be closed',
-            ], 422);
-        }
-
-        $term->update([
-            'is_closed' => true,
-            'is_active' => false,
-        ]);
-
-        return response()->json([
-            'message' => 'Term closed successfully',
-            'term' => $term,
-        ]);
+        return $this->transformTerm($term);
     }
 
     /**
-     * TERMS ARE NEVER DELETED
-     * Terms are historical records tied to attendance, exams and results.
-     * Use is_active to close a term instead.
+     * -----------------------------------------
+     * Helpers
+     * -----------------------------------------
      */
 
+    private function authorizeAdmin(): void
+    {
+        $user = Auth::user();
+
+        if (!$user || !$user->role || $user->role->name !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+    }
+
+    private function transformTerm(Term $term): array
+    {
+        return [
+            'id' => (string) $term->id,
+            'name' => $term->name,
+            'order' => $term->order,
+
+            // frontend contract
+            'isLocked' => (bool) $term->is_closed,
+            'lockedDate' => $term->is_closed ? $term->updated_at?->toISOString() : null,
+            'lockedBy' => $term->is_closed ? optional(Auth::user())->name : null,
+
+            // internal (optional but useful)
+            'isActive' => $term->is_active,
+        ];
+    }
 }

@@ -77,8 +77,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Core setup
     Route::apiResource('academic-years', AcademicYearController::class)->except(['destroy']);
     Route::apiResource('terms', TermController::class)->except(['destroy']);
-    Route::post('/terms/{term}/close', [TermController::class, 'close']);
-    Route::post('/terms/{term}/activate', [TermController::class, 'activate']);
+
+    Route::post('/terms/{term}/lock', [TermController::class, 'lock']);
+    Route::post('/terms/{term}/unlock', [TermController::class, 'unlock']);
+
     Route::apiResource('grades', GradeController::class);
     Route::apiResource('subjects', SubjectController::class);
     Route::apiResource('teachers', TeacherController::class);
@@ -133,8 +135,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::post('/exam-types', [ExamTypeController::class, 'store']);
     Route::delete('/exam-types/{id}', [ExamTypeController::class, 'destroy']);
 
-    // Term closure
-    Route::post('terms/{term}/close', [TermClosureController::class, 'close']);
 });
 
 /*
