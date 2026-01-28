@@ -25,50 +25,61 @@ export const useExamTypes = () => {
   };
 
   const createExamType = async (name: string): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await assessmentService.createExamType({ name });
-      if (response.error) {
-        setError(response.error);
-        return false;
-      } else if (response.data) {
-        setExamTypes(prev => [...prev, response.data!]);
-        return true;
-      }
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await assessmentService.createExamType({ name });
+
+    if (response.error || !response.data) {
+      setError(response.error ?? 'Failed to create exam type');
       return false;
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to create exam type');
-      return false;
-    } finally {
-      setLoading(false);
     }
+
+    const newExamType = response.data;
+
+    setExamTypes(prev => [...prev, newExamType]);
+
+    return true;
+  } catch (error) {
+    setError(error instanceof Error ? error.message : 'Failed to create exam type');
+    return false;
+  } finally {
+    setLoading(false);
+  }
   };
 
-  const updateExamType = async (id: string, name: string): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await assessmentService.updateExamType(id, { name });
-      if (response.error) {
-        setError(response.error);
-        return false;
-      } else if (response.data) {
-        setExamTypes(prev => 
-          prev.map(type => type.id === id ? response.data! : type)
-        );
-        return true;
-      }
+
+  const updateExamType = async (id: number, name: string): Promise<boolean> => {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await assessmentService.updateExamType(id, { name });
+
+    if (response.error || !response.data) {
+      setError(response.error ?? 'Failed to update exam type');
       return false;
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to update exam type');
-      return false;
-    } finally {
-      setLoading(false);
     }
+
+    const updatedExamType = response.data;
+
+    setExamTypes(prev =>
+      prev.map(type =>
+        type.id === id ? updatedExamType : type
+      )
+    );
+
+    return true;
+  } catch (error) {
+    setError(error instanceof Error ? error.message : 'Failed to update exam type');
+    return false;
+  } finally {
+    setLoading(false);
+  }
   };
 
-  const deleteExamType = async (id: string): Promise<boolean> => {
+  const deleteExamType = async (id: number): Promise<boolean> => {
     setLoading(true);
     setError(null);
     try {
@@ -76,10 +87,10 @@ export const useExamTypes = () => {
       if (response.error) {
         setError(response.error);
         return false;
-      } else {
-        setExamTypes(prev => prev.filter(type => type.id !== id));
-        return true;
       }
+
+      setExamTypes(prev => prev.filter(type => type.id !== id));
+      return true;
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete exam type');
       return false;
@@ -92,13 +103,13 @@ export const useExamTypes = () => {
     fetchExamTypes();
   }, []);
 
-  return { 
-    examTypes, 
-    loading, 
-    error, 
-    createExamType, 
-    updateExamType, 
+  return {
+    examTypes,
+    loading,
+    error,
+    createExamType,
+    updateExamType,
     deleteExamType,
-    refetch: fetchExamTypes 
+    refetch: fetchExamTypes,
   };
 };

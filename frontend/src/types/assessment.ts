@@ -1,13 +1,13 @@
 // types/assessment.ts
 export interface Exam {
-  id: string;
+  id: number;
   name: string;
   term: string;
   grade: string;
   startDate: string;
   endDate: string;
   status: 'scheduled' | 'active' | 'completed';
-  type: string; // Changed from specific types to string to support dynamic exam types
+  type: string; // exam type name or slug
   attachment?: string;
 }
 
@@ -22,4 +22,3 @@ export interface ExamType {
   id: number;
   name: string;
 }
-

@@ -5,30 +5,30 @@ import type { ExamType } from '@/types/assessment';
 interface ExamTypeTableProps {
   examTypes: ExamType[];
   onCreate: (name: string) => Promise<boolean> | void;
-  onUpdate: (id: string, name: string) => Promise<boolean> | void;
-  onDelete: (id: string) => Promise<boolean> | void;
+  onUpdate: (id: number, name: string) => Promise<boolean> | void;
+  onDelete: (id: number) => Promise<boolean> | void;
   loading?: boolean;
   error?: string | null;
 }
 
-const ExamTypeTable: React.FC<ExamTypeTableProps> = ({ 
-  examTypes, 
-  onCreate, 
-  onUpdate, 
+const ExamTypeTable: React.FC<ExamTypeTableProps> = ({
+  examTypes,
+  onCreate,
+  onUpdate,
   onDelete,
   loading = false,
-  error = null
+  error = null,
 }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentExamType, setCurrentExamType] = useState<ExamType | null>(null);
   const [newExamTypeName, setNewExamTypeName] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleCreate = async () => {
     if (!newExamTypeName.trim()) return;
-    
+
     setModalLoading(true);
     try {
       const result = await onCreate(newExamTypeName.trim());
@@ -49,7 +49,7 @@ const ExamTypeTable: React.FC<ExamTypeTableProps> = ({
 
   const handleUpdate = async () => {
     if (!currentExamType || !newExamTypeName.trim()) return;
-    
+
     setModalLoading(true);
     try {
       const result = await onUpdate(currentExamType.id, newExamTypeName.trim());
@@ -63,11 +63,9 @@ const ExamTypeTable: React.FC<ExamTypeTableProps> = ({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this exam type?')) {
-      return;
-    }
-    
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to delete this exam type?')) return;
+
     setDeletingId(id);
     try {
       const result = await onDelete(id);
@@ -81,7 +79,6 @@ const ExamTypeTable: React.FC<ExamTypeTableProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-      {/* Header - ALWAYS SHOW */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Exam Types</h3>
@@ -91,73 +88,45 @@ const ExamTypeTable: React.FC<ExamTypeTableProps> = ({
           onClick={() => setIsCreateModalOpen(true)}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Create new exam type"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
           Create Exam Type
         </button>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {error ? (
               <tr>
                 <td colSpan={2} className="px-6 py-8 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <AlertCircle size={48} className="text-red-500 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to Load Data</h3>
-                    <p className="text-gray-600 mb-4">{error}</p>
-                    <button
-                      onClick={() => window.location.reload()}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : loading && examTypes.length === 0 ? (
-              <tr>
-                <td colSpan={2} className="px-6 py-8 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <Loader2 size={48} className="animate-spin text-blue-600 mb-4" />
-                    <p className="text-gray-600">Loading exam types...</p>
-                  </div>
+                  <AlertCircle size={48} className="text-red-500 mb-4 mx-auto" />
+                  <p className="text-gray-600">{error}</p>
                 </td>
               </tr>
             ) : examTypes.length > 0 ? (
               examTypes.map((examType) => (
                 <tr key={examType.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">{examType.name}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 text-sm text-gray-900">{examType.name}</td>
+                  <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => handleEdit(examType)}
                         disabled={loading}
-                        className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Edit exam type"
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(examType.id)}
                         disabled={loading || deletingId === examType.id}
-                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete exam type"
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded"
                       >
                         {deletingId === examType.id ? (
                           <Loader2 size={16} className="animate-spin" />
@@ -172,7 +141,7 @@ const ExamTypeTable: React.FC<ExamTypeTableProps> = ({
             ) : (
               <tr>
                 <td colSpan={2} className="px-6 py-8 text-center text-gray-500">
-                  No exam types found. Click "Create Exam Type" to add one.
+                  No exam types found.
                 </td>
               </tr>
             )}

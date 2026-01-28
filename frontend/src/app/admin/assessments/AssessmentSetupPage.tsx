@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/admin/TopBar';
@@ -17,7 +15,10 @@ const AssessmentSetupPage: React.FC = () => {
     deleteExamType,
   } = useExamTypes();
 
-  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
@@ -35,7 +36,7 @@ const AssessmentSetupPage: React.FC = () => {
     }
   };
 
-  const handleUpdateExamType = async (id: string, name: string): Promise<boolean> => {
+  const handleUpdateExamType = async (id: number, name: string): Promise<boolean> => {
     const success = await updateExamType(id, name);
     if (success) {
       showNotification('success', 'Exam type updated successfully!');
@@ -46,7 +47,7 @@ const AssessmentSetupPage: React.FC = () => {
     }
   };
 
-  const handleDeleteExamType = async (id: string): Promise<boolean> => {
+  const handleDeleteExamType = async (id: number): Promise<boolean> => {
     const success = await deleteExamType(id);
     if (success) {
       showNotification('success', 'Exam type deleted successfully!');
@@ -57,19 +58,35 @@ const AssessmentSetupPage: React.FC = () => {
     }
   };
 
-  // DON'T show full page loading/error states - table handles them internally
-
   return (
     <div className="space-y-6 p-6">
       <TopBar />
 
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 ${notification.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border rounded-lg p-4 shadow-lg`}>
+        <div
+          className={`fixed top-4 right-4 z-50 ${
+            notification.type === 'success'
+              ? 'bg-green-50 border-green-200'
+              : 'bg-red-50 border-red-200'
+          } border rounded-lg p-4 shadow-lg`}
+        >
           <div className="flex items-center gap-2">
-            <span className={`font-semibold ${notification.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+            <span
+              className={`font-semibold ${
+                notification.type === 'success'
+                  ? 'text-green-800'
+                  : 'text-red-800'
+              }`}
+            >
               {notification.type === 'success' ? '✓ Success' : '✗ Error'}
             </span>
-            <span className={notification.type === 'success' ? 'text-green-600' : 'text-red-600'}>
+            <span
+              className={
+                notification.type === 'success'
+                  ? 'text-green-600'
+                  : 'text-red-600'
+              }
+            >
               {notification.message}
             </span>
           </div>
@@ -78,8 +95,12 @@ const AssessmentSetupPage: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Assessment Setup</h1>
-          <p className="text-gray-600">Manage exam types and assessment settings</p>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Assessment Setup
+          </h1>
+          <p className="text-gray-600">
+            Manage exam types and assessment settings
+          </p>
         </div>
         <button
           onClick={() => navigate(-1)}

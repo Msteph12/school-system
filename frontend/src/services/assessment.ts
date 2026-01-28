@@ -1,5 +1,5 @@
 import type { Exam, ExamType } from '@/types/assessment';
-import api from '@/services/api'; // Import the existing axios instance
+import api from '@/services/api';
 import type { AxiosError } from 'axios';
 
 interface ApiResponse<T> {
@@ -26,24 +26,23 @@ class AssessmentService {
       return { data: response.data as T };
     } catch (error) {
       console.error(`API Error (${endpoint}):`, error);
-      
+
       const axiosError = error as AxiosError<{ message?: string }>;
-      const errorMessage = axiosError.response?.data?.message 
-        || axiosError.message 
-        || 'An unknown error occurred';
-      
-      return {
-        error: errorMessage,
-      };
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        'An unknown error occurred';
+
+      return { error: errorMessage };
     }
   }
 
-  // Exam endpoints
+  // Exams
   async getExams(): Promise<ApiResponse<Exam[]>> {
     return this.fetchApi<Exam[]>('/exams');
   }
 
-  async getExam(id: string): Promise<ApiResponse<Exam>> {
+  async getExam(id: number): Promise<ApiResponse<Exam>> {
     return this.fetchApi<Exam>(`/exams/${id}`);
   }
 
@@ -54,39 +53,44 @@ class AssessmentService {
     });
   }
 
-  async updateExam(id: string, exam: Partial<Exam>): Promise<ApiResponse<Exam>> {
+  async updateExam(id: number, exam: Partial<Exam>): Promise<ApiResponse<Exam>> {
     return this.fetchApi<Exam>(`/exams/${id}`, {
       method: 'PUT',
       data: exam,
     });
   }
 
-  async deleteExam(id: string): Promise<ApiResponse<void>> {
+  async deleteExam(id: number): Promise<ApiResponse<void>> {
     return this.fetchApi<void>(`/exams/${id}`, {
       method: 'DELETE',
     });
   }
 
-  // Exam Type endpoints
+  // Exam Types
   async getExamTypes(): Promise<ApiResponse<ExamType[]>> {
     return this.fetchApi<ExamType[]>('/exam-types');
   }
 
-  async createExamType(examType: Omit<ExamType, 'id'>): Promise<ApiResponse<ExamType>> {
+  async createExamType(
+    examType: Omit<ExamType, 'id'>
+  ): Promise<ApiResponse<ExamType>> {
     return this.fetchApi<ExamType>('/exam-types', {
       method: 'POST',
       data: examType,
     });
   }
 
-  async updateExamType(id: string, examType: Partial<ExamType>): Promise<ApiResponse<ExamType>> {
+  async updateExamType(
+    id: number,
+    examType: Partial<ExamType>
+  ): Promise<ApiResponse<ExamType>> {
     return this.fetchApi<ExamType>(`/exam-types/${id}`, {
       method: 'PUT',
       data: examType,
     });
   }
 
-  async deleteExamType(id: string): Promise<ApiResponse<void>> {
+  async deleteExamType(id: number): Promise<ApiResponse<void>> {
     return this.fetchApi<void>(`/exam-types/${id}`, {
       method: 'DELETE',
     });
