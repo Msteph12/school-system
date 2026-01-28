@@ -22,6 +22,19 @@ class ExamTypeController extends Controller
         return ExamType::create($validated);
     }
 
+    public function update(Request $request, $id)
+    {
+        $examType = ExamType::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:exam_types,name,' . $examType->id,
+        ]);
+
+        $examType->update($validated);
+
+        return $examType;
+    }
+
     public function destroy($id)
     {
         ExamType::findOrFail($id)->delete();

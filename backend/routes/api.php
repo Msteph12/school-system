@@ -133,6 +133,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Exam types
     Route::get('/exam-types', [ExamTypeController::class, 'index']);
     Route::post('/exam-types', [ExamTypeController::class, 'store']);
+    Route::put('/exam-types/{id}', [ExamTypeController::class, 'update']);
     Route::delete('/exam-types/{id}', [ExamTypeController::class, 'destroy']);
 
 });
