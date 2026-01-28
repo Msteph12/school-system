@@ -204,7 +204,10 @@ Route::middleware(['auth:sanctum', 'role:admin,teacher'])->group(function () {
     Route::get('reports/teacher-attendance', [ReportsController::class, 'teacherAttendance']);
 
     // Marks (full CRUD)
-    Route::apiResource('marks', MarksController::class);
+    Route::get('/marks', [MarksController::class, 'index']);
+    Route::post('/marks', [MarksController::class, 'store']);
+    Route::get('/marks/{mark}', [MarksController::class, 'show']);
+    Route::put('/marks/{mark}', [MarksController::class, 'update']);
 
     Route::get('results/student/{student}', [ResultsController::class, 'studentResults']);
 

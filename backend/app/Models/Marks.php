@@ -12,41 +12,23 @@ class Marks extends Model
     protected $fillable = [
         'student_id',
         'exam_id',
-        'subject_id',
-        'academic_year_id',
-        'term_id',
-
-        'score',        // numeric mark, e.g. 78
-        'grade_label',  // Excellent, Above Average, etc.
+        'grade_scale_id',
+        'marks_obtained',
+        'remarks',
     ];
 
-    // A mark belongs to a student
     public function student()
     {
         return $this->belongsTo(Student::class);
     }
 
-    // A mark belongs to an exam
     public function exam()
     {
         return $this->belongsTo(Exam::class);
     }
 
-    // A mark belongs to a subject
-    public function subject()
+    public function gradeScale()
     {
-        return $this->belongsTo(Subject::class);
-    }
-
-    // A mark belongs to an academic year
-    public function academicYear()
-    {
-        return $this->belongsTo(AcademicYear::class);
-    }
-
-    // A mark belongs to a term
-    public function term()
-    {
-        return $this->belongsTo(Term::class);
+        return $this->belongsTo(GradeScale::class);
     }
 }

@@ -12,14 +12,13 @@ return new class extends Migration {
 
             $table->foreignId('exam_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('grade_scale_id')->constrained('grade_scales');
 
             $table->unsignedInteger('marks_obtained');
-            $table->string('grade')->nullable();
             $table->text('remarks')->nullable();
 
             $table->timestamps();
 
-            // One student can only have ONE mark per exam
             $table->unique(['exam_id', 'student_id']);
         });
     }
