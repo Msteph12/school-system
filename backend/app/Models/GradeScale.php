@@ -10,13 +10,20 @@ class GradeScale extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',        // Excellent, Above Average, etc.
-        'description', // Optional explanation
+        'name',
+        'description',
+        'is_active',
     ];
 
-    // A grade scale can be used by many marks
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * A grade scale can be used by many marks
+     */
     public function marks()
     {
-        return $this->hasMany(Marks::class);
+        return $this->hasMany(\App\Models\Marks::class);
     }
 }
