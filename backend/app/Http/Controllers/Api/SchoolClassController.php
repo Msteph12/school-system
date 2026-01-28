@@ -5,27 +5,64 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class SchoolClassController extends Controller
 {
     // GET /api/school-classes
     public function index()
     {
-        return SchoolClass::orderBy('name')->get();
+        $classes = SchoolClass::with('grade')
+            ->orderBy('grade_id')
+            ->orderBy('display_order')
+            ->get()
+            ->map(function ($class) {
+                return [
+                    'id' => (string) $class->id,
+                    'name' => $class->name,
+                    'code' => $class->code,
+                    'display_order' => $class->display_order,
+                    'status' => ucfirst($class->status),
+                    'gradeId' => (string) $class->grade_id,
+                    'gradeName' => $class->grade?->name,
+                ];
+            });
+
+        return response()->json(['classes' => $classes]);
     }
 
     // POST /api/school-classes
     public function store(Request $request)
     {
-
         $validated = $request->validate([
-            'name' => 'required|string|unique:school_classes,name',
+            'grade_id' => 'required|exists:grades,id',
+            'name' => 'required|string',
+            'code' => 'nullable|string',
+            'teacher_id' => 'nullable|exists:teachers,id',
+            'capacity' => 'nullable|integer|min:1',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'display_order' => 'nullable|integer',
         ]);
 
-        return SchoolClass::create($validated);
+        // Ensure unique class name per grade
+        $exists = SchoolClass::where('grade_id', $validated['grade_id'])
+            ->where('name', $validated['name'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Class name already exists in this grade'
+            ], 409);
+        }
+
+        $class = SchoolClass::create([
+            ...$validated,
+            'status' => 'active',
+        ]);
+
+        return response()->json([
+            'message' => 'Class created successfully',
+            'class' => $class
+        ], 201);
     }
 
     // GET /api/school-classes/{id}
@@ -40,15 +77,17 @@ class SchoolClassController extends Controller
         $schoolClass = SchoolClass::findOrFail($id);
 
         $validated = $request->validate([
-            'grade_id' => 'exists:grades,id',
-            'name' => 'string',
+            'grade_id' => 'sometimes|exists:grades,id',
+            'name' => 'sometimes|string',
             'code' => 'nullable|string',
             'status' => 'in:active,inactive',
             'teacher_id' => 'nullable|exists:teachers,id',
             'capacity' => 'nullable|integer|min:1',
+            'display_order' => 'nullable|integer',
+            'description' => 'nullable|string',
         ]);
 
-        // Ensure class name is unique per grade
+        // Unique name per grade (on update)
         if (isset($validated['name'], $validated['grade_id'])) {
             $exists = SchoolClass::where('grade_id', $validated['grade_id'])
                 ->where('name', $validated['name'])
@@ -64,24 +103,34 @@ class SchoolClassController extends Controller
 
         $schoolClass->update($validated);
 
-        return $schoolClass;
+        return response()->json([
+            'message' => 'Class updated successfully',
+            'class' => $schoolClass
+        ]);
     }
 
-
-    // DELETE /api/school-classes/{id}
+    // DELETE /api/school-classes/{id} (SOFT DELETE)
     public function destroy($id)
-    {       
+    {
         $schoolClass = SchoolClass::findOrFail($id);
 
-        // Prevent deletion if students are assigned
-        if ($schoolClass->classStudents()->exists()) {
-            return response()->json([
-                'message' => 'Cannot delete class with enrolled students'
-            ], 409);
-        }
+        $schoolClass->update([
+            'status' => 'inactive'
+        ]);
 
-        $schoolClass->delete();
+        return response()->json([
+            'message' => 'Class archived (inactive)'
+        ]);
+    }
 
-        return response()->json(['message' => 'School class deleted']);
+    public function toggleStatus($id)
+    {
+        $class = SchoolClass::findOrFail($id);
+
+        $class->update([
+            'status' => $class->status === 'active' ? 'inactive' : 'active'
+        ]);
+
+        return response()->json(['status' => $class->status]);
     }
 }

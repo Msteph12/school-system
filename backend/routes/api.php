@@ -145,6 +145,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin,registrar'])->group(function () {
 
     Route::apiResource('school-classes', SchoolClassController::class);
+    Route::patch('school-classes/{id}/status', [SchoolClassController::class, 'toggleStatus']);
     Route::apiResource('class-students', ClassStudentController::class)->only(['index','store','destroy']);
     Route::post('promotions', [PromotionController::class, 'promote']);
     Route::apiResource('teacher-attendance', TeacherAttendanceController::class) ->except(['show']);
