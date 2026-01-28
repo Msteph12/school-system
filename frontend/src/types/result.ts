@@ -1,6 +1,4 @@
 // types/result.ts
-
-// Basic types
 export interface FilterOption {
   id: string;
   name: string;

@@ -189,28 +189,30 @@ const EnterResults = () => {
   }, [selectedGrade, selectedClass]);
 
   // Load existing results - useCallback to avoid dependency issues
-  const loadResults = useCallback(async () => {
-    const filters = {
-      grade_id: selectedGrade,
-      class_id: selectedClass,
-      subject_id: selectedSubject,
-      exam_type_id: selectedExamType,
-      academic_year_id: selectedYear,
-      term_id: selectedTerm,
-    };
+const loadResults = useCallback(async () => {
+  if (
+    !selectedYear ||
+    !selectedTerm ||
+    !selectedGrade ||
+    !selectedClass ||
+    !selectedSubject ||
+    !selectedExamType
+  ) {
+    setResults([]);
+    return;
+  }
 
-    if (selectedGrade && selectedClass && selectedSubject && selectedExamType && selectedYear && selectedTerm) {
-      try {
-        const resultsData = await resultsService.getResults(filters);
-        setResults(resultsData || []);
-      } catch (error) {
-        console.error("Error loading results:", error);
-        setResults([]);
-      }
-    } else {
-      setResults([]);
-    }
-  }, [selectedGrade, selectedClass, selectedSubject, selectedExamType, selectedYear, selectedTerm]);
+  try {
+    const resultsData = await resultsService.getResults({
+      exam_id: selectedExamType,
+    });
+
+    setResults(resultsData || []);
+  } catch (error) {
+    console.error(error);
+    setResults([]);
+  }
+  }, [selectedExamType, selectedYear, selectedTerm, selectedGrade, selectedClass, selectedSubject]);
 
   useEffect(() => {
     loadResults();
@@ -228,6 +230,11 @@ const EnterResults = () => {
     );
   };
 
+  const handleEditResult = (result: ResultEntry) => {
+  console.log(result);
+  };
+
+
   // Handle delete result
   const handleDeleteResult = async (id: string) => {
     if (!confirm("Are you sure you want to delete this result?")) return;
@@ -243,34 +250,32 @@ const EnterResults = () => {
   };
 
   // Handle save result
-  const handleSaveResult = async (data: {
-    studentId: string;
-    marks: number;
-    gradeScaleId: string;
-    remarks?: string;
-  }) => {
-    if (!allCriteriaSelected()) return;
+ const handleSaveResult = async (data: {
+  studentId: string;
+  marks: number;
+  gradeScaleId: string;
+  remarks?: string;
+}) => {
+  if (!allCriteriaSelected()) return;
 
-    try {
-      await resultsService.addResult({
-        student_id: data.studentId,
-        subject_id: selectedSubject,
-        exam_type_id: selectedExamType,
-        academic_year_id: selectedYear,
-        term_id: selectedTerm,
-        marks: data.marks,
-        grade_scale_id: data.gradeScaleId,
-        remarks: data.remarks
-      });
+  try {
+    await resultsService.addResult({
+      student_id: data.studentId,
+      exam_id: selectedExamType, // exam already created from exam type
+      grade_scale_id: data.gradeScaleId,
+      marks_obtained: data.marks,
+      remarks: data.remarks
+    });
 
-      await loadResults();
-      setShowModal(false);
-      alert("Result saved successfully!");
-    } catch (error) {
-      console.error("Error saving result:", error);
-      alert("Failed to save result. Please try again.");
-    }
-  };
+    await loadResults();
+    setShowModal(false);
+    alert("Result saved successfully!");
+  } catch (error) {
+    console.error("Error saving result:", error);
+    alert("Failed to save result.");
+  }
+};
+
 
   const filterOptions = {
     years: years.map(year => ({ id: year.id, name: year.name || year.year })),
@@ -352,6 +357,7 @@ const EnterResults = () => {
 
       <EnterResultsTable
         results={results}
+        onEditResult={handleEditResult}
         onDeleteResult={handleDeleteResult}
         allCriteriaSelected={allCriteriaSelected()}
       />

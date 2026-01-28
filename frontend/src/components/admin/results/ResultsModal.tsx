@@ -4,6 +4,12 @@ import type { Student, GradeScale } from '@/types/result';
 interface ResultsModalProps {
   students: Student[];
   gradeScales: GradeScale[];
+  initialData?: {
+    studentId: string;
+    marks: number;
+    gradeScaleId: string;
+    remarks?: string;
+  };
   onSave: (data: {
     studentId: string;
     marks: number;
@@ -16,23 +22,54 @@ interface ResultsModalProps {
 const ResultsModal: React.FC<ResultsModalProps> = ({
   students,
   gradeScales,
+  initialData,
   onSave,
   onClose,
 }) => {
-  const [studentId, setStudentId] = useState('');
-  const [marks, setMarks] = useState('');
-  const [gradeScaleId, setGradeScaleId] = useState('');
-  const [remarks, setRemarks] = useState('');
+  const isEdit = Boolean(initialData);
+
+  const [studentId, setStudentId] = useState(
+    initialData?.studentId ?? ''
+  );
+  const [marks, setMarks] = useState(
+    initialData ? initialData.marks.toString() : ''
+  );
+  const [gradeScaleId, setGradeScaleId] = useState(
+    initialData?.gradeScaleId ?? ''
+  );
+  const [remarks, setRemarks] = useState(
+    initialData?.remarks ?? ''
+  );
+
+  const getGradeScaleForMarks = (value: string) => {
+    const marksNum = parseInt(value, 10);
+    if (isNaN(marksNum)) return '';
+
+    const scale = gradeScales.find(
+      s => marksNum >= s.min_score && marksNum <= s.max_score
+    );
+
+    return scale?.id || '';
+  };
+
+  const handleMarksChange = (value: string) => {
+    setMarks(value);
+
+    const scaleId = getGradeScaleForMarks(value);
+    if (scaleId) {
+      setGradeScaleId(scaleId);
+    }
+  };
 
   const handleSubmit = () => {
     if (!studentId || !marks || !gradeScaleId) {
-      alert("Please fill all required fields");
+      alert('Please fill all required fields');
       return;
     }
 
-    const marksNum = parseInt(marks);
+    const marksNum = parseInt(marks, 10);
     if (isNaN(marksNum) || marksNum < 0 || marksNum > 100) {
-      alert("Please enter valid marks (0-100)");
+      alert('Please enter valid marks (0-100)');
       return;
     }
 
@@ -44,30 +81,16 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
     });
   };
 
-  // Find grade scale based on marks
-  const getGradeScaleForMarks = (marksValue: string) => {
-    const marksNum = parseInt(marksValue);
-    if (isNaN(marksNum)) return '';
-    
-    const scale = gradeScales.find(s => marksNum >= s.min_score && marksNum <= s.max_score);
-    return scale?.id || '';
-  };
-
-  const handleMarksChange = (value: string) => {
-    setMarks(value);
-    const scaleId = getGradeScaleForMarks(value);
-    if (scaleId) setGradeScaleId(scaleId);
-  };
-
   const selectedStudent = students.find(s => s.id === studentId);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Result</h3>
-        
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          {isEdit ? 'Edit Result' : 'Add Result'}
+        </h3>
+
         <div className="space-y-4">
-          {/* Student Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Select Student *
@@ -75,8 +98,8 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
             <select
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
+              disabled={isEdit}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              aria-label="Select Student"
             >
               <option value="">Choose a student</option>
               {students.map(student => (
@@ -87,7 +110,6 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
             </select>
           </div>
 
-          {/* Marks Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Marks (0-100) *
@@ -103,7 +125,6 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
             />
           </div>
 
-          {/* Grade Scale */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Grade Scale *
@@ -112,7 +133,6 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
               value={gradeScaleId}
               onChange={(e) => setGradeScaleId(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
-              aria-label="Grade Scale"
             >
               <option value="">Select grade scale</option>
               {gradeScales.map(scale => (
@@ -123,7 +143,6 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
             </select>
           </div>
 
-          {/* Remarks */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Remarks (Optional)
@@ -133,7 +152,6 @@ const ResultsModal: React.FC<ResultsModalProps> = ({
               onChange={(e) => setRemarks(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
               rows={3}
-              placeholder="Enter any remarks"
             />
           </div>
 

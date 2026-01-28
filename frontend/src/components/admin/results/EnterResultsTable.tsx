@@ -3,14 +3,18 @@ import type { ResultEntry } from '@/types/result';
 
 interface EnterResultsTableProps {
   results: ResultEntry[];
-  onDeleteResult: (id: string) => void;
   allCriteriaSelected: boolean;
+
+  // backend-aligned actions
+  onEditResult: (result: ResultEntry) => void;
+  onDeleteResult?: (id: string) => void; // optional
 }
 
 const EnterResultsTable: React.FC<EnterResultsTableProps> = ({
   results,
-  onDeleteResult,
   allCriteriaSelected,
+  onEditResult,
+  onDeleteResult,
 }) => {
   const getGradeColor = (grade?: string) => {
     if (!grade) return 'bg-gray-100 text-gray-800';
@@ -38,8 +42,7 @@ const EnterResultsTable: React.FC<EnterResultsTableProps> = ({
           <p className="text-gray-400 text-sm">
             {allCriteriaSelected
               ? "No results entered for selected criteria"
-              : "Select all filters to view results"
-            }
+              : "Select all filters to view results"}
           </p>
         </div>
       </div>
@@ -83,6 +86,7 @@ const EnterResultsTable: React.FC<EnterResultsTableProps> = ({
               </th>
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-200">
             {results.map((result) => (
               <tr key={result.id} className="hover:bg-gray-50">
@@ -96,26 +100,33 @@ const EnterResultsTable: React.FC<EnterResultsTableProps> = ({
                   {result.marks}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full font-medium ${getGradeColor(result.grade_scale)}`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full font-medium ${getGradeColor(
+                      result.grade_scale
+                    )}`}
+                  >
                     {result.grade_scale || 'N/A'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {result.remarks || "—"}
+                  {result.remarks || '—'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
                   <button
-                    onClick={() => alert("Edit functionality to be implemented")}
+                    onClick={() => onEditResult(result)}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     Edit
                   </button>
-                  <button
-                    onClick={() => onDeleteResult(result.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+
+                  {onDeleteResult && (
+                    <button
+                      onClick={() => onDeleteResult(result.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
