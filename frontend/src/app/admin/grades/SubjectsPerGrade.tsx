@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 import TopBar from "@/components/admin/TopBar";
 import SubjectsModal from "@/components/admin/Grades/SubjectsModal";
+import QuickNavCards from "@/components/common/QuickNavCards";
 import type { Grade } from "@/types/grade";
 import type { Subject } from "@/types/subject";
+import type { QuickNavCard } from "@/types/result";
 
 // Import components
 import GradeCard from "@/components/admin/Grades/GradeCard";
@@ -52,6 +54,28 @@ const SubjectsPerGrade = () => {
       setLoading(false);
     }
   };
+
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Classes",
+      description: "Manage all classes",
+      onClick: () => (window.location.href = "/admin/classes"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Grades",
+      description: "View and manage grades",
+      onClick: () => (window.location.href = "/admin/grades"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Subjects per Grade",
+      description: "Browse subjects by grade",
+      onClick: () => (window.location.href = "/admin/subjects-per-grade"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
 
   // Handle subject added from modal
   const handleSubjectAdded = (newSubject: Subject) => {
@@ -135,6 +159,9 @@ const SubjectsPerGrade = () => {
         description="Browse and manage subjects assigned to each grade"
         onBack={() => navigate(-1)}
       />
+
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Quick Navigation Section with Add Subject Button */}
       <QuickActions

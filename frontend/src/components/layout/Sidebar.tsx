@@ -1,12 +1,33 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FiChevronRight, FiCircle } from "react-icons/fi";
 
 const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  
   const linkClass =
     "flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg hover:bg-white/20 hover:shadow-sm";
 
   const dropdownItem =
     "flex items-center gap-2 px-4 py-2 ml-8 text-sm text-gray-800 hover:text-blue-700 hover:bg-white/30 transition-colors duration-200 rounded-md";
+
+  const toggleDropdown = (dropdownName: string) => {
+    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
+  };
+
+  const isDropdownOpen = (dropdownName: string) => {
+    return openDropdown === dropdownName;
+  };
+
+  const handleDropdownLinkClick = (dropdownName: string) => {
+    // Keep the current dropdown open when clicking items inside it
+    setOpenDropdown(dropdownName);
+  };
+
+  const handleRegularLinkClick = () => {
+    // Close all dropdowns when clicking regular (non-dropdown) links
+    setOpenDropdown(null);
+  };
 
   return (
     <aside
@@ -41,6 +62,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           className={({ isActive }) => 
             `${linkClass} ${isActive ? 'bg-white/25 text-gray-900 shadow-inner font-semibold' : 'text-gray-700'}`
           }
+          onClick={handleRegularLinkClick}
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
             <span className="text-base">🏠</span>
@@ -49,22 +71,31 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
         </NavLink>
 
         {/* Students */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("students")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">📚</span>
             </div>
             {!collapsed && <span className="flex-1">Students</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("students") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
 
-          {!collapsed && (
+          {!collapsed && isDropdownOpen("students") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
                 to="/admin/students" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("students")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>All Students</span>
               </NavLink>
@@ -73,6 +104,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("students")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Student Promotion</span>
               </NavLink>
@@ -81,6 +113,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("students")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Promotion History</span>
               </NavLink>
@@ -89,30 +122,40 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("students")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Student Attendance</span>
               </NavLink>
             </div>
           )}
-        </details>
+        </div>
 
         {/* Teachers */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("teachers")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">👤</span>
             </div>
             {!collapsed && <span className="flex-1">Teachers</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("teachers") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
 
-          {!collapsed && (
+          {!collapsed && isDropdownOpen("teachers") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
                 to="/admin/teachers" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("teachers")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>All Teachers</span>
               </NavLink>
@@ -121,6 +164,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("teachers")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Teacher Attendance</span>
               </NavLink>
@@ -129,6 +173,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("teachers")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Subject Assignments</span>
               </NavLink>
@@ -137,30 +182,40 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("teachers")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Class Teachers</span>
               </NavLink>
             </div>
           )}
-        </details>
+        </div>
 
         {/* Finance */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("finance")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">💰</span>
             </div>
             {!collapsed && <span className="flex-1">Finance</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("finance") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
 
-          {!collapsed && (
+          {!collapsed && isDropdownOpen("finance") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
-                to="/admin/fees-structures" 
+                to="finance" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("finance")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Fees Structures</span>
               </NavLink>
@@ -169,6 +224,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("finance")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Payments</span>
               </NavLink>
@@ -177,6 +233,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("finance")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Student Fees</span>
               </NavLink>
@@ -185,6 +242,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("finance")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Student Balances</span>
               </NavLink>
@@ -193,29 +251,40 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("finance")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Finance Overview</span>
               </NavLink>
             </div>
           )}
-        </details>
+        </div>
 
         {/* Grades */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("grades")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">🏫</span>
             </div>
             {!collapsed && <span className="flex-1">Grades</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
-          {!collapsed && (
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("grades") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
+
+          {!collapsed && isDropdownOpen("grades") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
                 to="/admin/grades" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("grades")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Grades</span>
               </NavLink>
@@ -224,6 +293,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("grades")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Classes</span>
               </NavLink>
@@ -232,12 +302,13 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("grades")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Subject Per Grade</span>
               </NavLink>
             </div>
           )}
-        </details>
+        </div>
 
         {/* Timetable */}
         <NavLink 
@@ -245,6 +316,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           className={({ isActive }) => 
             `${linkClass} ${isActive ? 'bg-white/25 text-gray-900 shadow-inner font-semibold' : 'text-gray-700'}`
           }
+          onClick={handleRegularLinkClick}
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
             <span className="text-base">🗓️</span>
@@ -253,22 +325,31 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
         </NavLink>
 
         {/* Reports */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("reports")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">📊</span>
             </div>
             {!collapsed && <span className="flex-1">Reports</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("reports") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
 
-          {!collapsed && (
+          {!collapsed && isDropdownOpen("reports") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
                 to="/admin/reports/academic" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("reports")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Academic</span>
               </NavLink>
@@ -277,6 +358,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("reports")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Financial</span>
               </NavLink>
@@ -285,12 +367,13 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("reports")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Attendance</span>
               </NavLink>
             </div>
           )}
-        </details>
+        </div>
 
         {/* Calendar */}
         <NavLink 
@@ -298,6 +381,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           className={({ isActive }) => 
             `${linkClass} ${isActive ? 'bg-white/25 text-gray-900 shadow-inner font-semibold' : 'text-gray-700'}`
           }
+          onClick={handleRegularLinkClick}
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
             <span className="text-base">🗓️</span>
@@ -306,22 +390,31 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
         </NavLink>
 
         {/* Results */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("results")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">🏆</span>
             </div>
             {!collapsed && <span className="flex-1">Results</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("results") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
 
-          {!collapsed && (
+          {!collapsed && isDropdownOpen("results") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
                 to="/admin/EnterResults" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("results")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Enter Results</span>
               </NavLink>
@@ -330,6 +423,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("results")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Student Results</span>
               </NavLink>
@@ -338,6 +432,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("results")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Term Lock Status</span>
               </NavLink>
@@ -346,30 +441,40 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("results")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Grade Scale</span>
               </NavLink>
             </div>
           )}
-        </details>
+        </div>
 
          {/* Assessments */}
-        <details className="group [&>summary::-webkit-details-marker]:hidden [&>summary]:list-none relative">
-          <summary className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20`}>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => toggleDropdown("assessments")}
+            className={`${linkClass} cursor-pointer text-gray-700 hover:bg-white/20 w-full text-left`}
+          >
             <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
               <span className="text-base">✒️</span>
             </div>
             {!collapsed && <span className="flex-1">Assessments</span>}
-            {!collapsed && <FiChevronRight className="text-gray-600 transition-transform duration-300 group-open:rotate-90" />}
-          </summary>
+            {!collapsed && (
+              <FiChevronRight 
+                className={`text-gray-600 transition-transform duration-300 ${isDropdownOpen("assessments") ? "rotate-90" : ""}`} 
+              />
+            )}
+          </button>
 
-          {!collapsed && (
+          {!collapsed && isDropdownOpen("assessments") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
                 to="/admin/AssessmentsPage" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("assessments")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Exams</span>
               </NavLink>
@@ -378,20 +483,13 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
+                onClick={() => handleDropdownLinkClick("assessments")}
               >
                 <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Exam Timetable</span>
               </NavLink>
-              <NavLink 
-                to="/admin/assessments/records" 
-                className={({ isActive }) => 
-                  `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
-                }
-              >
-                <FiCircle className="w-1.5 h-1.5 text-blue-500" /> <span>Records</span>
-              </NavLink>
             </div>
           )}
-        </details>
+        </div>
       </nav>
 
       {/* Logout */}
@@ -402,6 +500,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             `flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg 
             ${isActive ? 'bg-red-50/30 text-red-700 shadow-inner' : 'text-gray-600 hover:bg-red-50/40 hover:text-red-600'}`
           }
+          onClick={handleRegularLinkClick}
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/20 backdrop-blur-sm">
             <span className="text-base">⬅️</span>

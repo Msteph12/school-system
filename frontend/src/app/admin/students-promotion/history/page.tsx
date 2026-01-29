@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/admin/TopBar";
 import PromotionHistoryTable from "@/components/admin/PromotionHistoryTable";
+import QuickNavCards from "@/components/common/QuickNavCards";
 import { getPromotionHistory } from "@/services/promotionHistory";
+import type { QuickNavCard } from "@/types/result";
 
 interface PromotionHistory {
   id: number;
@@ -30,6 +32,29 @@ const PromotionHistoryPage = () => {
     ? history.filter(h => h.academic_year === yearFilter)
     : history;
 
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Student Promotion",
+      description: "Promote students to next class",
+      onClick: () => (window.location.href = "/admin/students-promotion"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Promotion History",
+      description: "View past promotions",
+      onClick: () =>
+        (window.location.href = "/admin/students-promotion/history"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Student Attendance",
+      description: "View & record attendance",
+      onClick: () => (window.location.href = "/admin/student-attendance"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <TopBar />
@@ -46,6 +71,9 @@ const PromotionHistoryPage = () => {
           ← Back
         </button>
       </div>
+
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Filters */}
       <div className="bg-white p-4 rounded shadow flex gap-4">

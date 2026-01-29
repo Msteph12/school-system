@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import TopBar from "@/components/admin/TopBar";
+import QuickNavCards from "@/components/common/QuickNavCards";
 import GradesModal from "@/components/admin/Grades/GradesModal";
 import GradesTable from "@/components/admin/Grades/GradesTable";
 import type { Grade } from "@/types/grade";
+import type { QuickNavCard } from "@/types/result";
 import api from "@/services/api";
 
 const Grades = () => {
@@ -49,6 +50,28 @@ const Grades = () => {
     loadGrades();
   }, []);
 
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Classes",
+      description: "Manage classes and streams",
+      onClick: () => (window.location.href = "/admin/classes"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Grades",
+      description: "Manage grades per class & term",
+      onClick: () => (window.location.href = "/admin/grades"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Subjects per Grade",
+      description: "Manage subjects by grade",
+      onClick: () => (window.location.href = "/admin/subjects-per-grade"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -88,16 +111,8 @@ const Grades = () => {
         </button>
       </div>
 
-      {/* Quick navigation */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded shadow-md">
-        <Link
-          to="/admin/streams"
-          className="bg-blue-100 hover:bg-blue-200 text-blue-800 p-4 rounded-lg text-left transition block"
-        >
-          <h3 className="font-semibold">Grades</h3>
-          <p className="text-sm">Manage grades per class & term</p>
-        </Link>
-      </div>
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Actions */}
       <div className="flex items-center gap-4 bg-white p-4 rounded shadow-md">

@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/admin/TopBar';
 import ExamTypeTable from '@/components/admin/assessments/ExamTypeTable';
+import QuickNavCards from '@/components/common/QuickNavCards';
 import { useExamTypes } from '@/hooks/useExamTypes';
+import type { QuickNavCard } from '@/types/result';
 
 const AssessmentSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +21,22 @@ const AssessmentSetupPage: React.FC = () => {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Exam Management",
+      description: "Manage all exams",
+      onClick: () => navigate("/admin/AssessmentsPage"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Exam Timetable",
+      description: "View exam schedule",
+      onClick: () => navigate("/admin/exam-timetable"),
+      gradient: "from-green-500 to-green-700",
+    },
+  ];
 
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
@@ -110,6 +128,9 @@ const AssessmentSetupPage: React.FC = () => {
           ← Back
         </button>
       </div>
+
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       <ExamTypeTable
         examTypes={examTypes}
