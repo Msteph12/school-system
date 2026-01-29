@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import TopBar from "@/components/admin/TopBar";
 import TeachersTable from "@/components/admin/TeachersTable";
 import TeacherModal from "@/components/admin/TeacherModal";
+import QuickNavCards from "@/components/common/QuickNavCards";
 import { getTeachers } from "@/services/teachers";
 import api from "@/services/api";
 import type { TeacherFull, TeacherListItem } from "@/types/teacher";
+import type { QuickNavCard } from "@/types/result";
 
 const Teachers = () => {
   const [teachers, setTeachers] = useState<TeacherListItem[]>([]);
@@ -57,6 +58,28 @@ const Teachers = () => {
     setModalMode("edit");
   };
 
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Teacher Attendance",
+      description: "Overview of teachers attendance",
+      onClick: () => (window.location.href = "/admin/teachers-attendance"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Subject Assignments",
+      description: "Specify what teachers teaches",
+      onClick: () => (window.location.href = "/admin/subject-assignments"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Class Teachers",
+      description: "Class Teacher Allocation",
+      onClick: () => (window.location.href = "/admin/class-teachers"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <TopBar />
@@ -72,35 +95,8 @@ const Teachers = () => {
         </button>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded shadow-md">
-        {/* Teacher Attendance */}
-        <Link
-          to="/admin/teachers-attendance"
-          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
-        >
-          <h3 className="font-semibold">Teacher Attendance</h3>
-          <p className="text-sm">Overview of teachers attendance </p>
-        </Link>
-
-        {/* Subject Assignments */}
-        <Link
-          to="/admin/subject-assignments"
-          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
-        >
-          <h3 className="font-semibold">Subject Assignments</h3>
-          <p className="text-sm">Specify what teachers teaches</p>
-        </Link>
-
-        {/* Class Teachers */}
-        <Link
-          to="/admin/class-teachers"
-          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
-        >
-          <h3 className="font-semibold">Class Teachers</h3>
-          <p className="text-sm">Class Teacher Allocation</p>
-        </Link>
-      </div>
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Actions */}
       <div className="flex items-center gap-4 bg-white p-4 rounded shadow-md">

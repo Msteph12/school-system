@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import TopBar from "@/components/admin/TopBar";
 import FeesStructureModal from "@/components/admin/finance/FeesStructureModal";
 import FeesStructureTable from "@/components/admin/finance/FeesStructureTable";
+import QuickNavCards from "@/components/common/QuickNavCards";
 import type { FeeStructureListItem } from "@/types/Fees";
+import type { QuickNavCard } from "@/types/result";
 
 const FeesStructure = () => { 
   const [showModal, setShowModal] = useState(false);
@@ -27,6 +28,28 @@ const FeesStructure = () => {
   // placeholder – will be replaced with API call
 }, []);
 
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Payments",
+      description: "Manage payments in the school",
+      onClick: () => (window.location.href = "/admin/payments"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Student Fees",
+      description: "Manages fees per student",
+      onClick: () => (window.location.href = "/admin/finance/student-fees"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Student Balances",
+      description: "List of student with balances",
+      onClick: () => (window.location.href = "/admin/finance/student-balances"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <TopBar />
@@ -42,35 +65,8 @@ const FeesStructure = () => {
         </button>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-4 rounded shadow-md">
-        {/* Payments */}
-        <Link
-          to="/admin/payments"
-          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
-        >
-          <h3 className="font-semibold">Payments</h3>
-          <p className="text-sm">Manage payments in the school</p>
-        </Link>
-
-        {/* Student Fees */}
-        <Link
-          to="/admin/finance/student-fees"
-          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
-        >
-          <h3 className="font-semibold">Student Fees</h3>
-          <p className="text-sm">Manages fees per student</p>
-        </Link>
-
-        {/* Class Teachers */}
-        <Link
-          to="/admin/finance/student-balances"
-          className="bg-blue-100 text-blue-800 p-4 rounded-lg hover:bg-blue-200 transition block"
-        >
-          <h3 className="font-semibold">Student Balances</h3>
-          <p className="text-sm">List of student with balances</p>
-        </Link>
-      </div>
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Actions */}
       <div className="flex items-center gap-4 bg-white p-4 rounded shadow-md">

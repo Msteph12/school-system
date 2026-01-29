@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "@/components/admin/TopBar";
 import QuickNavCards from "@/components/admin/results/QuickNavCards";
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 import TermDropdown from "@/components/admin/results/TermDropdown";
 import StatusCard from "@/components/admin/results/StatusCard";
 import InfoCard from "@/components/admin/results/InfoCard";
@@ -20,6 +20,7 @@ const TermLock: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   /** ---------------- Quick Nav ---------------- */
   const quickNavCards = [
@@ -27,7 +28,7 @@ const TermLock: React.FC = () => {
       title: "Grade Scale",
       description: "Set and manage grade scale",
       gradient: "from-red-600/80 to-red-400/80",
-      onClick: () => navigate("/admin/grade-scale"),
+      onClick: () => navigate("/admin/GradeScalePage"),
     },
     {
       title: "Enter Results",
@@ -46,6 +47,7 @@ const TermLock: React.FC = () => {
   /** ---------------- Load Terms ---------------- */
   const loadTerms = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const data = await termService.getTerms();
       setTerms(data);
@@ -58,7 +60,7 @@ const TermLock: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to load terms:", error);
-      alert("Failed to load term data.");
+      setError("Unable to load academic terms. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -83,12 +85,12 @@ const TermLock: React.FC = () => {
   }, [terms]);
 
   /** ---------------- Actions ---------------- */
- const handleTermSelect = (term: Term) => {
-  const computedTerm = computedTerms.find(t => t.id === term.id);
+  const handleTermSelect = (term: Term) => {
+    const computedTerm = computedTerms.find(t => t.id === term.id);
 
-  if (computedTerm?.disabled) return;
+    if (computedTerm?.disabled) return;
 
-  setSelectedTerm(term);
+    setSelectedTerm(term);
   };
 
   const handleLockToggle = async () => {
@@ -115,17 +117,19 @@ const TermLock: React.FC = () => {
     );
 
     if (selectedTerm.order > 1 && !previousTerm?.isLocked) {
-      alert("You must lock the previous term first.");
+      setError("You must lock the previous term first. Please lock Term " + previousTerm?.name + " before proceeding.");
       return;
     }
 
     setIsProcessing(true);
+    setError(null);
     try {
       const updated = await termService.lockTerm(selectedTerm.id);
       setSelectedTerm(updated);
       await loadTerms();
-    } catch {
-      alert("Failed to lock term.");
+    } catch (err) {
+      setError("Failed to lock term. Please try again or contact support if the issue persists.");
+      console.error("Lock term error:", err);
     } finally {
       setIsProcessing(false);
     }
@@ -135,48 +139,52 @@ const TermLock: React.FC = () => {
     if (!selectedTerm) return;
 
     setIsProcessing(true);
+    setError(null);
     try {
       const updated = await termService.unlockTerm(selectedTerm.id);
       setSelectedTerm(updated);
       await loadTerms();
-    } catch {
-      alert("Failed to unlock term.");
+    } catch (err) {
+      setError("Failed to unlock term. Please try again or contact support if the issue persists.");
+      console.error("Unlock term error:", err);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  /** ---------------- UI States ---------------- */
+  /** ---------------- Loading State ---------------- */
   if (isLoading) {
     return (
       <div className="space-y-6 p-6">
         <TopBar />
-        <div className="animate-pulse space-y-6">
-          <div className="h-32 bg-gray-200 rounded-2xl" />
-          <div className="h-24 bg-gray-200 rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
-  if (terms.length === 0) {
-    return (
-      <div className="space-y-6 p-6">
-        <TopBar />
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex gap-3">
-          <FaExclamationTriangle className="text-yellow-600 w-6 h-6" />
+        <div className="flex justify-between items-center">
           <div>
-            <h3 className="font-semibold text-yellow-800">No Terms Found</h3>
-            <p className="text-yellow-700 text-sm">
-              No academic terms are configured.
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Term Lock Management
+            </h1>
+            <p className="text-gray-600">
+              Control term access for result entry and editing
             </p>
+          </div>
+          <button onClick={() => navigate(-1)} className="text-blue-600">
+            ← Back
+          </button>
+        </div>
+        
+        <QuickNavCards cards={quickNavCards} />
+        
+        <div className="animate-pulse space-y-6">
+          <div className="h-24 bg-gray-200 rounded-xl" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-48 bg-gray-200 rounded-xl" />
+            <div className="h-48 bg-gray-200 rounded-xl" />
           </div>
         </div>
       </div>
     );
   }
 
-  /** ---------------- Main ---------------- */
+  /** ---------------- Main Render ---------------- */
   return (
     <div className="space-y-6 p-6">
       <TopBar />
@@ -197,17 +205,47 @@ const TermLock: React.FC = () => {
 
       <QuickNavCards cards={quickNavCards} />
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        {selectedTerm && (
+      {/* Error Display - Shows where actual data is missing */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex gap-3 items-start">
+          <FaExclamationTriangle className="text-red-600 w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold text-red-800">Action Required</h3>
+            <p className="text-red-700 text-sm">{error}</p>
+            <button 
+              onClick={() => setError(null)}
+              className="text-red-600 text-xs mt-2 hover:text-red-800"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Data Status Indicator */}
+      {terms.length === 0 && !isLoading && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex gap-3 items-start">
+          <FaInfoCircle className="text-yellow-600 w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold text-yellow-800">No Academic Terms Found</h3>
+            <p className="text-yellow-700 text-sm">
+              Academic terms data is currently unavailable. Please check if terms have been configured in the system settings.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {terms.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm p-6">
           <TermDropdown
             terms={computedTerms}
-            selectedTerm={selectedTerm}
+            selectedTerm={selectedTerm!}
             onSelectTerm={handleTermSelect}
           />
-        )}
-      </div>
+        </div>
+      )}
 
-      {selectedTerm && (
+      {selectedTerm && terms.length > 0 && (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <StatusCard
@@ -225,6 +263,29 @@ const TermLock: React.FC = () => {
             </p>
           </div>
         </>
+      )}
+
+      {/* Term Cards Placeholder when no terms are loaded but UI is still visible */}
+      {terms.length === 0 && !isLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-dashed border-gray-300">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+              <div className="h-4 bg-gray-200 rounded w-24"></div>
+            </div>
+            <div className="h-8 bg-gray-200 rounded w-32 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-dashed border-gray-300">
+            <div className="h-4 bg-gray-200 rounded w-32 mb-4"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+              <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+            </div>
+          </div>
+        </div>
       )}
 
       {selectedTerm && (

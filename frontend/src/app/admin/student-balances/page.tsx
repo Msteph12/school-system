@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
 import TopBar from "@/components/admin/TopBar";
+import QuickNavCards from "@/components/common/QuickNavCards";
+import type { QuickNavCard } from "@/types/result";
 
 interface Student {
   id: number;
@@ -87,6 +89,28 @@ const StudentBalancesPage = () => {
       (classFilter ? s.class === classFilter : true)
   );
 
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Fee Structure",
+      description: "View and manage fee structures",
+      onClick: () => (window.location.href = "/admin/finance"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Payments",
+      description: "Manage Payments in the School",
+      onClick: () => (window.location.href = "/admin/payments"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Student Fees",
+      description: "View students with outstanding fees",
+      onClick: () => (window.location.href = "/admin/finance/student-fees"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <TopBar />
@@ -103,6 +127,9 @@ const StudentBalancesPage = () => {
           ← Back
         </button>
       </div>
+
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Filters */}
       <div className="flex gap-4 bg-white p-4 rounded shadow-md shadow-red-200">

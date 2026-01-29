@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
 import TopBar from "@/components/admin/TopBar";
+import QuickNavCards from "@/components/common/QuickNavCards";
 import type { StudentFeeListItem } from "@/types/studentFee";
+import type { QuickNavCard } from "@/types/result";
 
 import StudentFeesTable from "@/components/admin/finance/StudentFeesTable";
 import ViewStudentFeeModal from "@/components/admin/finance/ViewStudentFeeModal";
@@ -25,14 +27,35 @@ const StudentFeesPage = () => {
   };
 
   useEffect(() => {
-  const loadFees = async () => {
-    const res = await api.get("/student-fees");
-    setStudentFees(res.data);
-  };
+    const loadFees = async () => {
+      const res = await api.get("/student-fees");
+      setStudentFees(res.data);
+    };
 
-  loadFees();
-}, []);
+    loadFees();
+  }, []);
 
+  // Quick navigation cards data
+  const quickNavCards: QuickNavCard[] = [
+    {
+      title: "Fee Structure",
+      description: "View fee structure",
+      onClick: () => (window.location.href = "/admin/finance"),
+      gradient: "from-green-500 to-green-700",
+    },
+    {
+      title: "Payments",
+      description: "Manage student payments",
+      onClick: () => (window.location.href = "/admin/payments"),
+      gradient: "from-blue-500 to-blue-700",
+    },
+    {
+      title: "Student Balances",
+      description: "View student balances",
+      onClick: () => (window.location.href = "/admin/finance/student-balances"),
+      gradient: "from-purple-500 to-purple-700",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -48,6 +71,9 @@ const StudentFeesPage = () => {
           ← Back
         </button>
       </div>
+
+      {/* Quick navigation cards */}
+      <QuickNavCards cards={quickNavCards} />
 
       {/* Actions */}
       <div className="bg-white p-4 rounded shadow-md">
