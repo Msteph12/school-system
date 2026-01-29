@@ -1,5 +1,7 @@
-import { NavLink } from "react-router-dom";
+import { NavLink,  useNavigate } from "react-router-dom";
 import { FiChevronRight, FiCircle } from "react-icons/fi";
+import { authService } from "@/services/auth";
+import { useAuth } from "@/context/useAuth";
 
 const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
   const linkClass =
@@ -7,6 +9,9 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
 
   const dropdownItem =
     "flex items-center gap-2 px-4 py-2 ml-8 text-sm text-gray-800 hover:text-blue-700 hover:bg-white/30 transition-colors duration-200 rounded-md";
+
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   return (
     <aside
@@ -396,18 +401,27 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
 
       {/* Logout */}
       <div className="p-3 border-t border-white/30 mt-auto">
-        <NavLink
-          to="/logout"
-          className={({ isActive }) => 
-            `flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg 
-            ${isActive ? 'bg-red-50/30 text-red-700 shadow-inner' : 'text-gray-600 hover:bg-red-50/40 hover:text-red-600'}`
-          }
+        <button
+          onClick={async () => {
+            try {
+              await authService.logout(); // backend token revoke
+            } catch {
+              // ignore — user may already be logged out
+            } finally {
+              authService.logout(); // clear token + header
+              setUser(null);
+              navigate("/login");
+            }
+          }}
+          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium
+            text-gray-600 hover:bg-red-50/40 hover:text-red-600
+            transition-all duration-200 rounded-lg"
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/20 backdrop-blur-sm">
             <span className="text-base">⬅️</span>
           </div>
-          {!collapsed && <span className="flex-1">Logout</span>}
-        </NavLink>
+          {!collapsed && <span className="flex-1 text-left">Logout</span>}
+        </button>
       </div>
     </aside>
   );

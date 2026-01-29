@@ -32,29 +32,39 @@ import StudentResults from "@/app/admin/results/StudentResults";
 import TermLock from "@/app/admin/results/TermLock";
 import GradeScalePage from "@/app/admin/results/GradeScalePage";
 
-import AssessmentsPage from "@/app/admin/assessments/AssessmentsPage"; 
+import AssessmentsPage from "@/app/admin/assessments/AssessmentsPage";
 import AssessmentSetupPage from "@/app/admin/assessments/AssessmentSetupPage";
 import CompletedExamsPage from "@/components/admin/assessments/CompletedExamsPage";
 import TotalAssessmentsPage from "@/components/admin/assessments/TotalAssessmentsPage";
 import UpcomingExamsPage from "@/components/admin/assessments/UpcomingExamsPage";
 import OngoingExamsPage from "@/components/admin/assessments/OngoingExamsPage";
+
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import LoginPage from '@/app/pages/admin/LoginPage';
-
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import LoginPage from "@/app/pages/admin/LoginPage";
 
 function App() {
-  const { user, isAdmin, isRegistrar } = useAuth();
+  const { user, loading, isAdmin, isRegistrar } = useAuth();
+
+  /* 🔄 AUTH BOOTSTRAP LOADING */
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center gap-2">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-800" />
+        <span>Loading...</span>
+      </div>
+    );
+  }
 
   return (
     <>
       <Routes>
-        {/* Public Routes */}
+        {/* PUBLIC */}
         <Route path="/login" element={<LoginPage />} />
-        
-        {/* Root redirect */}
+
+        {/* ROOT REDIRECT */}
         <Route
           path="/"
           element={
@@ -72,12 +82,15 @@ function App() {
           }
         />
 
-        {/* Protected Admin Routes */}
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
+        {/* ADMIN ROUTES */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<Students />} />
           <Route path="students-promotion" element={<StudentsPromotion />} />
@@ -85,56 +98,58 @@ function App() {
             path="students-promotion/history"
             element={<StudentsPromotionHistory />}
           />
-          <Route
-            path="student-attendance"
-            element={<StudentAttendancePage />}
-          />
+          <Route path="student-attendance" element={<StudentAttendancePage />} />
           <Route path="teachers" element={<Teachers />} />
-          <Route
-            path="teachers-attendance"
-            element={<TeacherAttendancePage />}
-          />
+          <Route path="teachers-attendance" element={<TeacherAttendancePage />} />
           <Route
             path="subject-assignments"
             element={<SubjectAssignmentsPage />}
           />
           <Route path="class-teachers" element={<ClassTeachersPage />} />
+
           <Route path="finance" element={<FeesStructure />} />
           <Route path="payments" element={<PaymentsPage />} />
-          <Route path="finance/student-fees" element={<StudentFeesPage />}/>
-          <Route path="finance/finance-overview" element={<FinanceOverviewPage />}/>
-          <Route path="finance/student-balances" element={<StudentBalancesPage />}/>
+          <Route path="finance/student-fees" element={<StudentFeesPage />} />
+          <Route
+            path="finance/finance-overview"
+            element={<FinanceOverviewPage />}
+          />
+          <Route
+            path="finance/student-balances"
+            element={<StudentBalancesPage />}
+          />
 
-          <Route path="grades" element={<GradesPage />} /> 
-          <Route path="classes" element={<ClassesPage />} /> 
+          <Route path="grades" element={<GradesPage />} />
+          <Route path="classes" element={<ClassesPage />} />
           <Route path="subjects-per-grade" element={<SubjectsPerGrade />} />
           <Route path="subjects/grade/:gradeId" element={<GradesSubjects />} />
-          <Route path="grades/classes" element={<ClassesPage />} />
 
           <Route path="timetable" element={<Timetable />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="exam-timetable" element={<ExamTimetable />} />
 
           <Route path="EnterResults" element={<EnterResults />} />
           <Route path="StudentResults" element={<StudentResults />} />
           <Route path="TermLock" element={<TermLock />} />
           <Route path="GradeScalePage" element={<GradeScalePage />} />
+
           <Route path="AssessmentsPage" element={<AssessmentsPage />} />
           <Route path="assessments/completed" element={<CompletedExamsPage />} />
           <Route path="assessments/total" element={<TotalAssessmentsPage />} />
           <Route path="assessments/upcoming" element={<UpcomingExamsPage />} />
           <Route path="assessments/ongoing" element={<OngoingExamsPage />} />
           <Route path="assessments/setup" element={<AssessmentSetupPage />} />
-
-          <Route path="calendar" element={<Calendar />} />
-
-          <Route path="exam-timetable" element={<ExamTimetable />} />
         </Route>
 
-        {/* Protected Registrar Routes */}
-        <Route path="/registrar" element={
-          <ProtectedRoute allowedRoles={['admin', 'registrar']}>
-            <RegistrarLayout />
-          </ProtectedRoute>
-        }>
+        {/* REGISTRAR ROUTES */}
+        <Route
+          path="/registrar"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "registrar"]}>
+              <RegistrarLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<RegistrarDashboard />} />
           <Route path="students" element={<Students />} />
           <Route path="students-promotion" element={<StudentsPromotion />} />
@@ -148,7 +163,7 @@ function App() {
           />
         </Route>
 
-        {/* Fallback */}
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
 
