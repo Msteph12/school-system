@@ -2,26 +2,34 @@ import DashboardCard from "./DashboardCard";
 import TopBar from "../../components/admin/TopBar";
 import { useNavigate } from "react-router-dom"; 
 import StickyNotes from "../../components/admin/StickyNotes";
-import { useState } from "react"; // Add useState for calendar navigation
-
-// Static data
-const studentBalancesData = {
-  total: 45000,
-  currency: "KES"
-};
-
-const timetableData = {
-  published: 18,
-  total: 20
-};
-
-const teacherAttendanceData = {
-  present: 24,
-  total: 28
-};
+import { useEffect, useState } from "react"; // Add useState for calendar navigation
+import { dashboardService } from "@/services/dashboard";
 
 const AdminDashboard = () => {
   const navigate = useNavigate(); // Initialize navigate
+
+  const [search, setSearch] = useState("");
+
+  const [stats, setStats] = useState({
+  students: 0,
+  teachers: 0,
+  grades: 0,
+  studentsWithBalances: 0,
+  timetable: { published: 0, total: 0 },
+  teacherAttendance: { present: 0, total: 0 },
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  dashboardService
+    .getStats()
+    .then(setStats)
+    .catch(() => {
+      // keep safe defaults (0)
+    })
+    .finally(() => setLoading(false));
+  }, []);
 
   // State for calendar navigation
   const [calendarView, setCalendarView] = useState({
@@ -72,6 +80,50 @@ const AdminDashboard = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <TopBar
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
+        
+        {/* Welcome Section Skeleton */}
+        <div className="animate-pulse">
+          <div className="bg-gray-200 rounded-lg h-32 mb-4"></div>
+          
+          {/* System Overview Skeleton */}
+          <div className="bg-gray-200 rounded-lg h-48 mb-4"></div>
+          
+          {/* Main Content Skeleton */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 space-y-4">
+              {/* Core Management Skeleton */}
+              <div className="grid grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="bg-gray-200 rounded-lg h-32"></div>
+                ))}
+              </div>
+              
+              {/* Operations Skeleton */}
+              <div className="grid grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-gray-200 rounded-lg h-24"></div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Right Column Skeleton */}
+            <div className="space-y-4">
+              <div className="bg-gray-200 rounded-lg h-64"></div>
+              <div className="bg-gray-200 rounded-lg h-48"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Navigation functions
   const goToPreviousMonth = () => {
     setCalendarView(prev => {
@@ -117,7 +169,10 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-4">
-      <TopBar />
+      <TopBar
+        searchValue={search}
+        onSearchChange={setSearch}
+      />
 
       {/* Welcome Back Section - Updated with gradient */}
       <div className="relative rounded-lg overflow-hidden shadow-lg">
@@ -180,16 +235,16 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-700 text-sm tracking-wide">Student Balances</h3>
+                    <h3 className="font-medium text-gray-700 text-sm tracking-wide">Student with Balances</h3>
                     <div className="w-16 h-1 bg-gradient-to-r from-blue-300 to-blue-400 rounded-full mt-1"></div>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <p className="text-2xl font-bold text-gray-800 tracking-tight">
-                    {studentBalancesData.currency} {studentBalancesData.total.toLocaleString()}
+                     {stats.studentsWithBalances.toLocaleString()}
                   </p>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-500/80">Total outstanding</p>
+                    <p className="text-xs text-gray-500/80">Total students</p>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
                       <span className="text-xs font-medium text-amber-600">Attention</span>
@@ -218,19 +273,19 @@ const AdminDashboard = () => {
                 <div className="space-y-3">
                   <div>
                     <p className="text-2xl font-bold text-gray-800 tracking-tight">
-                      {timetableData.published}<span className="text-lg font-normal text-gray-500">/{timetableData.total}</span>
+                      {stats.timetable.published}<span className="text-lg font-normal text-gray-500">/{stats.timetable.total}</span>
                     </p>
                     <div className="mt-2">
                       <div className="w-full bg-gray-200/50 rounded-full h-1.5">
                         <div 
                           className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-1.5 rounded-full transition-all duration-500"
-                          style={{ width: `${(timetableData.published / timetableData.total) * 100}%` }}
+                          style={{ width: `${(stats.timetable.published / stats.timetable.total) * 100 || 0}%` }}
                         ></div>
                       </div>
                     </div>
                   </div>
                   <p className="text-xs text-emerald-600 font-medium">
-                    {Math.round((timetableData.published / timetableData.total) * 100)}% complete
+                    {Math.round((stats.timetable.published / stats.timetable.total) * 100)}% complete
                   </p>
                 </div>
               </div>
@@ -254,7 +309,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-2xl font-bold text-gray-800 tracking-tight">
-                    {teacherAttendanceData.present}<span className="text-lg font-normal text-gray-500">/{teacherAttendanceData.total}</span>
+                    {stats.teacherAttendance.present}  <span>/{stats.teacherAttendance.total}</span>
                   </p>
                   <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-2">
@@ -266,7 +321,7 @@ const AdminDashboard = () => {
                       <span className="text-xs text-gray-500/80">Active now</span>
                     </div>
                     <div className="text-xs font-medium text-violet-600 bg-violet-50 px-2 py-1 rounded-full">
-                      {Math.round((teacherAttendanceData.present / teacherAttendanceData.total) * 100)}% present
+                      {Math.round((stats.teacherAttendance.present / stats.teacherAttendance.total) * 100)}% present
                     </div>
                   </div>
                 </div>
@@ -288,7 +343,7 @@ const AdminDashboard = () => {
               <div className="col-span-2 md:col-span-1">
                 <DashboardCard
                   title="Students"
-                  count={320}
+                  count={stats.students}
                   route="/admin/students"
                   icon="👨‍🎓"
                   subtitle="Manage student records & profiles"
@@ -299,7 +354,7 @@ const AdminDashboard = () => {
               <div className="col-span-2 md:col-span-1">
                 <DashboardCard
                   title="Teachers"
-                  count={28}
+                  count={stats.teachers}
                   route="/admin/teachers"
                   icon="👤"
                   subtitle="View teacher schedules & details"
@@ -320,6 +375,7 @@ const AdminDashboard = () => {
               <div className="col-span-2 md:col-span-1">
                 <DashboardCard
                   title="Grades"
+                  count={stats.grades}
                   route="/admin/grades"
                   icon="🏫"
                   subtitle="Academic performance tracking"

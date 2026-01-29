@@ -25,9 +25,6 @@ let noteIdCounter = 3;
 const StickyNotes: React.FC = () => {
   const [search, setSearch] = useState('');
   const [notes, setNotes] = useState<NoteItem[]>([
-    { id: 1, text: 'Animal training services', time: '9:23 AM', date: 'Jan 19', colorIndex: 0 },
-    { id: 2, text: 'clients to make orders for services', time: '9:23 AM', date: 'Jan 19', colorIndex: 1 },
-    { id: 3, text: 'It has a chat to talk to clients\nadd to cart', time: '9:23 AM', date: 'Jan 19', colorIndex: 2 },
   ]);
 
   const [nextColorIndex, setNextColorIndex] = useState(0);

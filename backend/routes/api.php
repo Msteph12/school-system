@@ -9,8 +9,14 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AuthPasswordController;
+
+use App\Http\Controllers\Api\AdminDashboardController;
+
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\TermController;
+use App\Http\Controllers\Api\ContextController;
+
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\SchoolClassController;
@@ -59,13 +65,22 @@ Route::post('login', [AuthController::class, 'login']);
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated (any logged-in user)
+| Authenticated Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
+    Route::post('forgot-password', [AuthPasswordController::class, 'forgot']);
+    Route::post('reset-password', [AuthPasswordController::class, 'reset']);
 });
+
+
+// Admin dashboard stats
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -75,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Core setup
+    Route::get('context/current', [ContextController::class, 'current']);
     Route::apiResource('academic-years', AcademicYearController::class)->except(['destroy']);
     Route::apiResource('terms', TermController::class)->except(['destroy']);
 

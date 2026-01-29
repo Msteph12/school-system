@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { NavLink,  useNavigate } from "react-router-dom";
 import { FiChevronRight, FiCircle } from "react-icons/fi";
+import { authService } from "@/services/auth";
+import { useAuth } from "@/context/useAuth";
 
 const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -28,6 +31,8 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
     // Close all dropdowns when clicking regular (non-dropdown) links
     setOpenDropdown(null);
   };
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   return (
     <aside
@@ -490,6 +495,21 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             </div>
           )}
         </div>
+        </details>
+
+        {/* Academic Setup */}
+        <NavLink 
+          to="/admin/academicsetup" 
+          className={({ isActive }) => 
+            `${linkClass} ${isActive ? 'bg-white/25 text-gray-900 shadow-inner font-semibold' : 'text-gray-700'}`
+          }
+        >
+          <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
+            <span className="text-base">🧭</span>
+          </div>
+          {!collapsed && <span>Academic Setup</span>}
+        </NavLink>
+        
       </nav>
 
       {/* Logout */}
@@ -501,12 +521,27 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             ${isActive ? 'bg-red-50/30 text-red-700 shadow-inner' : 'text-gray-600 hover:bg-red-50/40 hover:text-red-600'}`
           }
           onClick={handleRegularLinkClick}
+        <button
+          onClick={async () => {
+            try {
+              await authService.logout(); // backend token revoke
+            } catch {
+              // ignore — user may already be logged out
+            } finally {
+              authService.logout(); // clear token + header
+              setUser(null);
+              navigate("/login");
+            }
+          }}
+          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium
+            text-gray-600 hover:bg-red-50/40 hover:text-red-600
+            transition-all duration-200 rounded-lg"
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/20 backdrop-blur-sm">
             <span className="text-base">⬅️</span>
           </div>
-          {!collapsed && <span className="flex-1">Logout</span>}
-        </NavLink>
+          {!collapsed && <span className="flex-1 text-left">Logout</span>}
+        </button>
       </div>
     </aside>
   );

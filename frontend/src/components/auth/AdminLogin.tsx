@@ -1,10 +1,11 @@
-// src/components/auth/AdminLogin.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import LoginForm from "./LoginForm";
 import ResetPasswordForm from "./ResetPasswordForm";
 import type { LoginCredentials, ResetStep, ResetStepData } from "./types";
+import { authService } from "@/services/auth";
+import { useAuth } from "@/context/useAuth";
 
 const AdminLogin = () => {
   const [isResetMode, setIsResetMode] = useState(false);
@@ -12,9 +13,11 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
 
-  // Handle login submission
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+
+  /* ===================== LOGIN ===================== */
   const handleLogin = async (credentials: LoginCredentials) => {
     setError("");
     setSuccess("");
@@ -26,35 +29,28 @@ const AdminLogin = () => {
       return;
     }
 
-    // Admin credentials check
-    const adminCredentials = {
-      email: "admin@stanthonys.academy",
-      password: "admin123"
-    };
-
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (credentials.email === adminCredentials.email && 
-          credentials.password === adminCredentials.password) {
-        // Store login state
-        localStorage.setItem("adminLoggedIn", "true");
-        localStorage.setItem("userRole", "admin");
-        
-        // Redirect to admin dashboard
-        navigate("/admin");
-      } else {
-        setError("Invalid email or password");
+      const user = await authService.login(credentials);
+      setUser(user);
+
+      switch (user.role) {
+        case "admin":
+          navigate("/admin");
+          break;
+        case "registrar":
+          navigate("/registrar");
+          break;
+        default:
+          navigate("/login");
       }
     } catch {
-      setError("Login failed. Please try again.");
+      setError("Invalid email or password");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle forgot password
+  /* ===================== RESET FLOW ===================== */
   const handleForgotPassword = () => {
     setIsResetMode(true);
     setResetStep(1);
@@ -62,7 +58,6 @@ const AdminLogin = () => {
     setSuccess("");
   };
 
-  // Handle back to login
   const handleBackToLogin = () => {
     setIsResetMode(false);
     setResetStep(1);
@@ -70,84 +65,66 @@ const AdminLogin = () => {
     setSuccess("");
   };
 
-  // Handle reset password submission
-  const handleResetPassword = async (step: ResetStep, data: ResetStepData[ResetStep]) => {
+  const handleResetPassword = async (
+    step: ResetStep,
+    data: ResetStepData[ResetStep]
+  ) => {
     setError("");
     setSuccess("");
     setIsLoading(true);
 
     try {
-      switch (step) {
-        case 1: // Send reset code
-          // Type guard for step 1 data
-          if ('email' in data) {
-            await handleSendResetCode(data.email);
-          }
-          break;
-        case 2: // Verify reset code
-          // Type guard for step 2 data
-          if ('code' in data) {
-            await handleVerifyResetCode(data.code);
-          }
-          break;
-        case 3: // Set new password
-          // Type guard for step 3 data
-          if ('newPassword' in data && 'confirmPassword' in data) {
-            await handleSetNewPassword(data.newPassword, data.confirmPassword);
-          }
-          break;
+      if (step === 1 && "email" in data) {
+        await handleSendResetCode(data.email);
+      }
+
+      if (step === 2 && "code" in data) {
+        handleVerifyResetCode(data.code);
+      }
+
+      if (
+        step === 3 &&
+        "newPassword" in data &&
+        "confirmPassword" in data
+      ) {
+        await handleSetNewPassword(data.newPassword, data.confirmPassword);
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Send reset code
   const handleSendResetCode = async (email: string) => {
     if (!email.trim()) {
-      setError("Please enter your admin email address");
+      setError("Please enter your email address");
       return;
     }
 
-    // Check if it's the admin email
-    if (email !== "admin@stanthonys.academy") {
-      setError("This email is not registered as an admin");
-      return;
+    try {
+      await authService.forgotPassword(email);
+      setSuccess("Password reset link sent to your email");
+      setResetStep(2);
+    } catch {
+      setError("Failed to send reset link");
     }
-
-    // Simulate API call to send reset code
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // For demo, we'll generate a mock reset code
-    const mockResetCode = "123456";
-    localStorage.setItem("resetCode", mockResetCode);
-    
-    setSuccess(`Reset code sent to ${email}. Use code: ${mockResetCode} (Demo)`);
-    setResetStep(2);
   };
 
-  // Verify reset code
-  const handleVerifyResetCode = async (code: string) => {
+  const handleVerifyResetCode = (code: string) => {
     if (!code.trim()) {
-      setError("Please enter the reset code");
+      setError("Please enter the reset token");
       return;
     }
 
-    // Verify the reset code
-    const storedCode = localStorage.getItem("resetCode");
-    if (code !== storedCode) {
-      setError("Invalid reset code. Please check your email.");
-      return;
-    }
-
-    setSuccess("Code verified. Please set your new password.");
+    setSuccess("Token accepted. Set a new password.");
     setResetStep(3);
   };
 
-  // Set new password
-  const handleSetNewPassword = async (newPassword: string, confirmPassword: string) => {
+  const handleSetNewPassword = async (
+    newPassword: string,
+    confirmPassword: string
+  ) => {
     if (!newPassword.trim() || !confirmPassword.trim()) {
-      setError("Please enter and confirm your new password");
+      setError("Please fill in both password fields");
       return;
     }
 
@@ -156,38 +133,36 @@ const AdminLogin = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters long");
-      return;
-    }
+    try {
+      await authService.resetPassword({
+        email: "",
+        token: "",
+        password: newPassword,
+        password_confirmation: confirmPassword,
+      });
 
-    // Simulate API call to reset password
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // In a real app, you would update the password in your backend
-    // For demo, we'll update the mock credentials
-    localStorage.removeItem("resetCode");
-    
-    setSuccess("Password reset successfully! You can now login with your new password.");
-    
-    // Return to login after successful reset
-    setTimeout(() => {
-      setIsResetMode(false);
-      setResetStep(1);
-    }, 2000);
+      setSuccess("Password reset successful. You can now login.");
+      setTimeout(() => {
+        setIsResetMode(false);
+        setResetStep(1);
+      }, 1500);
+    } catch {
+      setError("Invalid or expired reset token");
+    }
   };
 
+  /* ===================== UI ===================== */
   return (
     <AuthLayout>
       {isResetMode ? (
         <ResetPasswordForm
-        onSubmit={handleResetPassword}
-        onBack={handleBackToLogin}
-        currentStep={resetStep}
-        isLoading={isLoading}
-        error={error}
-        success={success}
-        onStepChange={(step) => setResetStep(step)}
+          onSubmit={handleResetPassword}
+          onBack={handleBackToLogin}
+          currentStep={resetStep}
+          isLoading={isLoading}
+          error={error}
+          success={success}
+          onStepChange={setResetStep}
         />
       ) : (
         <LoginForm
