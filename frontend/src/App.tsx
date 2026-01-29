@@ -41,103 +41,112 @@ import OngoingExamsPage from "@/components/admin/assessments/OngoingExamsPage";
 import RegistrarLayout from "./app/registrar/RegistrarLayout";
 import RegistrarDashboard from "./app/registrar/RegistrarDashboard";
 
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import LoginPage from '@/app/pages/admin/LoginPage';
+
 
 function App() {
   const { user, isAdmin, isRegistrar } = useAuth();
 
-  // TEMP dev-safe fallback (prevents blank page)
-  if (!user) {
-    return <div>Loading user...</div>;
-  }
-
   return (
     <>
       <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        
         {/* Root redirect */}
         <Route
           path="/"
           element={
-            isAdmin ? (
-              <Navigate to="/admin" />
-            ) : isRegistrar ? (
-              <Navigate to="/registrar" />
+            user ? (
+              isAdmin ? (
+                <Navigate to="/admin" />
+              ) : isRegistrar ? (
+                <Navigate to="/registrar" />
+              ) : (
+                <Navigate to="/admin" />
+              )
             ) : (
-              <Navigate to="/admin" />
+              <Navigate to="/login" />
             )
           }
         />
 
-        {/* ADMIN */}
-        {isAdmin && (
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="students" element={<Students />} />
-            <Route path="students-promotion" element={<StudentsPromotion />} />
-            <Route
-              path="students-promotion/history"
-              element={<StudentsPromotionHistory />}
-            />
-            <Route
-              path="student-attendance"
-              element={<StudentAttendancePage />}
-            />
-            <Route path="teachers" element={<Teachers />} />
-            <Route
-              path="teachers-attendance"
-              element={<TeacherAttendancePage />}
-            />
-            <Route
-              path="subject-assignments"
-              element={<SubjectAssignmentsPage />}
-            />
-            <Route path="class-teachers" element={<ClassTeachersPage />} />
-            <Route path="finance" element={<FeesStructure />} />
-            <Route path="payments" element={<PaymentsPage />} />
-            <Route path="finance/student-fees" element={<StudentFeesPage />}/>
-            <Route path="finance/finance-overview" element={<FinanceOverviewPage />}/>
-            <Route path="finance/student-balances" element={<StudentBalancesPage />}/>
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<AdminDashboard />} />
+          <Route path="students" element={<Students />} />
+          <Route path="students-promotion" element={<StudentsPromotion />} />
+          <Route
+            path="students-promotion/history"
+            element={<StudentsPromotionHistory />}
+          />
+          <Route
+            path="student-attendance"
+            element={<StudentAttendancePage />}
+          />
+          <Route path="teachers" element={<Teachers />} />
+          <Route
+            path="teachers-attendance"
+            element={<TeacherAttendancePage />}
+          />
+          <Route
+            path="subject-assignments"
+            element={<SubjectAssignmentsPage />}
+          />
+          <Route path="class-teachers" element={<ClassTeachersPage />} />
+          <Route path="finance" element={<FeesStructure />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="finance/student-fees" element={<StudentFeesPage />}/>
+          <Route path="finance/finance-overview" element={<FinanceOverviewPage />}/>
+          <Route path="finance/student-balances" element={<StudentBalancesPage />}/>
 
-            <Route path="grades" element={<GradesPage />} /> 
-            <Route path="classes" element={<ClassesPage />} /> 
-            <Route path="subjects-per-grade" element={<SubjectsPerGrade />} />
-            <Route path="/admin/subjects/grade/:gradeId" element={<GradesSubjects />} />
-            <Route path="grades/classes" element={<ClassesPage />} />
+          <Route path="grades" element={<GradesPage />} /> 
+          <Route path="classes" element={<ClassesPage />} /> 
+          <Route path="subjects-per-grade" element={<SubjectsPerGrade />} />
+          <Route path="subjects/grade/:gradeId" element={<GradesSubjects />} />
+          <Route path="grades/classes" element={<ClassesPage />} />
 
-            <Route path="timetable" element={<Timetable />} />
+          <Route path="timetable" element={<Timetable />} />
 
-            <Route path="/admin/EnterResults" element={<EnterResults />} />
-            <Route path="/admin/StudentResults" element={<StudentResults />} />
-            <Route path="/admin/TermLock" element={<TermLock />} />
-            <Route path="/admin/GradeScalePage" element={<GradeScalePage />} />
-            <Route path="/admin/AssessmentsPage" element={<AssessmentsPage />} />
-            <Route path="/admin/assessments/completed" element={<CompletedExamsPage />} />
-            <Route path="/admin/assessments/total" element={<TotalAssessmentsPage />} />
-            <Route path="/admin/assessments/upcoming" element={<UpcomingExamsPage />} />
-            <Route path="/admin/assessments/ongoing" element={<OngoingExamsPage />} />
-            <Route path="/admin/assessments/setup" element={<AssessmentSetupPage />} />
+          <Route path="EnterResults" element={<EnterResults />} />
+          <Route path="StudentResults" element={<StudentResults />} />
+          <Route path="TermLock" element={<TermLock />} />
+          <Route path="GradeScalePage" element={<GradeScalePage />} />
+          <Route path="AssessmentsPage" element={<AssessmentsPage />} />
+          <Route path="assessments/completed" element={<CompletedExamsPage />} />
+          <Route path="assessments/total" element={<TotalAssessmentsPage />} />
+          <Route path="assessments/upcoming" element={<UpcomingExamsPage />} />
+          <Route path="assessments/ongoing" element={<OngoingExamsPage />} />
+          <Route path="assessments/setup" element={<AssessmentSetupPage />} />
 
-            <Route path="calendar" element={<Calendar />} />
+          <Route path="calendar" element={<Calendar />} />
 
-            <Route path="exam-timetable" element={<ExamTimetable />} />
-          </Route>
-        )}
+          <Route path="exam-timetable" element={<ExamTimetable />} />
+        </Route>
 
-        {/* REGISTRAR */}
-        {(isRegistrar || isAdmin) && (
-          <Route path="/registrar" element={<RegistrarLayout />}>
-            <Route index element={<RegistrarDashboard />} />
-            <Route path="students" element={<Students />} />
-            <Route path="students-promotion" element={<StudentsPromotion />} />
-            <Route
-              path="students-promotion/history"
-              element={<StudentsPromotionHistory />}
-            />
-            <Route
-              path="teachers-attendance"
-              element={<TeacherAttendancePage />}
-            />
-          </Route>
-        )}
+        {/* Protected Registrar Routes */}
+        <Route path="/registrar" element={
+          <ProtectedRoute allowedRoles={['admin', 'registrar']}>
+            <RegistrarLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<RegistrarDashboard />} />
+          <Route path="students" element={<Students />} />
+          <Route path="students-promotion" element={<StudentsPromotion />} />
+          <Route
+            path="students-promotion/history"
+            element={<StudentsPromotionHistory />}
+          />
+          <Route
+            path="teachers-attendance"
+            element={<TeacherAttendancePage />}
+          />
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
