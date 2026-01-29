@@ -78,7 +78,7 @@ const TotalAssessmentsPage: React.FC = () => {
 
       <ExamManagement
         exams={allExams}
-        onCreateExam={() => navigate('/admin/assessments')}
+        onCreateExam={() => navigate('/admin/AssessmentsPage')}
         onCloseExam={handleCloseExam}
         onEditExam={handleEditExam}
         onViewDetails={handleViewDetailsModal}

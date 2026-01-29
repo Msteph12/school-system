@@ -4,7 +4,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '@/components/admin/TopBar';
 import ExamManagement from '@/components/admin/assessments/ExamManagement';
-import EditExamModal from '@/components/admin/assessments/EditExamModal';
 import ViewExamModal from '@/components/admin/assessments/ViewExamModal';
 import { useExamStore } from '@/utils/examStore';
 import { useExamHandlers } from '@/hooks/useExamHandlers';
@@ -15,15 +14,12 @@ const CompletedExamsPage: React.FC = () => {
   const navigate = useNavigate();
   const { getExamsWithAutoStatus, loading: examsLoading, error: examsError, fetchExams } = useExamStore();
   const {
-    editingExam,
-    setEditingExam,
-    handleUpdateExam,
     handleEditExam,
     loading: handlersLoading,
     error: handlersError,
   } = useExamHandlers();
   
-  const { examTypes, loading: typesLoading, error: typesError } = useExamTypes();
+  const { loading: typesLoading, error: typesError } = useExamTypes();
 
   const [viewingExam, setViewingExam] = useState<Exam | null>(null);
   
@@ -74,23 +70,13 @@ const CompletedExamsPage: React.FC = () => {
 
       <ExamManagement
         exams={completedExams}
-        onCreateExam={() => navigate('/admin/assessments')}
+        onCreateExam={() => navigate('/admin/AssessmentsPage')}
         onCloseExam={handleCloseExam}
         onEditExam={handleEditExam}
         onViewDetails={handleViewDetailsModal}
         loading={loading}
         error={error}
       />
-
-      {editingExam && (
-        <EditExamModal
-          isOpen={!!editingExam}
-          onClose={() => setEditingExam(null)}
-          onSave={handleUpdateExam}
-          exam={editingExam}
-          examTypes={examTypes}
-        />
-      )}
 
       {viewingExam && (
         <ViewExamModal

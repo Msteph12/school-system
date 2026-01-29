@@ -1,3 +1,4 @@
+// utils/examStore.ts
 import { create } from 'zustand';
 import { assessmentService } from '@/services/assessment';
 import type { Exam } from '@/types/assessment';
@@ -6,177 +7,99 @@ interface ExamStore {
   exams: Exam[];
   loading: boolean;
   error: string | null;
-  fetchExams: () => Promise<void>;
-  addExam: (exam: Omit<Exam, 'id'>) => Promise<void>;
-  updateExam: (id: string, exam: Partial<Exam>) => Promise<void>;
-  deleteExam: (id: string) => Promise<void>;
-  getExamsWithAutoStatus: () => Exam[];
-  getCompletedExams: () => Exam[];
-}
 
-// Function to determine status based on current date
-const getAutoStatus = (exam: Omit<Exam, 'id'> | Exam): Exam['status'] => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Date only, no time
-  
-  const startDate = new Date(exam.startDate);
-  const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-  
-  const endDate = new Date(exam.endDate);
-  const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-  
-  // If end date has passed, exam should be completed
-  if (endDateOnly < today) {
-    return 'completed';
-  }
-  
-  // If today is between start and end dates (inclusive), exam should be active
-  if (startDateOnly <= today && endDateOnly >= today) {
-    return 'active';
-  }
-  
-  // If start date is in the future, exam should be scheduled
-  if (startDateOnly > today) {
-    return 'scheduled';
-  }
-  
-  // Default fallback
-  return 'completed';
-};
+  fetchExams: () => Promise<void>;
+
+  getExamsWithAutoStatus: () => (Exam & {
+    status: 'scheduled' | 'active' | 'completed';
+  })[];
+
+  addExam: (exam: {
+    name: string;
+    exam_type_id: number;
+    class_id: number;
+    subject_id: number;
+    academic_year_id: number;
+    term_id: number;
+    exam_date: string;
+    total_marks: number;
+  }) => Promise<void>;
+
+  updateExam: (
+    id: number,
+    updates: {
+      name?: string;
+      exam_date?: string;
+      total_marks?: number;
+    }
+  ) => Promise<void>;
+}
 
 export const useExamStore = create<ExamStore>((set, get) => ({
   exams: [],
   loading: false,
   error: null,
-  
+
   fetchExams: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await assessmentService.getExams();
-      if (response.error) {
-        set({ error: response.error, loading: false });
-      } else {
-        set({ exams: response.data || [], loading: false });
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch exams', 
-        loading: false 
-      });
+      const res = await assessmentService.getExams();
+      set({ exams: res.data ?? [], loading: false });
+    } catch {
+      set({ error: 'Failed to fetch exams', loading: false });
     }
   },
-  
-  addExam: async (exam: Omit<Exam, 'id'>) => {
-    set({ loading: true, error: null });
-    try {
-      const autoStatus = getAutoStatus(exam);
-      const examWithStatus = { ...exam, status: autoStatus };
-      
-      const response = await assessmentService.createExam(examWithStatus);
-      if (response.error) {
-        set({ error: response.error, loading: false });
-        throw new Error(response.error);
-      } else if (response.data) {
-        set((state) => ({ 
-          exams: [...state.exams, response.data!], 
-          loading: false 
-        }));
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to create exam', 
-        loading: false 
-      });
-      throw error;
-    }
-  },
-  
-  updateExam: async (id, updatedExam) => {
-    set({ loading: true, error: null });
-    try {
-      // If explicitly closing an exam
-      if (updatedExam.status === 'completed') {
-        const today = new Date().toISOString().split('T')[0];
-        updatedExam = {
-          ...updatedExam,
-          status: 'completed',
-          endDate: today,
-          startDate: new Date(updatedExam.startDate || '') > new Date() ? today : updatedExam.startDate
-        };
-      }
-      
-      // If no status provided in update, calculate it
-      if (!updatedExam.status) {
-        const existingExam = get().exams.find(exam => exam.id === id);
-        if (existingExam) {
-          const mergedExam = { ...existingExam, ...updatedExam };
-          const autoStatus = getAutoStatus(mergedExam);
-          updatedExam = { ...updatedExam, status: autoStatus };
-        }
-      }
-      
-      const response = await assessmentService.updateExam(id, updatedExam);
-      if (response.error) {
-        set({ error: response.error, loading: false });
-        throw new Error(response.error);
-      } else if (response.data) {
-        set((state) => ({
-          exams: state.exams.map((exam) => {
-            if (exam.id !== id) return exam;
-            return response.data!;
-          }),
-          loading: false
-        }));
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to update exam', 
-        loading: false 
-      });
-      throw error;
-    }
-  },
-  
-  deleteExam: async (id) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await assessmentService.deleteExam(id);
-      if (response.error) {
-        set({ error: response.error, loading: false });
-        throw new Error(response.error);
-      } else {
-        set((state) => ({
-          exams: state.exams.filter((exam) => exam.id !== id),
-          loading: false
-        }));
-      }
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to delete exam', 
-        loading: false 
-      });
-      throw error;
-    }
-  },
-  
-  // Get exams with auto-calculated statuses (for display)
+
   getExamsWithAutoStatus: () => {
-    const { exams } = get();
-    return exams.map(exam => {
-      // For display, use the stored status if it's 'completed' (manually closed)
-      if (exam.status === 'completed') {
-        return exam;
-      }
-      
-      // Otherwise, calculate status based on dates
-      const autoStatus = getAutoStatus(exam);
-      return { ...exam, status: autoStatus };
-    });
+  const today = new Date().toDateString();
+
+  return get().exams.map((exam) => {
+    // If backend already sent status, trust it
+    if (exam.status) return exam as Exam & { status: 'scheduled' | 'active' | 'completed' };
+
+    // Fallback ONLY if status is missing
+    const examDate = new Date(exam.exam_date).toDateString();
+
+    let status: 'scheduled' | 'active' | 'completed';
+    if (examDate > today) status = 'scheduled';
+    else if (examDate === today) status = 'active';
+    else status = 'completed';
+
+    return { ...exam, status };
+  });
   },
-  
-  // Get only completed exams
-  getCompletedExams: () => {
-    const { exams } = get();
-    return exams.filter(exam => exam.status === 'completed');
+
+  addExam: async (examData) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await assessmentService.createExam(examData);
+      if (res.data) {
+        set((s) => ({
+          exams: [...s.exams, res.data as Exam],
+          loading: false,
+        }));
+      } else {
+        set({ error: res.error || 'Failed to create exam', loading: false });
+      }
+    } catch {
+      set({ error: 'Failed to create exam', loading: false });
+    }
+  },
+
+  updateExam: async (id, updates) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await assessmentService.updateExam(id, updates);
+      if (res.data) {
+        set((s) => ({
+          exams: s.exams.map((e) => (e.id === id ? res.data! : e)),
+          loading: false,
+        }));
+      } else {
+        set({ error: res.error || 'Failed to update exam', loading: false });
+      }
+    } catch {
+      set({ error: 'Failed to update exam', loading: false });
+    }
   },
 }));

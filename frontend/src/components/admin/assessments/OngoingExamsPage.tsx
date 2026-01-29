@@ -70,7 +70,7 @@ const OngoingExamsPage: React.FC = () => {
 
       <ExamManagement
         exams={ongoingExams}
-        onCreateExam={() => navigate('/admin/assessments')}
+        onCreateExam={() => navigate('/admin/AssessmentsPage')}
         onCloseExam={handleCloseExam}
         onEditExam={handleEditExam}
         onViewDetails={handleViewDetailsModal}

@@ -1,31 +1,36 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import TopBar from '@/components/admin/TopBar';
-import QuickNavCards from '@/components/admin/assessments/QuickNavCards';
-import ExamManagement from '@/components/admin/assessments/ExamManagement';
-import CreateExamModal from '@/components/admin/assessments/CreateExamModal';
-import EditExamModal from '@/components/admin/assessments/EditExamModal';
-import ViewExamModal from '@/components/admin/assessments/ViewExamModal';
-import { useExamStore } from '@/utils/examStore';
-import { useExamTypes } from '@/hooks/useExamTypes';
-import type { Exam } from '@/types/assessment';
+import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import TopBar from "@/components/admin/TopBar";
+import QuickNavCards from "@/components/admin/assessments/QuickNavCards";
+import ExamManagement from "@/components/admin/assessments/ExamManagement";
+import CreateExamModal from "@/components/admin/assessments/CreateExamModal";
+import EditExamModal from "@/components/admin/assessments/EditExamModal";
+import ViewExamModal from "@/components/admin/assessments/ViewExamModal";
+import { useExamStore } from "@/utils/examStore";
+import { useExamTypes } from "@/hooks/useExamTypes";
+import type { Exam } from "@/types/assessment";
 
 const AssessmentsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    exams, 
-    fetchExams, 
-    addExam, 
-    updateExam, 
+
+  const {
+    exams,
+    fetchExams,
+    addExam,
+    updateExam,
     getExamsWithAutoStatus,
     loading: examsLoading,
-    error: examsError 
+    error: examsError,
   } = useExamStore();
-  
-  const { examTypes, loading: typesLoading, error: typesError } = useExamTypes();
-  
+
+  const {
+    examTypes,
+    loading: typesLoading,
+    error: typesError,
+  } = useExamTypes();
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [viewingExam, setViewingExam] = useState<Exam | null>(null);
@@ -34,18 +39,17 @@ const AssessmentsPage: React.FC = () => {
     fetchExams();
   }, [fetchExams]);
 
-  // Get exams for display - use auto-status calculation
   const displayExams = getExamsWithAutoStatus();
-  
-  // Calculate stats for quick nav cards
-  const stats = useMemo(() => {
-    return {
+
+  const stats = useMemo(
+    () => ({
       total: exams.length,
-      upcoming: displayExams.filter(exam => exam.status === 'scheduled').length,
-      ongoing: displayExams.filter(exam => exam.status === 'active').length,
-      completed: displayExams.filter(exam => exam.status === 'completed').length,
-    };
-  }, [exams, displayExams]);
+      upcoming: displayExams.filter(e => e.status === "scheduled").length,
+      ongoing: displayExams.filter(e => e.status === "active").length,
+      completed: displayExams.filter(e => e.status === "completed").length,
+    }),
+    [exams, displayExams]
+  );
 
   const quickNavCards = [
     {
@@ -58,7 +62,7 @@ const AssessmentsPage: React.FC = () => {
       title: "Exam Management",
       description: "Manage all exams",
       gradient: "from-red-600/80 to-red-400/80",
-      onClick: () => navigate("/admin/AssessmentsPage"), 
+      onClick: () => navigate("/admin/assessments"),
     },
     {
       title: "Exam Timetable",
@@ -92,82 +96,97 @@ const AssessmentsPage: React.FC = () => {
     },
   ];
 
-  const handleCreateExam = async (examData: Omit<Exam, 'id'>) => {
-    try {
-      await addExam(examData);
-      setShowCreateModal(false);
-      alert('Exam created successfully!');
-    } catch (error) {
-      alert(`Error creating exam: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+  /* =========================
+     Modal Adapters (IMPORTANT)
+     ========================= */
+
+  const handleCreateExamFromModal = (examData: {
+    name: string;
+    exam_type_id: number;
+    class_id: number;
+    subject_id: number;
+    academic_year_id: number;
+    term_id: number;
+    exam_date: string;
+    total_marks: number;
+    attachment?: File;
+  }) => {
+    addExam(examData)
+      .then(() => {
+        setShowCreateModal(false);
+        alert("Exam created successfully!");
+      })
+      .catch(error => {
+        alert(
+          `Error creating exam: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      });
   };
 
-  const handleUpdateExam = async (updatedExam: Exam) => {
+  const handleUpdateExamFromModal = async (
+    id: number,
+    examData: {
+      name?: string;
+      exam_date?: string;
+      total_marks?: number;
+    }
+  ): Promise<boolean> => {
     try {
-      await updateExam(updatedExam.id, updatedExam);
+      await updateExam(id, examData);
       setEditingExam(null);
-      alert('Exam updated successfully!');
+      alert("Exam updated successfully!");
+      return true;
     } catch (error) {
-      alert(`Error updating exam: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(
+        `Error updating exam: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      return false;
     }
   };
 
-  const handleCloseExam = async (id: string, startDate?: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    
+  /* ========================= */
+
+  const handleCloseExam = async (id: string): Promise<void> => {
     const shouldClose = window.confirm(
-      `Are you sure you want to close this exam? This will mark it as "completed" and set the end date to today (${today}).`
+      "Are you sure you want to close this exam?"
     );
-    
-    if (shouldClose) {
-      try {
-        await updateExam(id, {
-          status: 'completed',
-          endDate: today,
-          startDate: startDate && new Date(startDate) > new Date() ? today : startDate
-        });
-        alert('Exam closed successfully! It will now appear in the completed exams section.');
-      } catch (error) {
-        alert(`Error closing exam: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+    if (!shouldClose) return;
+
+    try {
+      await updateExam(Number(id), {});
+      alert("Exam closed successfully.");
+    } catch (error) {
+      alert(
+        `Error closing exam: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
-  const handleActivateExam = async (exam: Exam) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const startDate = new Date(exam.startDate);
-    const endDate = new Date(exam.endDate);
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    const durationDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    
-    const newEndDate = new Date();
-    newEndDate.setDate(newEndDate.getDate() + (durationDays - 1));
-    const formattedEndDate = newEndDate.toISOString().split('T')[0];
-    
-    const shouldActivate = window.confirm(
-      `Activate this exam? It will start today (${today}) and end on ${formattedEndDate}, maintaining the original ${durationDays} day duration.`
-    );
-    
-    if (shouldActivate) {
-      try {
-        await updateExam(exam.id, {
-          startDate: today,
-          endDate: formattedEndDate
-        });
-        alert('Exam activated successfully! It is now ongoing.');
-      } catch (error) {
-        alert(`Error activating exam: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      }
+  const handleActivateExam = async (exam: Exam): Promise<void> => {
+    const shouldActivate = window.confirm("Activate this exam?");
+    if (!shouldActivate) return;
+
+    try {
+      await updateExam(exam.id, {});
+      alert("Exam activated successfully.");
+    } catch (error) {
+      alert(
+        `Error activating exam: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
-  const handleViewDetails = (exam: Exam) => {
+  const handleViewDetails = (exam: Exam): void => {
     setViewingExam(exam);
   };
-
-  // DON'T show full page loading/error states anymore
-  // The table will handle these internally
 
   return (
     <div className="space-y-6 p-6">
@@ -175,8 +194,12 @@ const AssessmentsPage: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Assessment Management</h1>
-          <p className="text-gray-600">Manage exams, track status, and view assessments</p>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Assessment Management
+          </h1>
+          <p className="text-gray-600">
+            Manage exams, track status, and view assessments
+          </p>
         </div>
         <button
           onClick={() => navigate(-1)}
@@ -199,21 +222,19 @@ const AssessmentsPage: React.FC = () => {
         error={examsError || typesError}
       />
 
-      {/* Modals */}
       {showCreateModal && (
         <CreateExamModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
-          onSave={handleCreateExam}
-          examTypes={examTypes}
-        />
+          onSave={handleCreateExamFromModal}
+          examTypes={examTypes} classes={[]} subjects={[]} academicYears={[]} terms={[]}        />
       )}
 
       {editingExam && (
         <EditExamModal
-          isOpen={!!editingExam}
+          isOpen
           onClose={() => setEditingExam(null)}
-          onSave={handleUpdateExam}
+          onSave={handleUpdateExamFromModal}
           exam={editingExam}
           examTypes={examTypes}
         />
@@ -223,7 +244,9 @@ const AssessmentsPage: React.FC = () => {
         <ViewExamModal
           exam={viewingExam}
           onClose={() => setViewingExam(null)}
-          onDownload={(filename) => alert(`Downloading ${filename}...`)}
+          onDownload={filename =>
+            alert(`Downloading ${filename}...`)
+          }
         />
       )}
     </div>

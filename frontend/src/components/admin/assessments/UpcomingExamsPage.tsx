@@ -71,7 +71,7 @@ const UpcomingExamsPage: React.FC = () => {
 
       <ExamManagement
         exams={upcomingExams}
-        onCreateExam={() => navigate('/admin/assessments')}
+        onCreateExam={() => navigate('/admin/AssessmentsPage')}
         onCloseExam={handleCloseExam}
         onEditExam={handleEditExam}
         onViewDetails={handleViewDetailsModal}

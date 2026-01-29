@@ -17,13 +17,6 @@ const ViewExamModal: React.FC<ViewExamModalProps> = ({ exam, onClose, onDownload
     });
   };
 
-  const calculateDurationInDays = (startDate: string, endDate: string): number => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800 border border-green-200';
@@ -33,15 +26,8 @@ const ViewExamModal: React.FC<ViewExamModalProps> = ({ exam, onClose, onDownload
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'mid-term': return 'bg-purple-100 text-purple-800 border border-purple-200';
-      case 'final': return 'bg-red-100 text-red-800 border border-red-200';
-      case 'quiz': return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-      case 'assignment': return 'bg-indigo-100 text-indigo-800 border border-indigo-200';
-      case 'test': return 'bg-cyan-100 text-cyan-800 border border-cyan-200';
-      default: return 'bg-gray-100 text-gray-800 border border-gray-200';
-    }
+  const getTypeColor = () => {
+    return 'bg-blue-100 text-blue-800 border border-blue-200';
   };
 
   const handleDownload = (filename: string) => {
@@ -51,6 +37,18 @@ const ViewExamModal: React.FC<ViewExamModalProps> = ({ exam, onClose, onDownload
       alert(`Downloading ${filename}...`);
     }
   };
+
+  // Determine status based on exam_date
+  const getExamStatus = () => {
+    const today = new Date();
+    const examDate = new Date(exam.exam_date);
+    
+    if (examDate < today) return 'completed';
+    if (examDate.toDateString() === today.toDateString()) return 'active';
+    return 'scheduled';
+  };
+
+  const status = getExamStatus();
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -83,10 +81,38 @@ const ViewExamModal: React.FC<ViewExamModalProps> = ({ exam, onClose, onDownload
               <div className="px-3 py-2 bg-gray-50 rounded-lg">{exam.name}</div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Marks</label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">{exam.total_marks}</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Term</label>
               <div className="px-3 py-2 bg-gray-50 rounded-lg">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor(exam.type)}`}>
-                  {exam.type.charAt(0).toUpperCase() + exam.type.slice(1).replace('-', ' ')}
+                {exam.term?.name || 'N/A'}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                {exam.class?.name || 'N/A'}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                {exam.subject?.name || 'N/A'}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor()}`}>
+                  {exam.examType?.name || 'N/A'}
                 </span>
               </div>
             </div>
@@ -94,38 +120,22 @@ const ViewExamModal: React.FC<ViewExamModalProps> = ({ exam, onClose, onDownload
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Term</label>
-              <div className="px-3 py-2 bg-gray-50 rounded-lg">{exam.term}</div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                {exam.academicYear?.name || 'N/A'}
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-              <div className="px-3 py-2 bg-gray-50 rounded-lg">{exam.grade}</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-              <div className="px-3 py-2 bg-gray-50 rounded-lg">{formatDate(exam.startDate)}</div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-              <div className="px-3 py-2 bg-gray-50 rounded-lg">{formatDate(exam.endDate)}</div>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-            <div className="px-3 py-2 bg-gray-50 rounded-lg">
-              {calculateDurationInDays(exam.startDate, exam.endDate)} days
+              <label className="block text-sm font-medium text-gray-700 mb-1">Exam Date</label>
+              <div className="px-3 py-2 bg-gray-50 rounded-lg">{formatDate(exam.exam_date)}</div>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <div className="px-3 py-2 bg-gray-50 rounded-lg">
-              <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(exam.status)}`}>
-                {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
+              <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(status)}`}>
+                {status.charAt(0).toUpperCase() + status.slice(1)}
               </span>
             </div>
           </div>
