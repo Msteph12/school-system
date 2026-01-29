@@ -12,24 +12,22 @@ return new class extends Migration {
 
             $table->string('name');
 
-            $table->foreignId('class_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('term_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('academic_year_id')->constrained()->cascadeOnDelete();
+            // Relationships
+            $table->foreignId('exam_type_id')->constrained('exam_types')->cascadeOnDelete();
 
-            $table->date('exam_date');
-            $table->unsignedInteger('total_marks');
+            // UI-driven fields
+            $table->string('term');   // e.g. Term 1
+            $table->string('grade');  // e.g. Grade 9
+
+            // Dates & status
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->enum('status', ['scheduled', 'active', 'completed'])->default('scheduled');
+
+            // Optional attachment
+            $table->string('attachment')->nullable();
 
             $table->timestamps();
-
-            // Prevent duplicate exams for same context
-            $table->unique([
-                'class_id',
-                'subject_id',
-                'term_id',
-                'academic_year_id',
-                'name'
-            ]);
         });
     }
 

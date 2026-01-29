@@ -10,18 +10,22 @@ class Exam extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',               // Midterm, Endterm, CAT 1, etc.
+        'name',                // Midterm, Endterm, CAT 1, etc.
         'class_id',
         'subject_id',
         'academic_year_id',
         'term_id',
+        'exam_type_id',
         'exam_date',
+        'total_marks',
+        'status',
+        'attachment',
     ];
 
     // An exam belongs to a class
-    public function class()
+    public function schoolClass()
     {
-        return $this->belongsTo(SchoolClass::class);
+        return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
     // An exam belongs to a subject
@@ -46,5 +50,11 @@ class Exam extends Model
     public function marks()
     {
         return $this->hasMany(Marks::class);
+    }
+
+    // An exam belongs to an exam type
+    public function examType()
+    {
+        return $this->belongsTo(ExamType::class);
     }
 }

@@ -123,6 +123,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Exams (create/update/view – no delete)
     Route::apiResource('exams', ExamsController::class)->except(['destroy']);
+    Route::post('/exams/{exam}/activate', [ExamsController::class, 'activate']);
+    Route::post('/exams/{exam}/close', [ExamsController::class, 'close']);
 
     // Exam timetables
     Route::post('/exam-timetables', [ExamTimetableController::class, 'store']);
