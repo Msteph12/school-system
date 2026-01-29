@@ -99,7 +99,7 @@ const DashboardCard = ({ title, count, subtitle, route, icon }: Props) => {
       )}
       
       {/* Main card container */}
-        <div className={`relative h-full bg-[#F3ECEB]/90 backdrop-blur-sm  rounded-xl p-4 
+        <div className={`relative h-full bg-[#f2e1df]/90 backdrop-blur-sm  rounded-xl p-4 
         ${route ? "hover:bg-[#F5EFEE]/95 hover:shadow-lg transition-all duration-300 group-hover:translate-y-0.5" : ""}
         transition-all duration-300`}
         >

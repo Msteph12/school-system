@@ -177,7 +177,7 @@ const AdminDashboard = () => {
       {/* Welcome Back Section - Updated with gradient */}
       <div className="relative rounded-lg overflow-hidden shadow-lg">
         {/* Gradient background using your three core colors */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#e33a24]/40 via-[#9CCBFF]/40 to-slate-800/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#e33a24]/40 via-[#4d9ef7]/40 to-slate-900/40"></div>
         {/* Subtle overlay pattern */}
         <div className="absolute inset-0 opacity-5" style={{
           backgroundImage: `radial-gradient(circle at 25% 25%, #FFD1C9 2px, transparent 2px)`,
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
       {/* System Overview Section - Enhanced to match premium feel */}
       <div className="relative rounded-lg overflow-hidden shadow-lg">
         {/* Gradient background matching the Welcome section */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#e33a24]/40 via-[#9CCBFF]/40 to-slate-800/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#e33a24]/40 via-[#4d9ef7]/40 to-blue-800/40"></div>
         
         {/* Subtle overlay pattern */}
         <div className="absolute inset-0 opacity-3" style={{
@@ -428,7 +428,7 @@ const AdminDashboard = () => {
           {/* Calendar Card - Updated with gradient background */}
           <div className="relative rounded-lg overflow-hidden shadow-lg">
             {/* Gradient background using your three core colors */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FFF1EE]/20 via-[#9CCBFF]/20 to-slate-800/20"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#e33a24]/20 via-[#9CCBFF]/20 to-blue-800/20"></div>
             
             {/* Subtle overlay pattern */}
             <div className="absolute inset-0 opacity-5" style={{
@@ -483,14 +483,14 @@ const AdminDashboard = () => {
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-1">
                   {dayNames.map((day) => (
-                    <div key={day} className="text-center text-xs font-medium text-gray-600 py-1 bg-white/50 backdrop-blur-sm rounded-full">
+                    <div key={day} className="text-center text-xs font-medium text-black-600 py-1 bg-white/50 backdrop-blur-sm rounded-full">
                       {day}
                     </div>
                   ))}
                 </div>
                 
                 {/* Calendar grid */}
-                <div className="grid grid-cols-7 gap-1 p-1 bg-white/30 backdrop-blur-sm rounded-lg"> 
+                <div className="grid grid-cols-7 gap-1 p-1 bg-white/30 backdrop-blur-sm rounded-lg shadow-red-300"> 
                   {days.map((day, index) => (
                     <div 
                       key={index}

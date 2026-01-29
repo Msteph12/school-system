@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { NavLink,  useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FiChevronRight, FiCircle } from "react-icons/fi";
 import { authService } from "@/services/auth";
 import { useAuth } from "@/context/useAuth";
@@ -31,8 +30,21 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
     // Close all dropdowns when clicking regular (non-dropdown) links
     setOpenDropdown(null);
   };
+
   const navigate = useNavigate();
   const { setUser } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout(); // backend token revoke
+    } catch {
+      // ignore — user may already be logged out
+    } finally {
+      authService.logout(); // clear token + header
+      setUser(null);
+      navigate("/login");
+    }
+  };
 
   return (
     <aside
@@ -216,7 +228,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           {!collapsed && isDropdownOpen("finance") && (
             <div className="space-y-1 border-l border-white/30 ml-2 pl-3 mt-1">
               <NavLink 
-                to="finance" 
+                to="/admin/finance" 
                 className={({ isActive }) => 
                   `${dropdownItem} ${isActive ? 'text-blue-700 bg-white/40 font-medium' : ''}`
                 }
@@ -454,7 +466,7 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           )}
         </div>
 
-         {/* Assessments */}
+        {/* Assessments */}
         <div className="relative">
           <button
             type="button"
@@ -495,7 +507,6 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             </div>
           )}
         </div>
-        </details>
 
         {/* Academic Setup */}
         <NavLink 
@@ -503,36 +514,19 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
           className={({ isActive }) => 
             `${linkClass} ${isActive ? 'bg-white/25 text-gray-900 shadow-inner font-semibold' : 'text-gray-700'}`
           }
+          onClick={handleRegularLinkClick}
         >
           <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
             <span className="text-base">🧭</span>
           </div>
           {!collapsed && <span>Academic Setup</span>}
         </NavLink>
-        
       </nav>
 
       {/* Logout */}
       <div className="p-3 border-t border-white/30 mt-auto">
-        <NavLink
-          to="/logout"
-          className={({ isActive }) => 
-            `flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg 
-            ${isActive ? 'bg-red-50/30 text-red-700 shadow-inner' : 'text-gray-600 hover:bg-red-50/40 hover:text-red-600'}`
-          }
-          onClick={handleRegularLinkClick}
         <button
-          onClick={async () => {
-            try {
-              await authService.logout(); // backend token revoke
-            } catch {
-              // ignore — user may already be logged out
-            } finally {
-              authService.logout(); // clear token + header
-              setUser(null);
-              navigate("/login");
-            }
-          }}
+          onClick={handleLogout}
           className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium
             text-gray-600 hover:bg-red-50/40 hover:text-red-600
             transition-all duration-200 rounded-lg"
