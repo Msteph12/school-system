@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\AdminDashboardController;
 
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\TermController;
+use App\Http\Controllers\Api\ContextController;
+
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\SchoolClassController;
@@ -88,6 +90,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Core setup
+    Route::get('context/current', [ContextController::class, 'current']);
     Route::apiResource('academic-years', AcademicYearController::class)->except(['destroy']);
     Route::apiResource('terms', TermController::class)->except(['destroy']);
 
