@@ -6,6 +6,9 @@ import { useExamTypes } from '@/hooks/useExamTypes';
 
 const AssessmentSetupPage: React.FC = () => {
   const navigate = useNavigate();
+
+  const [search, setSearch] = useState("");
+
   const { 
     examTypes, 
     loading, 
@@ -60,7 +63,10 @@ const AssessmentSetupPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <TopBar />
+      <TopBar
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
 
       {notification && (
         <div

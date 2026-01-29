@@ -8,6 +8,8 @@ import { dashboardService } from "@/services/dashboard";
 const AdminDashboard = () => {
   const navigate = useNavigate(); // Initialize navigate
 
+  const [search, setSearch] = useState("");
+
   const [stats, setStats] = useState({
   students: 0,
   teachers: 0,
@@ -81,7 +83,10 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="space-y-4">
-        <TopBar />
+        <TopBar
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
         
         {/* Welcome Section Skeleton */}
         <div className="animate-pulse">
@@ -164,7 +169,10 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-4">
-      <TopBar />
+      <TopBar
+        searchValue={search}
+        onSearchChange={setSearch}
+      />
 
       {/* Welcome Back Section - Updated with gradient */}
       <div className="relative rounded-lg overflow-hidden shadow-lg">

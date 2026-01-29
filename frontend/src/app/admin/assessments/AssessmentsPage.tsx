@@ -15,6 +15,8 @@ import type { Exam } from "@/types/assessment";
 const AssessmentsPage: React.FC = () => {
   const navigate = useNavigate();
 
+  const [search, setSearch] = useState(""); 
+
   const {
     exams,
     fetchExams,
@@ -190,7 +192,10 @@ const AssessmentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <TopBar />
+      <TopBar
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
 
       <div className="flex items-center justify-between">
         <div>

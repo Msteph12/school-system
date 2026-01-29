@@ -32,6 +32,8 @@ import StudentResults from "@/app/admin/results/StudentResults";
 import TermLock from "@/app/admin/results/TermLock";
 import GradeScalePage from "@/app/admin/results/GradeScalePage";
 
+import AcademicSetupPage from "@/app/pages/admin/AcademicSetup";
+
 import AssessmentsPage from "@/app/admin/assessments/AssessmentsPage";
 import AssessmentSetupPage from "@/app/admin/assessments/AssessmentSetupPage";
 import CompletedExamsPage from "@/components/admin/assessments/CompletedExamsPage";
@@ -139,6 +141,8 @@ function App() {
           <Route path="assessments/upcoming" element={<UpcomingExamsPage />} />
           <Route path="assessments/ongoing" element={<OngoingExamsPage />} />
           <Route path="assessments/setup" element={<AssessmentSetupPage />} />
+
+          <Route path="AcademicSetup" element={<AcademicSetupPage />} />
         </Route>
 
         {/* REGISTRAR ROUTES */}

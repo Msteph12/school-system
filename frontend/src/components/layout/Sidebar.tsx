@@ -397,6 +397,20 @@ const Sidebar = ({ collapsed = false }: { collapsed?: boolean }) => {
             </div>
           )}
         </details>
+
+        {/* Academic Setup */}
+        <NavLink 
+          to="/admin/academicsetup" 
+          className={({ isActive }) => 
+            `${linkClass} ${isActive ? 'bg-white/25 text-gray-900 shadow-inner font-semibold' : 'text-gray-700'}`
+          }
+        >
+          <div className="w-6 h-6 flex items-center justify-center rounded-md bg-white/30 backdrop-blur-sm">
+            <span className="text-base">🧭</span>
+          </div>
+          {!collapsed && <span>Academic Setup</span>}
+        </NavLink>
+        
       </nav>
 
       {/* Logout */}
