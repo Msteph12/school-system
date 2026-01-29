@@ -1,8 +1,15 @@
 import api from "@/services/api";
 
 export interface SystemContextResponse {
-  academicYear: string;
-  term: string;
+  academicYear: {
+    id: number;
+    name: string;
+  } | null;
+
+  term: {
+    id: number;
+    name: string;
+  } | null;
 }
 
 export const contextService = {

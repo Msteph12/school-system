@@ -17,8 +17,8 @@ export const SystemProvider = ({ children }: { children: ReactNode }) => {
       try {
         const data = await contextService.getCurrent();
         if (mounted) {
-          setAcademicYear(data.academicYear);
-          setTerm(data.term);
+          setAcademicYear(data.academicYear?.name ?? null);
+          setTerm(data.term?.name ?? null);
         }
       } finally {
         if (mounted) setLoading(false);
