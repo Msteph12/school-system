@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -20,17 +21,35 @@ class AuthController extends Controller
 
         if (!Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'Invalid login credentials'
+                'message' => 'Invalid login credentials',
             ], 401);
         }
 
-        $user = Auth::user();
+        $user = User::with('role')->find(Auth::id());
 
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => [
+                'id'   => $user->id,
+                'name' => $user->name,
+                'role' => $user->role->name, // 👈 frontend expects string
+            ],
             'token' => $token,
+        ]);
+    }
+
+    /**
+     * GET /api/me
+     */
+    public function me(Request $request)
+    {
+        $user = User::with('role')->find($request->user()->id);
+
+        return response()->json([
+            'id'   => $user->id,
+            'name' => $user->name,
+            'role' => $user->role->name,
         ]);
     }
 
@@ -44,13 +63,5 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out successfully',
         ]);
-    }
-
-    /**
-     * GET /api/me
-     */
-    public function me(Request $request)
-    {
-        return response()->json($request->user());
     }
 }

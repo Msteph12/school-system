@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 |--------------------------------------------------------------------------
 */
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AuthPasswordController;
+
+use App\Http\Controllers\Api\AdminDashboardController;
+
 use App\Http\Controllers\Api\AcademicYearController;
 use App\Http\Controllers\Api\TermController;
 use App\Http\Controllers\Api\StudentController;
@@ -59,13 +63,22 @@ Route::post('login', [AuthController::class, 'login']);
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated (any logged-in user)
+| Authenticated Routes
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
+    Route::post('forgot-password', [AuthPasswordController::class, 'forgot']);
+    Route::post('reset-password', [AuthPasswordController::class, 'reset']);
 });
+
+
+// Admin dashboard stats
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+});
+
 
 /*
 |--------------------------------------------------------------------------
