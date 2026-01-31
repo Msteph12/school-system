@@ -12,6 +12,7 @@ import type { QuickNavCard } from "@/types/result";
 
 const Students = () => {
   const [students, setStudents] = useState<StudentListItem[]>([]);
+
   const [modalMode, setModalMode] = useState<"add" | "edit" | "view" | null>(
     null
   );

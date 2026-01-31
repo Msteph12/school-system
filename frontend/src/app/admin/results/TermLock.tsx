@@ -15,6 +15,8 @@ import { termService } from "@/services/termService";
 const TermLock: React.FC = () => {
   const navigate = useNavigate();
 
+  const [search, setSearch] = useState("");
+
   const [terms, setTerms] = useState<Term[]>([]);
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -103,6 +105,11 @@ const TermLock: React.FC = () => {
     }
   };
 
+  const handleActivate = async (termId: string) => {
+  await termService.activateTerm(termId);
+  loadTerms();
+  };
+
   const confirmLock = async () => {
     setShowConfirmation(false);
     await lockTerm();
@@ -156,7 +163,10 @@ const TermLock: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6 p-6">
-        <TopBar />
+       <TopBar
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">
@@ -187,7 +197,10 @@ const TermLock: React.FC = () => {
   /** ---------------- Main Render ---------------- */
   return (
     <div className="space-y-6 p-6">
-      <TopBar />
+     <TopBar
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
 
       <div className="flex justify-between items-center">
         <div>
@@ -250,6 +263,7 @@ const TermLock: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <StatusCard
               term={selectedTerm}
+              onActivate={handleActivate}
               onLockToggle={handleLockToggle}
               isProcessing={isProcessing}
             />

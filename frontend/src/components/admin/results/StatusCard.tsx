@@ -5,12 +5,14 @@ import type { Term } from '@/types/term';
 interface StatusCardProps {
   term: Term | null;
   onLockToggle: () => void;
+  onActivate: (id: string) => void;
   isProcessing: boolean;
 }
 
 const StatusCard: React.FC<StatusCardProps> = ({
   term,
   onLockToggle,
+  onActivate,
   isProcessing,
 }) => {
   if (!term) return null;
@@ -46,36 +48,58 @@ const StatusCard: React.FC<StatusCardProps> = ({
         </p>
       </div>
 
-      <button
-        onClick={onLockToggle}
-        disabled={isProcessing}
-        className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${
-          term.isLocked
-            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-            : 'bg-red-600 hover:bg-red-700 text-white'
-        } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
-      >
-        {isProcessing ? (
-          <>
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            Processing...
-          </>
-        ) : (
-          <>
-            {term.isLocked ? (
-              <>
-                <FaUnlock className="w-5 h-5" />
-                Unlock Term
-              </>
-            ) : (
-              <>
-                <FaLock className="w-5 h-5" />
-                Lock Term
-              </>
-            )}
-          </>
-        )}
-      </button>
+      {/* ACTION BUTTON */}
+      {!term.isActive ? (
+        /* ACTIVATE TERM */
+        <button
+          onClick={() => onActivate(term.id)}
+          disabled={isProcessing}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors bg-green-600 hover:bg-green-700 text-white ${
+            isProcessing ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          {isProcessing ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Activating...
+            </>
+          ) : (
+            <>
+              <FaUnlock className="w-5 h-5" />
+              Activate Term
+            </>
+          )}
+        </button>
+      ) : (
+        /* LOCK / UNLOCK TERM */
+        <button
+          onClick={onLockToggle}
+          disabled={isProcessing}
+          className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${
+            term.isLocked
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-red-600 hover:bg-red-700 text-white'
+          } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isProcessing ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Processing...
+            </>
+          ) : term.isLocked ? (
+            <>
+              <FaUnlock className="w-5 h-5" />
+              Unlock Term
+            </>
+          ) : (
+            <>
+              <FaLock className="w-5 h-5" />
+              Lock Term
+            </>
+          )}
+        </button>
+      )}
+
 
       {term.order > 1 && !term.isLocked && (
         <div className="mt-4 flex items-start gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">

@@ -1,6 +1,6 @@
 import api from "@/services/api";
 
-export interface LoginPayload {
+interface LoginPayload {
   email: string;
   password: string;
 }
@@ -8,10 +8,11 @@ export interface LoginPayload {
 export const authService = {
   async login(payload: LoginPayload) {
     const response = await api.post("/login", payload);
+
     const { token, user } = response.data;
 
+    // ✅ STORE TOKEN (single source of truth)
     localStorage.setItem("auth_token", token);
-    api.defaults.headers.common.Authorization = `Bearer ${token}`;
 
     return user;
   },
@@ -21,25 +22,12 @@ export const authService = {
     return response.data;
   },
 
-  async forgotPassword(email: string) {
-    return api.post("/forgot-password", { email });
-  },
-
-  async resetPassword(payload: {
-    email: string;
-    token: string;
-    password: string;
-    password_confirmation: string;
-  }) {
-    return api.post("/reset-password", payload);
-  },
-
   async logout() {
     try {
-      await api.post("/logout"); // ✅ revoke token in backend
+      await api.post("/logout");
     } finally {
+      // ✅ ALWAYS CLEAR TOKEN
       localStorage.removeItem("auth_token");
-      delete api.defaults.headers.common.Authorization;
     }
   },
 };

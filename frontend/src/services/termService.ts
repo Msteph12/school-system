@@ -12,6 +12,10 @@ export const termService = {
     }
   },
 
+    async activateTerm(termId: string) {
+    return api.post(`/terms/${termId}/activate`);
+  },
+
   async lockTerm(termId: string): Promise<Term> {
     try {
       const response = await api.post(`/terms/${termId}/lock`);
@@ -32,3 +36,4 @@ export const termService = {
     }
   },
 };
+

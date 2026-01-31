@@ -3,6 +3,7 @@ export interface Term {
   name: string;
   order: number;
   isLocked: boolean;
+  isActive: boolean;
   lockedDate?: string;
   lockedBy?: string;
   disabled?: boolean;

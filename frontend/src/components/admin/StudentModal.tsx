@@ -11,7 +11,7 @@ interface Student {
   first_name: string;
   last_name: string;
   gender?: string;
-  status?: string;
+  status: string;
   grade_id?: string;
   class_id?: string;
   guardian_name?: string;
@@ -41,7 +41,7 @@ const emptyForm: Student = {
   first_name: "",
   last_name: "",
   gender: "",
-  status: "",
+  status: "active", // ✅ REQUIRED by backend
   grade_id: "",
   class_id: "",
   guardian_name: "",
@@ -58,17 +58,23 @@ const StudentModal = ({ mode, student, onClose, onSuccess }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load dropdown data
+  // ✅ Load dropdown data safely
   useEffect(() => {
-    getGrades().then(res => setGrades(res.data));
-    getClasses().then(res => setClasses(res.data));
+  getGrades()
+    .then(res => setGrades(Array.isArray(res.data) ? res.data : res.data.data ?? []))
+    .catch(() => setGrades([]));
+
+  getClasses()
+    .then(res => setClasses(Array.isArray(res.data) ? res.data : res.data.data ?? []))
+    .catch(() => setClasses([]));
   }, []);
 
-  // Init form when modal opens
+  // ✅ Init form
   useEffect(() => {
     if ((mode === "edit" || mode === "view") && student) {
       setForm({
         ...student,
+        status: student.status || "active",
         grade_id: student.grade_id?.toString() || "",
         class_id: student.class_id?.toString() || "",
       });
@@ -103,20 +109,20 @@ const StudentModal = ({ mode, student, onClose, onSuccess }: Props) => {
     setIsSubmitting(true);
     setError(null);
 
-    const payload = {
-      admission_number: form.admission_number,
-      first_name: form.first_name,
-      last_name: form.last_name,
-      gender: form.gender,
-      status: form.status,
-      grade_id: form.grade_id,
-      class_id: form.class_id,
-      guardian_name: form.guardian_name,
-      guardian_phone: form.guardian_phone,
-      guardian_address: form.guardian_address,
-    };
-
     try {
+      const payload = {
+        admission_number: form.admission_number,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        gender: form.gender || null,
+        status: form.status,
+        grade_id: Number(form.grade_id),
+        class_id: Number(form.class_id),
+        guardian_name: form.guardian_name || null,
+        guardian_phone: form.guardian_phone || null,
+        guardian_address: form.guardian_address || null,
+      };
+
       if (mode === "add") await addStudent(payload);
       if (mode === "edit" && student?.id)
         await updateStudent(student.id, payload);
@@ -162,10 +168,10 @@ const StudentModal = ({ mode, student, onClose, onSuccess }: Props) => {
 
           {!readOnly ? (
             <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded">
-              <option value="">Status</option>
               <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="transferred">Transferred</option>
+              <option value="graduated">Graduated</option>
+              <option value="withdrawn">Withdrawn</option>
+              <option value="suspended">Suspended</option>
             </select>
           ) : (
             <input value={form.status} readOnly className="border p-2 rounded" />
@@ -174,7 +180,7 @@ const StudentModal = ({ mode, student, onClose, onSuccess }: Props) => {
           {!readOnly ? (
             <select name="grade_id" value={form.grade_id} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select Grade</option>
-              {grades.map(g => (
+              {Array.isArray(grades) && grades.map(g => (
                 <option key={g.id} value={g.id}>{g.name}</option>
               ))}
             </select>
@@ -185,7 +191,7 @@ const StudentModal = ({ mode, student, onClose, onSuccess }: Props) => {
           {!readOnly ? (
             <select name="class_id" value={form.class_id} onChange={handleChange} className="border p-2 rounded">
               <option value="">Select Class</option>
-              {classes.map(c => (
+              {Array.isArray(classes) && classes.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>

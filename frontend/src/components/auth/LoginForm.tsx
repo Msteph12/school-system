@@ -163,19 +163,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
           </button>
         </form>
 
-        {/* Demo Credentials */}
-        <div className="mt-5 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-          <p className="text-xs text-gray-600 text-center">
-            <span className="font-medium">Demo Admin:</span> admin@stanthonys.academy / admin123
-          </p>
-        </div>
-
-        {/* Other Roles */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-xs text-center text-gray-500">
-            Other roles: Teacher • Accountant • Registrar
-          </p>
-        </div>
       </div>
     </div>
   );
