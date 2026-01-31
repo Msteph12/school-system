@@ -3,37 +3,77 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Schema;
+use Carbon\Carbon;
+
+// Models (only used if tables exist)
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Grade;
 use App\Models\Timetable;
 use App\Models\TeacherAttendance;
-use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
-        // Basic counts
-        $studentsCount = Student::count();
-        $teachersCount = Teacher::count();
-        $gradesCount   = Grade::count();
+        // -----------------------------
+        // SAFE COUNTS (no crashes)
+        // -----------------------------
+        $studentsCount = Schema::hasTable('students')
+            ? Student::count()
+            : 0;
 
-        // Students with balances (balance > 0)
-        $studentsWithBalances = Student::where('balance', '>', 0)->count();
+        $teachersCount = Schema::hasTable('teachers')
+            ? Teacher::count()
+            : 0;
 
-        // Timetable stats
-        $publishedTimetables = Timetable::where('is_published', true)->count();
-        $totalClasses        = Grade::count();
+        $gradesCount = Schema::hasTable('grades')
+            ? Grade::count()
+            : 0;
 
-        // Teacher attendance (today)
-        $today = Carbon::today();
+        // -----------------------------
+        // STUDENT BALANCES (optional column)
+        // -----------------------------
+        $studentsWithBalances = 0;
+        if (
+            Schema::hasTable('students') &&
+            Schema::hasColumn('students', 'balance')
+        ) {
+            $studentsWithBalances = Student::where('balance', '>', 0)->count();
+        }
 
-        $teachersPresentToday = TeacherAttendance::whereDate('date', $today)
-            ->where('status', 'present')
-            ->distinct('teacher_id')
-            ->count('teacher_id');
+        // -----------------------------
+        // TIMETABLE STATS
+        // -----------------------------
+        $publishedTimetables = 0;
+        if (
+            Schema::hasTable('timetables') &&
+            Schema::hasColumn('timetables', 'is_published')
+        ) {
+            $publishedTimetables = Timetable::where('is_published', true)->count();
+        }
 
+        // -----------------------------
+        // TEACHER ATTENDANCE (today)
+        // -----------------------------
+        $teachersPresentToday = 0;
+        if (
+            Schema::hasTable('teacher_attendance') &&
+            Schema::hasColumn('teacher_attendance', 'date')
+        ) {
+            $teachersPresentToday = TeacherAttendance::whereDate(
+                'date',
+                Carbon::today()
+            )
+                ->where('status', 'present')
+                ->distinct('teacher_id')
+                ->count('teacher_id');
+        }
+
+        // -----------------------------
+        // RESPONSE (matches frontend)
+        // -----------------------------
         return response()->json([
             'students' => $studentsCount,
             'teachers' => $teachersCount,
@@ -43,7 +83,7 @@ class AdminDashboardController extends Controller
 
             'timetable' => [
                 'published' => $publishedTimetables,
-                'total'     => $totalClasses,
+                'total'     => $gradesCount,
             ],
 
             'teacherAttendance' => [

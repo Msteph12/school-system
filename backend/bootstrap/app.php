@@ -12,18 +12,42 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 
-    // ✅ REQUIRED in Laravel 11 (do NOT remove)
+    // ✅ REQUIRED in Laravel 11
     ->withExceptions(function (Exceptions $exceptions) {
-        // Leave EMPTY — Laravel binds the default Handler internally
+        // Leave empty — Laravel binds default handler internally
     })
 
     ->withMiddleware(function (Middleware $middleware): void {
+
+        /*
+        |--------------------------------------------------------------------------
+        | API Middleware
+        |--------------------------------------------------------------------------
+        | Option A: Bearer Token Auth (NO cookies)
+        |--------------------------------------------------------------------------
+        */
+
+        // ❌ DO NOT use EnsureFrontendRequestsAreStateful
+        // This breaks token-based auth
+
+        /*
+        |--------------------------------------------------------------------------
+        | Middleware Aliases
+        |--------------------------------------------------------------------------
+        */
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'role'     => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Force API-style unauthenticated response
+        |--------------------------------------------------------------------------
+        */
         $middleware->redirectGuestsTo(function () {
-        abort(401, 'Unauthenticated.');
-    });
+            abort(401, 'Unauthenticated.');
+        });
     })
 
     ->create();

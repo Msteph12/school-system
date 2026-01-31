@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('terms', function (Blueprint $table) {
             $table->id();
-
+ 
             $table->foreignId('academic_year_id')
                   ->constrained()
                   ->cascadeOnDelete();

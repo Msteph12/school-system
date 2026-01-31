@@ -9,9 +9,7 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    /**
-     * POST /api/login
-     */
+    // POST /api/login
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -30,32 +28,30 @@ class AuthController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => [
-                'id'   => $user->id,
-                'name' => $user->name,
-                'role' => $user->role->name, // 👈 frontend expects string
-            ],
             'token' => $token,
+            'user' => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'role'  => $user->role->name,
+            ],
         ]);
     }
 
-    /**
-     * GET /api/me
-     */
+    // GET /api/me
     public function me(Request $request)
     {
-        $user = User::with('role')->find($request->user()->id);
+        $user = $request->user()->load('role');
 
         return response()->json([
-            'id'   => $user->id,
-            'name' => $user->name,
-            'role' => $user->role->name,
+            'id'    => $user->id,
+            'name'  => $user->name,
+            'email' => $user->email,
+            'role'  => $user->role->name,
         ]);
     }
 
-    /**
-     * POST /api/logout
-     */
+    // POST /api/logout
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

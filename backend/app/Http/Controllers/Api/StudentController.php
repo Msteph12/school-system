@@ -8,26 +8,35 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    // GET /api/students
+    /**
+     * GET /api/students
+     * Used by students table list
+     */
     public function index()
     {
-        return Student::select([
-            'id',
-            'first_name',
-            'last_name',
-            'admission_number',
-            'is_promoted'
-        ])
-        ->orderBy('last_name')
-        ->get()
-        ->map(fn ($s) => [
-            'id' => $s->id,
-            'name' => $s->first_name . ' ' . $s->last_name,
-            'is_promoted' => $s->is_promoted,
-        ]);
+        return Student::with(['grade', 'class'])
+            ->orderBy('last_name')
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id' => $s->id,
+                    'admission_number' => $s->admission_number,
+                    'first_name' => $s->first_name,
+                    'last_name' => $s->last_name,
+                    'name' => $s->first_name . ' ' . $s->last_name,
+                    'gender' => $s->gender,
+                    'status' => $s->status,
+                    'is_promoted' => (bool) $s->is_promoted,
+                    'grade' => $s->grade?->name,
+                    'class' => $s->class?->name,
+                ];
+            });
     }
 
-    // 🔍 GET /api/students/by-admission/{admissionNo}
+    /**
+     * GET /api/students/by-admission/{admissionNo}
+     * Used when searching student by admission number
+     */
     public function findByAdmission($admissionNo)
     {
         $student = Student::with(['grade', 'class'])
@@ -35,14 +44,22 @@ class StudentController extends Controller
             ->firstOrFail();
 
         return [
-            'id'    => $student->id,
-            'name'  => $student->first_name . ' ' . $student->last_name,
+            'id' => $student->id,
+            'admission_number' => $student->admission_number,
+            'first_name' => $student->first_name,
+            'last_name' => $student->last_name,
+            'name' => $student->first_name . ' ' . $student->last_name,
+            'gender' => $student->gender,
+            'status' => $student->status,
             'grade' => $student->grade?->name,
             'class' => $student->class?->name,
         ];
     }
 
-    // POST /api/students
+    /**
+     * POST /api/students
+     * Used by Add Student Modal
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -52,7 +69,7 @@ class StudentController extends Controller
             'last_name' => 'required|string',
             'gender' => 'nullable|string',
             'date_of_birth' => 'nullable|date',
-            'status' => 'required|string',
+            'status' => 'required|in:active,graduated,withdrawn,suspended',
             'guardian_name' => 'nullable|string',
             'guardian_relationship' => 'nullable|string',
             'guardian_phone' => 'nullable|string',
@@ -60,16 +77,25 @@ class StudentController extends Controller
             'guardian_address' => 'nullable|string',
         ]);
 
-        return Student::create($validated);
+        $student = Student::create($validated);
+
+        return response()->json([
+            'message' => 'Student created successfully',
+            'student' => $student
+        ], 201);
     }
 
-    // GET /api/students/{id}
+    /**
+     * GET /api/students/{id}
+     */
     public function show($id)
     {
-        return Student::findOrFail($id);
+        return Student::with(['grade', 'class'])->findOrFail($id);
     }
 
-    // PUT /api/students/{id}
+    /**
+     * PUT /api/students/{id}
+     */
     public function update(Request $request, $id)
     {
         $student = Student::findOrFail($id);
@@ -91,10 +117,16 @@ class StudentController extends Controller
 
         $student->update($validated);
 
-        return $student;
+        return response()->json([
+            'message' => 'Student updated successfully',
+            'student' => $student
+        ]);
     }
 
-    // DELETE /api/students/{id}
+    /**
+     * DELETE /api/students/{id}
+     * Soft action (withdraw)
+     */
     public function destroy($id)
     {
         $student = Student::findOrFail($id);

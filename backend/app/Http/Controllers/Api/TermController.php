@@ -69,7 +69,7 @@ class TermController extends Controller
         if ($term->is_closed) {
             return response()->json([
                 'message' => 'Term is already locked.',
-            ], 422);
+            ], 422); 
         }
 
         // Enforce sequential locking
@@ -151,4 +151,28 @@ class TermController extends Controller
             'isActive' => $term->is_active,
         ];
     }
+
+    public function activate($id)
+    {
+        $term = Term::findOrFail($id);
+
+        if ($term->is_closed) {
+            return response()->json([
+                'message' => 'Cannot activate a locked term'
+            ], 422);
+        }
+
+        // Deactivate all terms in same academic year
+        Term::where('academic_year_id', $term->academic_year_id)
+            ->update(['is_active' => false]);
+
+        // Activate selected term
+        $term->update(['is_active' => true]);
+
+        return response()->json([
+            'message' => 'Term activated successfully',
+            'data' => $term
+        ]);
+    }
+
 }
